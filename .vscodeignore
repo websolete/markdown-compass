@@ -1,0 +1,23 @@
+.vscode/**
+.vscode-test/**
+dev/**
+.gitignore
+.yarnrc
+vsc-extension-quickstart.md
+**/jsconfig.json
+**/*.map
+**/eslint.config.mjs
+**/.vscode-test.*
+test-*.md
+package-and-test.js
+package-and-test.ps1
+test-*.js
+verify-*.js
+validate-*.js
+snapshot.js
+ignored-docs/**
+extension.js.new
+snapshot/**
+
+# Make sure these are NOT ignored
+!icons/**
