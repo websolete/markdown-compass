@@ -18,6 +18,7 @@ snapshot.js
 ignored-docs/**
 extension.js.new
 snapshot/**
+testing/**
 
 # Make sure these are NOT ignored
 !icons/**
