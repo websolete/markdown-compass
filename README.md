@@ -19,6 +19,7 @@ Provide an easy to use and intuitive way to navigate and preview all the Markdow
 - **Toggle .gitignore Filtering**: Enable or disable .gitignore filtering with one click
 - **Search and Filter**: Find markdown files by name or content using the built-in search
 - **File Statistics**: View comprehensive statistics about your markdown documentation
+- **Preview Themes**: Choose from multiple styling themes for markdown previews (GitHub, Academic, Dark Enhanced, Minimal)
 
 ## Usage
 
@@ -32,6 +33,7 @@ Provide an easy to use and intuitive way to navigate and preview all the Markdow
 8. Use the refresh button to update the view if files are added or changed
 9. Click on the filter icon to toggle .gitignore filtering on/off
 10. Use the statistics button to view comprehensive information about your markdown files
+11. Click on the color icon to select a preview theme for enhanced markdown styling
 
 ## Header Navigation
 
@@ -50,7 +52,24 @@ No special requirements or dependencies.
 
 ## Extension Settings
 
-This extension doesn't add any VS Code settings at this time.
+This extension contributes the following settings:
+
+- `markdownNavigator.previewTheme`: Choose the visual theme for markdown previews (default, github, academic, dark-enhanced, minimal)
+- `markdownNavigator.customCssPath`: Path to custom CSS file for markdown preview (optional, overrides theme selection)
+
+## Preview Themes
+
+The extension offers several built-in themes to enhance your markdown preview experience:
+
+- **Default**: VS Code's standard markdown preview styling
+- **GitHub**: Clean, GitHub-style markdown with modern typography and spacing
+- **Academic**: Academic paper style with serif fonts, proper margins, and scholarly formatting
+- **Dark Enhanced**: Enhanced dark mode with improved contrast and readability
+- **Minimal**: Minimal, distraction-free styling focused on content clarity
+
+**Theme Switching**: Themes are applied immediately when selected and automatically refresh all open markdown previews. Selected themes persist across VS Code sessions.
+
+You can switch themes using the color icon in the Documentation Files toolbar, or by configuring the `markdownNavigator.previewTheme` setting.
 
 ## Known Issues
 

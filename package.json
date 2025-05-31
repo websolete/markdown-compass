@@ -2,7 +2,7 @@
   "name": "markdown-navigator",
   "displayName": "Markdown Navigator",
   "description": "Navigate and preview all Markdown files in your workspace",
-  "version": "1.6.11",
+  "version": "1.6.12",
   "publisher": "Websolete",
   "author": {
     "name": "Kevin J. Miller",
@@ -137,6 +137,11 @@
           "command": "markdown-navigator.showWorkspaceStats",
           "when": "view == markdownNavigator",
           "group": "navigation@4"
+        },
+        {
+          "command": "markdown-navigator.selectPreviewTheme",
+          "when": "view == markdownNavigator",
+          "group": "navigation@5"
         }
       ]
     },
@@ -224,11 +229,46 @@
         "command": "markdown-navigator.removeFromFavorites",
         "title": "Remove from Favorites",
         "icon": "$(bookmark-remove)"
+      },
+      {
+        "command": "markdown-navigator.selectPreviewTheme",
+        "title": "Select Preview Theme",
+        "icon": "$(symbol-color)"
       }
     ],
     "configuration": {
       "title": "Markdown Navigator",
-      "properties": {}
+      "properties": {
+        "markdownNavigator.previewTheme": {
+          "type": "string",
+          "enum": [
+            "default",
+            "github",
+            "academic", 
+            "dark-enhanced",
+            "minimal"
+          ],
+          "enumDescriptions": [
+            "VS Code default markdown preview styling",
+            "GitHub-style markdown with clean typography",
+            "Academic paper style with serif fonts and proper spacing",
+            "Enhanced dark mode with better contrast and readability",
+            "Minimal style with focus on content"
+          ],
+          "default": "default",
+          "description": "Choose the visual theme for markdown previews"
+        },
+        "markdownNavigator.customCssPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to custom CSS file for markdown preview (optional, overrides theme selection)"
+        },
+        "markdownNavigator.useRelativePaths": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use paths relative to extension directory for theme CSS files (recommended)"
+        }
+      }
     }
   },
   "scripts": {

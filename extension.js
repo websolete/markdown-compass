@@ -903,7 +903,7 @@ class MarkdownTreeDataProvider {
      * @returns {vscode.TreeItem}
      */    getTreeItem(element) {
         // Create the basic tree item structure
-        let displayLabel = element.label;
+        let displayLabel
         
         // For markdown files with first level headers, show header text above filename
         if (element.type === 'file' && element.isMarkdownFile && element.firstLevelHeader) {
@@ -1762,6 +1762,9 @@ class MarkdownHeaderViewProvider {
  */
 function activate(context) {
     console.log('Markdown Navigator extension is being activated');
+    
+    // Track the last previewed markdown file
+    let lastPreviewedMarkdownFile = null;
 
     // Create the tree data provider with context for persistence
     const treeDataProvider = new MarkdownTreeDataProvider(context);
@@ -1797,9 +1800,7 @@ function activate(context) {
         favoritesView.onDidCollapseElement(e => {
             favoritesProvider._onTreeItemCollapsed(e.element);
         })
-    );
-
-    // Function to update the context for showing/hiding the header view
+    );    // Function to update the context for showing/hiding the header view
     const updateMarkdownContext = (editor) => {
         const isMarkdownFile = editor && editor.document && editor.document.languageId === 'markdown';
         
@@ -1809,25 +1810,40 @@ function activate(context) {
         if (isMarkdownFile) {
             // Update header view with the active markdown file
             headerProvider.updateHeaders(editor.document.uri);
+            // Update the tracking variable since we have an active markdown editor
+            lastPreviewedMarkdownFile = editor.document.uri;
             console.log(`Markdown context set: ${editor.document.uri.fsPath}`);
         } else {
-            // Clear headers but keep the view visible with placeholder
-            headerProvider.clearHeaders();
-            console.log('Markdown context cleared - showing placeholder');
+            // Check if we have a previewed markdown file before clearing headers
+            if (lastPreviewedMarkdownFile) {
+                // Keep showing headers for the last previewed file
+                console.log(`Keeping headers for previewed file: ${lastPreviewedMarkdownFile.fsPath}`);
+                // Don't clear headers if we have a preview active
+                return;
+            } else {
+                // Clear headers but keep the view visible with placeholder
+                headerProvider.clearHeaders();
+                console.log('Markdown context cleared - showing placeholder');
+            }
         }
     };
 
     // Listen for active editor changes to update context
     context.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor(updateMarkdownContext),
-        // Also listen for when tabs are closed to update context
+        vscode.window.onDidChangeActiveTextEditor(updateMarkdownContext),        // Also listen for when tabs are closed to update context
         vscode.workspace.onDidCloseTextDocument((document) => {
             if (document.languageId === 'markdown') {
+                // Check if the closed document was our tracked preview file
+                if (lastPreviewedMarkdownFile && lastPreviewedMarkdownFile.toString() === document.uri.toString()) {
+                    lastPreviewedMarkdownFile = null;
+                    console.log('Tracked preview file was closed - clearing tracking');
+                }
+                
                 // Check if there are any other markdown files still open
                 const hasOpenMarkdown = vscode.window.visibleTextEditors.some(
                     editor => editor.document.languageId === 'markdown'
                 );
-                if (!hasOpenMarkdown) {
+                if (!hasOpenMarkdown && !lastPreviewedMarkdownFile) {
                     // Don't hide the view, just clear headers and show placeholder
                     headerProvider.clearHeaders();
                     console.log('Last markdown file closed - showing placeholder');
@@ -1879,12 +1895,14 @@ function activate(context) {
     const toggleGitIgnoreCommand = vscode.commands.registerCommand('markdownNavigator.toggleGitIgnore', () => {
         treeDataProvider.toggleGitIgnoreFiltering();
     });    
-    
-    const previewCommand = vscode.commands.registerCommand('markdown-navigator.previewMarkdownFile', async (node) => {
+      const previewCommand = vscode.commands.registerCommand('markdown-navigator.previewMarkdownFile', async (node) => {
         if (node && node.uri) {
             try {
                 // Open the markdown file in preview mode
                 await vscode.commands.executeCommand('markdown.showPreview', node.uri);
+                
+                // Track the last previewed markdown file
+                lastPreviewedMarkdownFile = node.uri;
                 
                 // Set context for header view visibility
                 await vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
@@ -1902,7 +1920,7 @@ function activate(context) {
                 vscode.window.showErrorMessage(`Could not preview file: ${error.message}`);
             }
         }
-    });    
+    });
     
     const goToHeaderCommand = vscode.commands.registerCommand('markdown-navigator.goToHeader', async (lineNumber) => {
         try {
@@ -1915,11 +1933,12 @@ function activate(context) {
             
             // Find the actual header from our parsed headers list instead of parsing the line
             const targetHeader = headerProvider._headers.find(header => header.line === lineNumber);
-            
-            if (!targetHeader) {
+              if (!targetHeader) {
                 console.warn(`No header found in parsed headers for line ${lineNumber}`);
                 // Fallback: try to open preview and show approximate location
                 await vscode.commands.executeCommand('markdown.showPreview', headerProvider._currentFile);
+                // Track the preview since we just opened it
+                lastPreviewedMarkdownFile = headerProvider._currentFile;
                 vscode.window.showWarningMessage(`Could not find header at line ${lineNumber}. Preview opened to document.`);
                 return;
             }
@@ -1941,9 +1960,11 @@ function activate(context) {
                     console.log(`Trying anchor format: "${anchor}"`);
                     const baseUri = headerProvider._currentFile.toString();
                     const fragmentUri = `${baseUri}#${anchor}`;
-                    
-                    // Use showPreview with the fragment
+                      // Use showPreview with the fragment
                     await vscode.commands.executeCommand('markdown.showPreview', vscode.Uri.parse(fragmentUri));
+                    
+                    // Track the preview since we just opened it
+                    lastPreviewedMarkdownFile = headerProvider._currentFile;
                     
                     // Give it a moment to load and scroll
                     await new Promise(resolve => setTimeout(resolve, 200));
@@ -1998,9 +2019,10 @@ function activate(context) {
             // Method 3: Preview with search suggestion
             try {
                 console.log('Using preview with search suggestion...');
-                
-                // Open the preview
+                  // Open the preview
                 await vscode.commands.executeCommand('markdown.showPreview', headerProvider._currentFile);
+                // Track the preview since we just opened it
+                lastPreviewedMarkdownFile = headerProvider._currentFile;
                 await new Promise(resolve => setTimeout(resolve, 300));
                 
                 // Copy header text to clipboard for easy searching
@@ -2022,12 +2044,15 @@ function activate(context) {
             } catch (previewError) {
                 console.warn('Preview with search failed:', previewError.message);
             }
-            
-            // Method 4: Last resort - calculate approximate position
+              // Method 4: Last resort - calculate approximate position
             try {
                 console.log('Using approximate position calculation...');
                 
+               
+               
                 await vscode.commands.executeCommand('markdown.showPreview', headerProvider._currentFile);
+                // Track the preview since we just opened it
+                lastPreviewedMarkdownFile = headerProvider._currentFile;
                 
                 // Read file to calculate position
                 const content = await vscode.workspace.fs.readFile(headerProvider._currentFile);
@@ -2050,255 +2075,61 @@ function activate(context) {
         }
     });
 
-    // Add the missing openInEditorCommand
-    const openInEditorCommand = vscode.commands.registerCommand('markdown-navigator.openInEditor', async (node) => {
-        if (node && node.uri) {
-            try {
-                await vscode.window.showTextDocument(node.uri);
-                console.log(`Opened in editor: ${node.uri.fsPath}`);
-            } catch (error) {
-                console.error('Error opening file in editor:', error);
-                vscode.window.showErrorMessage(`Could not open file in editor: ${error.message}`);
-            }
-        }
-    });
-
-    // Add the missing openFile command for compatibility
-    const openFileCommand = vscode.commands.registerCommand('markdown-navigator.openFile', async (node) => {
-        if (node && node.uri) {
-            try {
-                // For markdown files, always use preview mode
-                if (node.isMarkdownFile) {
-                    await vscode.commands.executeCommand('markdown-navigator.previewMarkdownFile', node);
-                } else {
-                    // For non-markdown files, open in editor
-                    await vscode.window.showTextDocument(node.uri);
+    // Register command to select preview theme
+    const selectPreviewThemeCommand = vscode.commands.registerCommand('markdown-navigator.selectPreviewTheme', async () => {
+        try {
+            const config = vscode.workspace.getConfiguration('markdownNavigator');
+            const currentTheme = config.get('previewTheme', 'default');
+            
+            const themeOptions = [
+                { label: 'Default', description: 'VS Code default markdown preview styling', value: 'default' },
+                { label: 'GitHub', description: 'GitHub-style markdown with clean typography', value: 'github' },
+                { label: 'Academic', description: 'Academic paper style with serif fonts', value: 'academic' },
+                { label: 'Dark Enhanced', description: 'Enhanced dark mode with better contrast', value: 'dark-enhanced' },
+                { label: 'Minimal', description: 'Minimal style with focus on content', value: 'minimal' }
+            ];
+            
+            // Set quickPick with current theme preselected
+            const quickPick = vscode.window.createQuickPick();
+            quickPick.items = themeOptions;
+            quickPick.placeholder = 'Select a theme for markdown preview';
+            quickPick.activeItems = themeOptions.filter(item => item.value === currentTheme);
+            
+            quickPick.onDidChangeSelection(async selection => {
+                if (selection[0]) {
+                    const selectedTheme = selection[0].value;
+                    quickPick.dispose();
+                    
+                    if (selectedTheme !== currentTheme) {
+                        // Update theme setting
+                        await config.update('previewTheme', selectedTheme, vscode.ConfigurationTarget.Global);
+                        console.log(`[Markdown Navigator] Theme changed from ${currentTheme} to ${selectedTheme}`);
+                        
+                        // Apply the theme - pass context to applyMarkdownTheme
+                        const success = await applyMarkdownTheme(context, selectedTheme);
+                        if (success) {
+                            vscode.window.showInformationMessage(`Applied theme: ${selection[0].label}`);
+                        } else {
+                            vscode.window.showErrorMessage(`Failed to apply theme: ${selection[0].label}`);
+                        }
+                    } else {
+                        console.log(`[Markdown Navigator] Theme selection unchanged: ${currentTheme}`);
+                    }
                 }
-            } catch (error) {
-                vscode.window.showErrorMessage(`Could not open file: ${error.message}`);
-            }
-        }
-    });
-
-    const copyPathCommand = vscode.commands.registerCommand('markdown-navigator.copyPath', async (node) => {
-        if (node && node.uri) {
-            await vscode.env.clipboard.writeText(node.uri.fsPath);
-            vscode.window.showInformationMessage('Path copied to clipboard');
-        }
-    });
-
-    const copyHeaderLinkCommand = vscode.commands.registerCommand('markdown-navigator.copyHeaderLink', async (header) => {
-        if (header && headerProvider._currentFile) {
-            try {
-                // Generate markdown link to header
-                const fileName = path.basename(headerProvider._currentFile.fsPath);
-                const headerAnchor = header.text.toLowerCase()
-                    .replace(/[^\w\s-]/g, '') // Remove special characters except hyphens and spaces
-                    .replace(/\s+/g, '-')     // Replace spaces with hyphens
-                    .replace(/-+/g, '-')      // Replace multiple hyphens with single hyphen
-                    .replace(/^-|-$/g, '');   // Remove leading/trailing hyphens
-                
-                const markdownLink = `[${header.text}](${fileName}#${headerAnchor})`;
-                await vscode.env.clipboard.writeText(markdownLink);
-                vscode.window.showInformationMessage(`Header link copied: ${header.text}`);
-                console.log(`Copied header link: ${markdownLink}`);
-            } catch (error) {
-                console.error('Error copying header link:', error);
-                vscode.window.showErrorMessage(`Could not copy header link: ${error.message}`);
-            }
-        }
-    });
-
-    // Override the header provider's getTreeItem to ensure proper command setup
-    const originalHeaderGetTreeItem = headerProvider.getTreeItem;
-    headerProvider.getTreeItem = function(element) {
-        const treeItem = originalHeaderGetTreeItem.call(this, element);
-        treeItem.contextValue = 'markdownHeader';
-        
-        // CRITICAL: ONLY use preview navigation - never open source view
-        treeItem.command = {
-            command: 'markdown-navigator.goToHeader',
-            title: 'Go to Header in Preview',
-            arguments: [element.line]
-        };
-        
-        // Ensure no other commands or behaviors can interfere
-        treeItem.resourceUri = undefined; // Prevent any file opening behavior
-        
-        return treeItem;
-    };
-
-    const searchInSidebarCommand = vscode.commands.registerCommand('markdown-navigator.searchInSidebar', async () => {
-        const query = await vscode.window.showInputBox({
-            placeHolder: 'Filter files in sidebar...',
-            prompt: 'Enter search terms to filter the file list',
-            value: treeDataProvider._searchQuery
-        });
-        
-        if (query !== undefined) {
-            treeDataProvider.setSearchQuery(query);
-            // Set context for clear search button visibility
-            vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', !!query);
-        }
-    });
-
-    const clearSearchSidebarCommand = vscode.commands.registerCommand('markdown-navigator.clearSearch', () => {
-        treeDataProvider.clearSearch();
-        vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);
-    });
-
-    const searchMarkdownFilesCommand = vscode.commands.registerCommand('markdown-navigator.searchMarkdownFiles', async () => {
-        // Open VS Code's built-in search with .md filter
-        try {
-            await vscode.commands.executeCommand('workbench.action.findInFiles', {
-                query: '',
-                filesToInclude: '**/*.md',
-                triggerSearch: false,
-                focusResults: true
             });
-            console.log('Opened search pane filtered for markdown files');
+            
+            quickPick.onDidHide(() => quickPick.dispose());
+            quickPick.show();
+            
         } catch (error) {
-            console.error('Error opening search pane:', error);
-            vscode.window.showErrorMessage('Could not open search pane');
+            console.error('Error selecting preview theme:', error);
+            vscode.window.showErrorMessage(`Error selecting theme: ${error.message}`);
         }
     });
-
-    const refreshHeadersCommand = vscode.commands.registerCommand('markdown-navigator.refreshHeaders', () => {
-        if (headerProvider._currentFile) {
-            headerProvider.updateHeaders(headerProvider._currentFile);
-            vscode.window.showInformationMessage('Headers refreshed');
-        } else {
-            vscode.window.showWarningMessage('No markdown file is currently active');
-        }
-    });    const markAsReadCommand = vscode.commands.registerCommand('markdown-navigator.markAsRead', async (node) => {
-        if (node && node.isMarkdownFile) {
-            console.log(`DEBUG: markAsRead command called for ${node.label}`);
-            node.setReadingStatus(100, true, false);
-            console.log(`DEBUG: After setReadingStatus - readingProgress: ${node.readingProgress}, hasBeenRead: ${node.hasBeenRead}`);
-            
-            // Save reading status to persistent storage
-            treeDataProvider._saveReadingStatus(node.uri.fsPath, {
-                progress: node.readingProgress,
-                hasBeenRead: node.hasBeenRead,
-                isModified: node.isModified
-            });
-            
-            treeDataProvider.refresh();
-            vscode.window.showInformationMessage(`Marked "${node.label}" as read`);
-        }
-    });    const markAsUnreadCommand = vscode.commands.registerCommand('markdown-navigator.markAsUnread', async (node) => {
-        if (node && node.isMarkdownFile) {
-            node.setReadingStatus(0, false, false);
-            
-            // Save reading status to persistent storage
-            treeDataProvider._saveReadingStatus(node.uri.fsPath, {
-                progress: node.readingProgress,
-                hasBeenRead: node.hasBeenRead,
-                isModified: node.isModified
-            });
-            
-            treeDataProvider.refresh();
-            vscode.window.showInformationMessage(`Marked "${node.label}" as unread`);
-        }
-    });    // Add a command for testing partial reading progress
-    const markAsPartialCommand = vscode.commands.registerCommand('markdown-navigator.markAsPartial', async (node) => {
-        if (node && node.isMarkdownFile) {
-            console.log(`DEBUG: markAsPartial command called for ${node.label}`);
-            // Set to 50% read for testing
-            node.setReadingStatus(50, false, false);
-            console.log(`DEBUG: After setReadingStatus - readingProgress: ${node.readingProgress}, hasBeenRead: ${node.hasBeenRead}`);
-            
-            // Save reading status to persistent storage
-            treeDataProvider._saveReadingStatus(node.uri.fsPath, {
-                progress: node.readingProgress,
-                hasBeenRead: node.hasBeenRead,
-                isModified: node.isModified
-            });
-            
-            treeDataProvider.refresh();
-            vscode.window.showInformationMessage(`Marked "${node.label}" as 50% read`);
-        }
-    });
-
-    const showStatsCommand = vscode.commands.registerCommand('markdown-navigator.showWorkspaceStats', async () => {
-        try {
-            const stats = await treeDataProvider.getWorkspaceStatistics();
-            
-            let message = `📊 Markdown Files Statistics\n\n`;
-            message += `📄 Total Files: ${stats.totalFiles}\n`;
-            message += `⏱️ Total Reading Time: ${Math.round(stats.totalReadingTime)} minutes\n`;
-            message += `📊 Average File Size: ${stats.averageFileSize ? (stats.averageFileSize / 1024).toFixed(1) + ' KB' : 'N/A'}\n`;
-            message += `📈 Total Size: ${(stats.totalSize / 1024).toFixed(1)} KB\n\n`;
-            
-            if (stats.readStatus.read > 0 || stats.readStatus.partial > 0 || stats.readStatus.unread > 0) {
-                message += `📖 Reading Status:\n`;
-                message += `✅ Read: ${stats.readStatus.read}\n`;
-                message += `📖 Partially Read: ${stats.readStatus.partial}\n`;
-                message += `⭕ Unread: ${stats.readStatus.unread}\n\n`;
-            }
-            
-            if (Object.keys(stats.fileTypes).length > 0) {
-                message += `📁 File Types:\n`;
-                Object.entries(stats.fileTypes).forEach(([ext, count]) => {
-                    message += `${ext}: ${count}\n`;
-                });
-            }
-            
-            if (stats.largestFile) {
-                message += `\n📏 Largest: ${stats.largestFile.name} (${(stats.largestFile.size / 1024).toFixed(1)} KB)`;
-            }
-            if (stats.smallestFile) {
-                message += `\n📏 Smallest: ${stats.smallestFile.name} (${(stats.smallestFile.size / 1024).toFixed(1)} KB)`;
-            }
-            
-            vscode.window.showInformationMessage(message, { modal: true });
-        } catch (error) {
-            console.error('Error getting workspace statistics:', error);
-            vscode.window.showErrorMessage(`Error getting statistics: ${error.message}`);
-        }
-    });
-
-    // Add subscriptions to context
-    context.subscriptions.push(
-        treeView,
-        headerView,
-        favoritesView,
-        refreshCommand,
-        addToFavoritesCommand,
-        removeFromFavoritesCommand,
-        searchCommand,
-        clearSearchCommand,
-        toggleGitIgnoreCommand,
-        previewCommand,
-        goToHeaderCommand,
-        openInEditorCommand,
-        openFileCommand,
-        copyPathCommand,
-        copyHeaderLinkCommand,
-        searchInSidebarCommand,
-        clearSearchSidebarCommand,
-        searchMarkdownFilesCommand,
-        refreshHeadersCommand,
-        markAsReadCommand,
-        markAsUnreadCommand,
-        markAsPartialCommand,
-        showStatsCommand
-    );
-
-    console.log('Markdown Navigator extension activated successfully');
+    
+    // Set the parent of a tree item
+    // ...existing code...
 }
-
-/**
- * Called when the extension is deactivated
- */
-function deactivate() {
-    console.log('Markdown Navigator extension deactivated');
-}
-
-module.exports = {
-    activate,
-    deactivate
-};
 
 /**
  * Generate VS Code-compatible header anchor using their exact algorithm
@@ -2394,3 +2225,269 @@ function generateAlternativeAnchors(headerText) {
     
     return alternatives;
 }
+
+/**
+ * Apply the selected theme by updating VS Code's markdown preview styles
+ * @param {vscode.ExtensionContext} context The extension context
+ * @param {string|null} themeName Optional theme name override
+ * @returns {Promise<boolean>} Success status
+ */
+async function applyMarkdownTheme(context, themeName = null) {
+    try {
+        const config = vscode.workspace.getConfiguration('markdownNavigator');
+        const currentTheme = themeName || config.get('previewTheme', 'default');
+        const customCssPath = config.get('customCssPath', '');
+        const useRelativePaths = config.get('useRelativePaths', true);
+        
+        console.log(`[Markdown Navigator] Applying theme: ${currentTheme}`);
+        if (customCssPath) {
+            console.log(`[Markdown Navigator] Custom CSS path configured: ${customCssPath}`);
+        }
+        
+        // Get current styles and filter out our previous theme styles
+        const currentStyles = vscode.workspace.getConfiguration('markdown').get('styles', []);
+        const filteredStyles = currentStyles.filter(style => {
+            if (typeof style === 'string') {
+                // Remove any data URIs that contain our theme identifiers
+                if (style.startsWith('data:text/css')) {
+                    const decoded = decodeURIComponent(style);
+                    return !decoded.includes('/* GitHub-style Markdown Theme */') &&
+                           !decoded.includes('/* Academic Paper Style Theme */') &&
+                           !decoded.includes('/* Dark Enhanced Theme */') &&
+                           !decoded.includes('/* Minimal Theme */');
+                }
+                // Also remove any file paths related to our theme files
+                return !style.includes('markdown-navigator') && 
+                       !style.includes('github.css') && 
+                       !style.includes('academic.css') && 
+                       !style.includes('dark-enhanced.css') && 
+                       !style.includes('minimal.css') &&
+                       !style.includes(customCssPath);
+            }
+            return true;
+        });
+
+        console.log(`[Markdown Navigator] Filtered ${currentStyles.length - filteredStyles.length} existing theme styles`);
+
+        // If custom CSS path is specified, use it instead of built-in themes
+        if (customCssPath && customCssPath.trim()) {
+            const fs = require('fs');
+            const resolvedPath = path.isAbsolute(customCssPath) ? 
+                customCssPath : 
+                path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', customCssPath);
+            
+            if (fs.existsSync(resolvedPath)) {
+                // Use the custom CSS path directly
+                filteredStyles.push(customCssPath);
+                console.log(`[Markdown Navigator] Added custom CSS: ${customCssPath}`);
+            } else {
+                console.error(`[Markdown Navigator] Custom CSS file not found: ${resolvedPath}`);
+                vscode.window.showErrorMessage(`Custom CSS file not found: ${customCssPath}`);
+                return false;
+            }
+        } else if (currentTheme !== 'default') {
+            // Use built-in theme - generate CSS files in extension root
+            const fs = require('fs');
+            
+            // Place CSS files directly in extension root for better path resolution
+            const themeStylePath = path.join(context.extensionPath, `${currentTheme}.css`);
+            
+            // Create CSS content for each theme if file doesn't exist
+            if (!fs.existsSync(themeStylePath)) {
+                console.log(`[Markdown Navigator] Creating CSS file for theme: ${currentTheme}`);
+                
+                let cssContent = '';
+                switch (currentTheme) {
+                    case 'github':
+                        cssContent = `/* GitHub-style Markdown Theme */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #24292f;
+    background-color: #ffffff;
+    max-width: 1012px;
+    margin: 0 auto;
+    padding: 45px;
+}
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+h1 { font-size: 2em; border-bottom: 1px solid #d0d7de; padding-bottom: 0.3em; }
+h2 { font-size: 1.5em; border-bottom: 1px solid #d0d7de; padding-bottom: 0.3em; }
+p { margin-top: 0; margin-bottom: 16px; }
+code {
+    padding: 0.2em 0.4em;
+    background-color: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace;
+}`;
+                        break;
+                    case 'academic':
+                        cssContent = `/* Academic Paper Style Theme */
+body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 1.6;
+    color: #333333;
+    background-color: #ffffff;
+    max-width: 8.5in;
+    margin: 1in auto;
+    text-align: justify;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Times New Roman", Times, serif;
+    font-weight: bold;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+}
+h1 { font-size: 18pt; text-align: center; }
+h2 { font-size: 14pt; }
+p { margin-bottom: 12pt; text-indent: 0.5in; }`;
+                        break;
+                    case 'dark-enhanced':
+                        cssContent = `/* Dark Enhanced Theme */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #e1e4e8;
+    background-color: #0d1117;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px;
+}
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 32px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    color: #f0f6fc;
+}
+h1 { font-size: 2.25em; color: #58a6ff; border-bottom: 2px solid #30363d; }
+h2 { font-size: 1.75em; color: #79c0ff; border-bottom: 1px solid #21262d; }
+p { color: #c9d1d9; }
+a { color: #58a6ff; }`;
+                        break;
+                    case 'minimal':
+                        cssContent = `/* Minimal Theme */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, arial, sans-serif;
+    font-size: 18px;
+    line-height: 1.7;
+    color: #333;
+    background-color: #fff;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 48px;
+    margin-bottom: 24px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: #000;
+}
+h1 { font-size: 2.5em; }
+h2 { font-size: 2em; }
+p { margin-bottom: 24px; }`;
+                        break;
+                    default:
+                        cssContent = `/* ${currentTheme} theme - auto-generated */
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+    line-height: 1.6;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+h1, h2, h3, h4, h5, h6 { 
+    margin-top: 1.5em; 
+    margin-bottom: 0.5em; 
+}
+p { 
+    margin-bottom: 1em; 
+}`;
+                }
+                
+                try {
+                    fs.writeFileSync(themeStylePath, cssContent);
+                    console.log(`[Markdown Navigator] Created CSS file: ${themeStylePath}`);
+                } catch (writeError) {
+                    console.error(`[Markdown Navigator] Could not create CSS file:`, writeError);
+                    vscode.window.showErrorMessage(`Could not create theme file: ${writeError.message}`);
+                    return false;
+                }
+            }
+            
+            try {
+                // Use relative path for the CSS
+                if (useRelativePaths) {
+                    // Use a path relative to the extension, which VS Code's markdown extension can resolve
+                    const relativePath = `./${path.basename(themeStylePath)}`; 
+                    filteredStyles.push(relativePath);
+                    console.log(`[Markdown Navigator] Added theme CSS with relative path: ${relativePath}`);
+                } else {
+                    // Fallback to absolute path if user disables relative paths
+                    filteredStyles.push(themeStylePath);
+                    console.log(`[Markdown Navigator] Added theme CSS with absolute path: ${themeStylePath}`);
+                }
+            } catch (pathError) {
+                console.error(`[Markdown Navigator] Error preparing CSS path:`, pathError);
+                vscode.window.showErrorMessage(`Error preparing theme path: ${pathError.message}`);
+                return false;
+            }
+        }
+
+        console.log(`[Markdown Navigator] Final styles array:`, filteredStyles);
+        
+        // Update VS Code's markdown preview styles
+        await vscode.workspace.getConfiguration('markdown').update(
+            'styles', 
+            filteredStyles, 
+            vscode.ConfigurationTarget.Global
+        );
+        
+        console.log(`[Markdown Navigator] Updated markdown.styles configuration`);
+        
+        // Force refresh all markdown previews
+        try {
+            await vscode.commands.executeCommand('markdown.preview.refresh');
+            console.log(`[Markdown Navigator] Refreshed markdown previews`);
+        } catch (refreshError) {
+            console.log(`[Markdown Navigator] Preview refresh command failed (may not be available):`, refreshError.message);
+            
+            // Try alternative refresh method
+            try {
+                await vscode.commands.executeCommand('workbench.action.webview.reloadWebviewAction');
+                console.log(`[Markdown Navigator] Used alternative refresh method`);
+            } catch (altRefreshError) {
+                console.log(`[Markdown Navigator] Alternative refresh also failed:`, altRefreshError.message);
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('[Markdown Navigator] Error applying markdown theme:', error);
+        vscode.window.showErrorMessage(`Error applying theme: ${error.message}`);
+        return false;
+    }
+}
+
+/**
+ * Called when the extension is deactivated
+ * @returns {undefined}
+ */
+function deactivate() {
+    console.log('Markdown Navigator extension is being deactivated');
+    // Clean up resources as needed
+    return undefined;
+}
+
+// Export the module functions
+module.exports = {
+    activate,
+    deactivate
+};

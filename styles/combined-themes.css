@@ -1,0 +1,427 @@
+/* Combined Theme CSS for Markdown Navigator */
+/* This file contains all themes with CSS classes for conditional application */
+
+/* ===== DEFAULT THEME (VS Code built-in) ===== */
+.markdown-navigator-theme-default {
+    /* No additional styles - uses VS Code defaults */
+}
+
+/* ===== GITHUB THEME ===== */
+.markdown-navigator-theme-github,
+body:not([class*="markdown-navigator-theme"]) {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    color: #24292f;
+    background-color: #ffffff;
+}
+
+.markdown-navigator-theme-github h1,
+body:not([class*="markdown-navigator-theme"]) h1 {
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #d0d7de;
+    font-size: 2em;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+.markdown-navigator-theme-github h2,
+body:not([class*="markdown-navigator-theme"]) h2 {
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #d0d7de;
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+.markdown-navigator-theme-github h3,
+body:not([class*="markdown-navigator-theme"]) h3 {
+    font-size: 1.25em;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+.markdown-navigator-theme-github h4,
+body:not([class*="markdown-navigator-theme"]) h4 {
+    font-size: 1em;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+.markdown-navigator-theme-github h5,
+body:not([class*="markdown-navigator-theme"]) h5 {
+    font-size: 0.875em;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+.markdown-navigator-theme-github h6,
+body:not([class*="markdown-navigator-theme"]) h6 {
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 16px;
+    color: #656d76;
+}
+
+.markdown-navigator-theme-github pre,
+body:not([class*="markdown-navigator-theme"]) pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+}
+
+.markdown-navigator-theme-github code,
+body:not([class*="markdown-navigator-theme"]) code {
+    background-color: rgba(175, 184, 193, 0.2);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 85%;
+}
+
+.markdown-navigator-theme-github blockquote,
+body:not([class*="markdown-navigator-theme"]) blockquote {
+    padding: 0 1em;
+    color: #656d76;
+    border-left: 0.25em solid #d0d7de;
+    margin: 0;
+}
+
+.markdown-navigator-theme-github table,
+body:not([class*="markdown-navigator-theme"]) table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.markdown-navigator-theme-github th,
+.markdown-navigator-theme-github td,
+body:not([class*="markdown-navigator-theme"]) th,
+body:not([class*="markdown-navigator-theme"]) td {
+    padding: 6px 13px;
+    border: 1px solid #d0d7de;
+}
+
+.markdown-navigator-theme-github th,
+body:not([class*="markdown-navigator-theme"]) th {
+    font-weight: 600;
+    background-color: #f6f8fa;
+}
+
+/* ===== ACADEMIC THEME ===== */
+.markdown-navigator-theme-academic {
+    font-family: "Times New Roman", Times, serif;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    color: #333;
+    background-color: #fff;
+}
+
+.markdown-navigator-theme-academic h1 {
+    font-size: 2.2em;
+    font-weight: bold;
+    text-align: center;
+    margin: 40px 0 30px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+}
+
+.markdown-navigator-theme-academic h2 {
+    font-size: 1.6em;
+    font-weight: bold;
+    margin: 30px 0 20px;
+    border-bottom: 1px solid #666;
+    padding-bottom: 5px;
+}
+
+.markdown-navigator-theme-academic h3 {
+    font-size: 1.3em;
+    font-weight: bold;
+    margin: 25px 0 15px;
+}
+
+.markdown-navigator-theme-academic h4 {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin: 20px 0 10px;
+    font-style: italic;
+}
+
+.markdown-navigator-theme-academic p {
+    text-align: justify;
+    margin: 15px 0;
+    text-indent: 1.5em;
+}
+
+.markdown-navigator-theme-academic blockquote {
+    font-style: italic;
+    margin: 20px 40px;
+    padding: 15px 20px;
+    border-left: 3px solid #ccc;
+    background-color: #f9f9f9;
+}
+
+.markdown-navigator-theme-academic pre {
+    font-family: "Courier New", monospace;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 3px;
+}
+
+.markdown-navigator-theme-academic code {
+    font-family: "Courier New", monospace;
+    background-color: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.markdown-navigator-theme-academic table {
+    border-collapse: collapse;
+    margin: 20px auto;
+    font-size: 0.9em;
+}
+
+.markdown-navigator-theme-academic th,
+.markdown-navigator-theme-academic td {
+    border: 1px solid #333;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.markdown-navigator-theme-academic th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+/* ===== DARK ENHANCED THEME ===== */
+.markdown-navigator-theme-dark-enhanced {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    line-height: 1.6;
+    color: #e6edf3;
+    background-color: #0d1117;
+}
+
+.markdown-navigator-theme-dark-enhanced h1,
+.markdown-navigator-theme-dark-enhanced h2,
+.markdown-navigator-theme-dark-enhanced h3,
+.markdown-navigator-theme-dark-enhanced h4,
+.markdown-navigator-theme-dark-enhanced h5,
+.markdown-navigator-theme-dark-enhanced h6 {
+    color: #f0f6fc;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+.markdown-navigator-theme-dark-enhanced h1 {
+    font-size: 2em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #30363d;
+}
+
+.markdown-navigator-theme-dark-enhanced h2 {
+    font-size: 1.5em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #30363d;
+}
+
+.markdown-navigator-theme-dark-enhanced pre {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: auto;
+}
+
+.markdown-navigator-theme-dark-enhanced code {
+    background-color: rgba(110, 118, 129, 0.4);
+    color: #f0f6fc;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 85%;
+}
+
+.markdown-navigator-theme-dark-enhanced blockquote {
+    color: #8b949e;
+    border-left: 0.25em solid #30363d;
+    padding: 0 1em;
+    margin: 0;
+}
+
+.markdown-navigator-theme-dark-enhanced table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.markdown-navigator-theme-dark-enhanced th,
+.markdown-navigator-theme-dark-enhanced td {
+    padding: 6px 13px;
+    border: 1px solid #30363d;
+}
+
+.markdown-navigator-theme-dark-enhanced th {
+    background-color: #161b22;
+    font-weight: 600;
+}
+
+.markdown-navigator-theme-dark-enhanced a {
+    color: #58a6ff;
+    text-decoration: none;
+}
+
+.markdown-navigator-theme-dark-enhanced a:hover {
+    text-decoration: underline;
+}
+
+/* ===== MINIMAL THEME ===== */
+.markdown-navigator-theme-minimal {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+    line-height: 1.7;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+    background-color: #fff;
+}
+
+.markdown-navigator-theme-minimal h1,
+.markdown-navigator-theme-minimal h2,
+.markdown-navigator-theme-minimal h3,
+.markdown-navigator-theme-minimal h4,
+.markdown-navigator-theme-minimal h5,
+.markdown-navigator-theme-minimal h6 {
+    font-weight: 600;
+    margin: 30px 0 15px;
+    color: #000;
+}
+
+.markdown-navigator-theme-minimal h1 {
+    font-size: 1.8em;
+}
+
+.markdown-navigator-theme-minimal h2 {
+    font-size: 1.5em;
+}
+
+.markdown-navigator-theme-minimal h3 {
+    font-size: 1.3em;
+}
+
+.markdown-navigator-theme-minimal h4 {
+    font-size: 1.1em;
+}
+
+.markdown-navigator-theme-minimal p {
+    margin: 15px 0;
+}
+
+.markdown-navigator-theme-minimal pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.markdown-navigator-theme-minimal code {
+    background-color: #f1f3f4;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-size: 0.9em;
+}
+
+.markdown-navigator-theme-minimal blockquote {
+    border-left: 3px solid #ddd;
+    margin: 20px 0;
+    padding: 10px 20px;
+    background-color: #f9f9f9;
+    color: #666;
+}
+
+.markdown-navigator-theme-minimal table {
+    border-collapse: collapse;
+    margin: 20px 0;
+    width: 100%;
+}
+
+.markdown-navigator-theme-minimal th,
+.markdown-navigator-theme-minimal td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.markdown-navigator-theme-minimal th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+.markdown-navigator-theme-minimal a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.markdown-navigator-theme-minimal a:hover {
+    text-decoration: underline;
+}
+
+/* Dark mode support for themes */
+@media (prefers-color-scheme: dark) {
+    .markdown-navigator-theme-github {
+        color: #c9d1d9;
+        background-color: #0d1117;
+    }
+    
+    .markdown-navigator-theme-minimal {
+        color: #c9d1d9;
+        background-color: #0d1117;
+    }
+    
+    .markdown-navigator-theme-minimal h1,
+    .markdown-navigator-theme-minimal h2,
+    .markdown-navigator-theme-minimal h3,
+    .markdown-navigator-theme-minimal h4,
+    .markdown-navigator-theme-minimal h5,
+    .markdown-navigator-theme-minimal h6 {
+        color: #f0f6fc;
+    }
+    
+    .markdown-navigator-theme-minimal pre {
+        background-color: #161b22;
+        border-color: #30363d;
+    }
+    
+    .markdown-navigator-theme-minimal code {
+        background-color: rgba(110, 118, 129, 0.4);
+    }
+    
+    .markdown-navigator-theme-minimal blockquote {
+        background-color: #161b22;
+        border-left-color: #30363d;
+        color: #8b949e;
+    }
+    
+    .markdown-navigator-theme-minimal th,
+    .markdown-navigator-theme-minimal td {
+        border-color: #30363d;
+    }
+    
+    .markdown-navigator-theme-minimal th {
+        background-color: #161b22;
+    }
+}

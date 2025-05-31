@@ -5,315 +5,260 @@ const vscode = require('vscode');
 const path = require('path');
 
 /**
- * Tree data provider for markdown favorites
+ * TreeDataProvider for markdown file favorites
  */
 class FavoritesTreeDataProvider {
-    /**
-     * Constructor
-     * @param {vscode.ExtensionContext} context Extension context for state persistence
-     * @param {MarkdownTreeDataProvider} markdownProvider Reference to main markdown provider
-     */
-    constructor(context, markdownProvider) {
-        this._context = context;
-        this._markdownProvider = markdownProvider;
-        this._favorites = this._context.globalState.get('markdownNavigator.favorites', []);
-        
-        // Event emitter for tree changes
+    constructor(context, treeDataProvider) {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
-        
-        // Set context variable to show/hide view based on whether we have favorites
-        this._updateContext();
+        this._context = context;
+        this._treeDataProvider = treeDataProvider;
+        this._favorites = this._loadFavorites();
+        this._expandedDirectories = new Set();
     }
-    
-    /**
-     * Refresh the tree view
-     */
+
     refresh() {
         this._onDidChangeTreeData.fire();
     }
-    
+
     /**
-     * Get tree item representation of a favorite item
-     * @param {Object} element Tree item
-     * @returns {vscode.TreeItem} VS Code tree item
+     * Load favorites from storage
+     * @returns {Array} Array of favorite file paths
      */
-    getTreeItem(element) {
-        const treeItem = new vscode.TreeItem(
-            element.label,
-            vscode.TreeItemCollapsibleState.None
-        );
-        
-        // Copy as many properties as possible from the original tree item
-        treeItem.tooltip = element.tooltip || element.label;
-        treeItem.description = element.description || '';
-        
-        // Add command to preview the file when clicked
-        treeItem.command = {
-            command: 'markdown-navigator.previewMarkdownFile',
-            title: 'Preview Markdown File',
-            arguments: [element]
-        };
-        
-        // Set the appropriate icon
-        if (element.iconPath) {
-            treeItem.iconPath = element.iconPath;
-        } else {
-            // Default icon
-            treeItem.iconPath = vscode.Uri.file(
-                path.join(__dirname, 'icons', 'bullets', 'default.svg')
-            );
-        }
-        
-        // Set the context value for the context menu
-        treeItem.contextValue = 'markdownFile';
-        
-        return treeItem;
+    _loadFavorites() {
+        const favorites = this._context.globalState.get('markdownNavigator.favorites', []);
+        console.log(`Loaded ${favorites.length} favorites from storage`);
+        return favorites;
     }
-    
+
     /**
-     * Get children of the given element
-     * @param {Object} element Tree item parent (unused as favorites are flat list)
-     * @returns {Promise<Array>} Array of child items
+     * Save favorites to storage
      */
-    async getChildren(element) {
-        // We don't have hierarchy - favorites are flat list
-        if (element) {
-            return [];
-        }
-        
-        if (!this._favorites || this._favorites.length === 0) {
-            return [];
-        }
-        
-        // Load each favorite with current metadata
-        const items = [];
-        for (const favorite of this._favorites) {
-            try {
-                const uri = vscode.Uri.parse(favorite.uri);
-                
-                // Create the node
-                const node = {
-                    label: favorite.label || path.basename(uri.fsPath),
-                    uri: uri,
-                    type: 'file',
-                    isMarkdownFile: true,
-                    collapsibleState: vscode.TreeItemCollapsibleState.None
-                };
-                
-                // Try to load metadata from the original file
-                // This allows showing reading status, etc.
-                await this._loadMetadata(node);
-                
-                items.push(node);
-            } catch (error) {
-                console.error(`Error loading favorite: ${error}`);
-                // Skip invalid favorites
-            }
-        }
-        
-        return items;
+    _saveFavorites() {
+        this._context.globalState.update('markdownNavigator.favorites', this._favorites);
+        console.log(`Saved ${this._favorites.length} favorites to storage`);
     }
-    
-    /**
-     * Load metadata for a favorite (header, reading time, etc.)
-     * @param {Object} node Favorite node
-     */
-    async _loadMetadata(node) {
-        try {
-            // Try to extract first level header
-            const content = await vscode.workspace.fs.readFile(node.uri);
-            const text = Buffer.from(content).toString('utf8');
-            
-            // Extract first level header if available
-            const headerMatch = text.match(/^#\s+(.+)$/m);
-            if (headerMatch) {
-                node.firstLevelHeader = headerMatch[1];
-            }
-            
-            // Calculate reading time
-            const wordCount = text.split(/\\s+/).length;
-            const readingTime = Math.max(1, Math.ceil(wordCount / 200));
-            const stats = await vscode.workspace.fs.stat(node.uri);
-            
-            node.setMetadata = function(metadata) {
-                Object.assign(this, metadata);
-            };
-            
-            node.setMetadata({
-                size: stats.size,
-                lastModified: new Date(stats.mtime),
-                readingTime: readingTime
-            });
-            
-            // Load reading status from the main provider if available
-            if (this._markdownProvider && this._markdownProvider._loadReadingStatus) {
-                const status = this._markdownProvider._loadReadingStatus(node.uri.fsPath);
-                if (status) {
-                    node.readingStatus = status;
-                    
-                    // Add methods needed for status indicators
-                    node.getReadingStatusDescription = function() {
-                        if (!this.readingStatus) return 'Unread';
-                        
-                        if (this.readingStatus.hasBeenRead) {
-                            return 'Read';
-                        } else if (this.readingStatus.progress > 0) {
-                            return 'Partially Read';
-                        } else {
-                            return 'Unread';
-                        }
-                    };
-                    
-                    node.getStatusIcon = function() {
-                        if (!this.readingStatus) return null;
-                        
-                        const status = this.getReadingStatusDescription();
-                        if (status === 'Read') {
-                            return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'progress.svg'));
-                        } else if (status === 'Partially Read') {
-                            return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'progress.svg'));
-                        }
-                        return null;
-                    };
-                    
-                    node.getFileIcon = function() {
-                        // Basic file icon based on name
-                        const fileName = path.basename(this.uri.fsPath).toLowerCase();
-                        
-                        if (fileName === 'readme.md') {
-                            return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'readme.svg'));
-                        } else if (fileName === 'changelog.md') {
-                            return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'changelog.svg'));
-                        } else if (/^todo.*/i.test(fileName)) {
-                            return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'todo.svg'));
-                        } else if (/^notes.*/i.test(fileName)) {
-                            return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'notes.svg'));
-                        }
-                        
-                        return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'default.svg'));
-                    };
-                    
-                    node.getEnhancedTooltip = function() {
-                        let tooltip = '';
-                        
-                        if (this.readingTime) {
-                            tooltip += `Reading time: ~${this.readingTime} min\n`;
-                        }
-                        
-                        if (this.fileSize) {
-                            tooltip += `Size: ${this._formatFileSize(this.fileSize)}\n`;
-                        }
-                        
-                        if (this.lastModified) {
-                            tooltip += `Last modified: ${this.lastModified.toLocaleDateString()}\n`;
-                        }
-                        
-                        tooltip += `Status: ${this.getReadingStatusDescription()}`;
-                        
-                        return tooltip;
-                    };
-                }
-            }
-        } catch (error) {
-            console.error(`Error loading metadata for favorite ${node.uri.fsPath}: ${error}`);
-        }
-    }
-    
+
     /**
      * Add a file to favorites
-     * @param {Object} node Tree item to add to favorites
+     * @param {object} node The file node to add
      */
     async addToFavorites(node) {
         if (!node || !node.uri) {
             return;
         }
+
+        const filePath = node.uri.fsPath;
         
         // Check if already in favorites
-        const alreadyExists = this._favorites.some(
-            f => f.uri === node.uri.toString()
-        );
-        
-        if (alreadyExists) {
-            vscode.window.showInformationMessage(`${node.label} is already in favorites`);
+        if (this._favorites.find(f => f.path === filePath)) {
+            vscode.window.showInformationMessage(`"${node.label}" is already in your favorites`);
             return;
         }
         
-        // Add to favorites
+        // Add to favorites with metadata
         this._favorites.push({
-            uri: node.uri.toString(),
-            label: path.basename(node.uri.fsPath),
-            dateAdded: new Date().toISOString()
+            path: filePath,
+            label: node.label,
+            added: new Date().toISOString()
         });
         
-        // Save to global state
-        await this._context.globalState.update('markdownNavigator.favorites', this._favorites);
-        
-        // Update context and refresh view
-        this._updateContext();
+        // Save and refresh
+        this._saveFavorites();
         this.refresh();
         
-        vscode.window.showInformationMessage(`Added ${node.label} to favorites`);
+        vscode.window.showInformationMessage(`Added "${node.label}" to favorites`);
     }
-    
+
     /**
-     * Remove an item from favorites
-     * @param {Object} node Tree item to remove from favorites
+     * Remove a file from favorites
+     * @param {object} node The file node to remove
      */
     async removeFromFavorites(node) {
         if (!node || !node.uri) {
             return;
         }
-        
+
+        const filePath = node.uri.fsPath;
         const initialCount = this._favorites.length;
         
         // Remove from favorites
-        this._favorites = this._favorites.filter(
-            f => f.uri !== node.uri.toString()
-        );
+        this._favorites = this._favorites.filter(f => f.path !== filePath);
         
-        if (initialCount === this._favorites.length) {
-            vscode.window.showInformationMessage(`${node.label} is not in favorites`);
-            return;
+        // If something was removed, save and refresh
+        if (initialCount !== this._favorites.length) {
+            this._saveFavorites();
+            this.refresh();
+            vscode.window.showInformationMessage(`Removed "${node.label}" from favorites`);
         }
-        
-        // Save to global state
-        await this._context.globalState.update('markdownNavigator.favorites', this._favorites);
-        
-        // Update context and refresh view
-        this._updateContext();
-        this.refresh();
-        
-        vscode.window.showInformationMessage(`Removed ${node.label} from favorites`);
     }
-    
+
     /**
-     * Update context to show/hide favorites view
-     */
-    _updateContext() {
-        const hasFavorites = this._favorites && this._favorites.length > 0;
-        vscode.commands.executeCommand(
-            'setContext', 
-            'markdownNavigator.hasFavorites', 
-            hasFavorites
-        );
-    }
-      /**
      * Handle tree item expansion event
-     * @param {Object} element The expanded element
+     * @param {object} element The expanded element
      */
     _onTreeItemExpanded(element) {
-        // Favorites view is a flat list, but we need this method for compatibility
-        console.log(`Favorites item expanded: ${element?.label || 'unknown'}`);
+        if (element && element.type === 'directory') {
+            const dirKey = element.uri.toString();
+            this._expandedDirectories.add(dirKey);
+        }
     }
 
     /**
      * Handle tree item collapse event
-     * @param {Object} element The collapsed element
+     * @param {object} element The collapsed element
      */
     _onTreeItemCollapsed(element) {
-        // Favorites view is a flat list, but we need this method for compatibility
-        console.log(`Favorites item collapsed: ${element?.label || 'unknown'}`);
+        if (element && element.type === 'directory') {
+            const dirKey = element.uri.toString();
+            this._expandedDirectories.delete(dirKey);
+        }
+    }
+
+    /**
+     * Check if a directory is currently expanded in the tree view
+     * @param {object} element Directory element to check
+     * @returns {boolean} True if directory is expanded
+     */
+    _isDirectoryExpanded(element) {
+        if (!element || element.type !== 'directory') {
+            return false;
+        }
+        return this._expandedDirectories.has(element.uri.toString());
+    }
+
+    /**
+     * Get the TreeItem for the given element
+     * @param {object} element
+     * @returns {vscode.TreeItem}
+     */
+    getTreeItem(element) {
+        // Create the tree item
+        const treeItem = new vscode.TreeItem(
+            element.label,
+            element.type === 'directory' ? 
+                (this._isDirectoryExpanded(element) ? 
+                    vscode.TreeItemCollapsibleState.Expanded : 
+                    vscode.TreeItemCollapsibleState.Collapsed) : 
+                vscode.TreeItemCollapsibleState.None
+        );
+        
+        // Set icon and context value based on type
+        if (element.type === 'file') {
+            treeItem.iconPath = vscode.Uri.file(path.join(this._context.extensionPath, 'icons', 'bullets', 'star.svg'));
+            treeItem.contextValue = 'markdownFile';
+            treeItem.command = {
+                command: 'markdown-navigator.previewMarkdownFile',
+                title: 'Preview Markdown File',
+                arguments: [element]
+            };
+        } else {
+            treeItem.iconPath = vscode.Uri.file(path.join(
+                this._context.extensionPath, 
+                'icons', 
+                'bullets',
+                this._isDirectoryExpanded(element) ? 'folder-opened.svg' : 'folder-closed.svg'
+            ));
+        }
+        
+        treeItem.tooltip = element.path || element.label;
+        return treeItem;
+    }
+
+    /**
+     * Get children of the given element
+     * @param {object} element
+     * @returns {Promise<Array>}
+     */
+    async getChildren(element) {
+        // If no element, return top-level items
+        if (!element) {
+            if (this._favorites.length === 0) {
+                // Return a placeholder item if no favorites
+                return [{
+                    label: 'No favorites added yet',
+                    path: null,
+                    tooltip: 'Right-click on a markdown file and select "Add to Favorites"'
+                }];
+            }
+            
+            // Group favorites by directory
+            const directoryMap = new Map();
+            const workspaceFolders = vscode.workspace.workspaceFolders || [];
+            
+            for (const favorite of this._favorites) {
+                try {
+                    // Create file URI
+                    const uri = vscode.Uri.file(favorite.path);
+                    
+                    // Check if file still exists
+                    try {
+                        await vscode.workspace.fs.stat(uri);
+                    } catch (fileError) {
+                        // Skip files that don't exist anymore
+                        console.log(`Favorite file doesn't exist anymore: ${favorite.path}`);
+                        continue;
+                    }
+                    
+                    // Get directory path
+                    const dirPath = path.dirname(favorite.path);
+                    const fileName = path.basename(favorite.path);
+                    
+                    // Add to directory map
+                    if (!directoryMap.has(dirPath)) {
+                        directoryMap.set(dirPath, []);
+                    }
+                    
+                    directoryMap.get(dirPath).push({
+                        label: fileName,
+                        path: favorite.path,
+                        type: 'file',
+                        uri: uri,
+                        isMarkdownFile: true
+                    });
+                } catch (error) {
+                    console.error(`Error processing favorite: ${favorite.path}`, error);
+                }
+            }
+            
+            // Convert directory map to tree items
+            const result = [];
+            
+            // Add workspace root folders first
+            for (const folder of workspaceFolders) {
+                if (directoryMap.has(folder.uri.fsPath)) {
+                    result.push({
+                        label: folder.name,
+                        path: folder.uri.fsPath,
+                        type: 'directory',
+                        uri: folder.uri,
+                        children: directoryMap.get(folder.uri.fsPath)
+                    });
+                    directoryMap.delete(folder.uri.fsPath);
+                }
+            }
+            
+            // Add remaining directories
+            for (const [dirPath, files] of directoryMap.entries()) {
+                result.push({
+                    label: path.basename(dirPath),
+                    path: dirPath,
+                    type: 'directory',
+                    uri: vscode.Uri.file(dirPath),
+                    children: files
+                });
+            }
+            
+            return result;
+        }
+        
+        // For directory elements, return their children
+        if (element.type === 'directory' && element.children) {
+            return element.children;
+        }
+        
+        // Files don't have children
+        return [];
     }
 }
 
