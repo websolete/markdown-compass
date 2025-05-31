@@ -3,6 +3,7 @@
 const vscode = require('vscode');
 const path = require('path');
 const ignore = require('ignore').default;
+const FavoritesTreeDataProvider = require('./favorites-provider');
 
 /**
  * Fuzzy search utility class for enhanced search capabilities
@@ -312,16 +313,25 @@ class MarkdownNode {
             return 'Modified recently';
         }
         return 'Unread';
-    }
-      /**
+    }    /**
      * Get appropriate status icon based on file state
      * @returns {object|null} Icon configuration or null for default
      */    getStatusIcon() {
+        console.log(`DEBUG: getStatusIcon for ${this.label} - readingProgress: ${this.readingProgress}, hasBeenRead: ${this.hasBeenRead}, isModified: ${this.isModified}`);
+        
         if (this.hasBeenRead && this.readingProgress >= 100) {
+            console.log(`DEBUG: Using progress icon for ${this.label} (completed)`);
             return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'progress.svg'));
+        } else if (this.readingProgress > 0 && this.readingProgress < 100) {
+            // Use a different icon for partially read files (using file-status as indicator)
+            console.log(`DEBUG: Using file-status icon for ${this.label} (${this.readingProgress}% read)`);
+            return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'file-status.svg'));
         } else if (this.isModified) {
+            console.log(`DEBUG: Using file-status icon for ${this.label} (modified)`);
             return vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'file-status.svg'));
         }
+        
+        console.log(`DEBUG: Using default icon for ${this.label}`);
         return null; // Use default file type icon
     }
       /**
@@ -364,7 +374,7 @@ class MarkdownNode {
  * Provides a hierarchical view of directories and Markdown files
  */
 class MarkdownTreeDataProvider {
-    constructor() {
+    constructor(context) {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         // Enable gitignore filtering by default
@@ -385,12 +395,51 @@ class MarkdownTreeDataProvider {
         this._isInitialLoad = true;
         this._autoExpandedPaths = new Set(); // Track which paths were auto-expanded
         this._firstMarkdownDepth = new Map(); // Cache depth of first markdown file per directory
+        
+        // Reading status persistence
+        this._context = context;
+        this._readingStatusStorage = context.globalState;
+    }    /**
+     * Save reading status for a file
+     * @param {string} filePath File path
+     * @param {object} status Reading status object
+     */
+    _saveReadingStatus(filePath, status) {
+        const key = `readingStatus:${filePath}`;
+        this._readingStatusStorage.update(key, status);
+        console.log(`DEBUG: Saved reading status for ${filePath}:`, status);
+    }
+
+    /**
+     * Load reading status for a file
+     * @param {string} filePath File path
+     * @returns {object|null} Reading status object or null
+     */
+    _loadReadingStatus(filePath) {
+        const key = `readingStatus:${filePath}`;
+        const status = this._readingStatusStorage.get(key);
+        console.log(`DEBUG: Loaded reading status for ${filePath}:`, status);
+        return status;
+    }
+
+    /**
+     * Clear all saved reading status
+     */
+    _clearReadingStatus() {
+        // Get all keys and remove reading status entries
+        const keys = this._context.globalState.keys();
+        keys.forEach(key => {
+            if (key.startsWith('readingStatus:')) {
+                this._readingStatusStorage.update(key, undefined);
+            }
+        });
     }
 
     /**
      * Refresh the tree view and clear caches
      */
     refresh() {
+        console.log('DEBUG: TreeDataProvider.refresh() called');
         // Clear gitignore cache
         this._gitIgnoreCache.clear();
         // Clear header cache to prevent stale data
@@ -890,11 +939,13 @@ class MarkdownTreeDataProvider {
                 title: 'Preview Markdown File',
                 arguments: [element]
             };
-            treeItem.contextValue = 'markdownFile';
-            
-            // Use status icon if available, otherwise use file type icon
+            treeItem.contextValue = 'markdownFile';              // Use status icon if available, otherwise use file type icon
             const statusIcon = element.getStatusIcon();
-            treeItem.iconPath = statusIcon || element.getFileIcon();
+            const fileIcon = element.getFileIcon();
+            
+            console.log(`DEBUG: getTreeItem for ${element.label} - statusIcon: ${statusIcon ? 'YES' : 'NO'}, fileIcon: ${fileIcon ? 'YES' : 'NO'}`);
+            
+            treeItem.iconPath = statusIcon || fileIcon;
             treeItem.resourceUri = element.uri; // Add resourceUri for file icons
             
             // Enhanced descriptions for different states
@@ -910,11 +961,10 @@ class MarkdownTreeDataProvider {
                 } else {
                     description = `Score: ${Math.round(element.searchScore)}`;
                 }
-                // Add search highlight icon for high-scoring results
-                if (element.searchScore > 75) {
+                // Only use search highlight icon if there's no status icon (preserve read/unread indicators)
+                if (element.searchScore > 75 && !statusIcon) {
                     treeItem.iconPath = vscode.Uri.file(path.join(__dirname, 'icons', 'bullets', 'search-highlight.svg'));
-                }
-            } else if (element.readingTime && element.fileSize) {
+                }            } else if (element.readingTime && element.fileSize) {
                 // Show reading time and status for normal display
                 const statusDesc = element.getReadingStatusDescription();
                 if (statusDesc !== 'Unread') {
@@ -922,6 +972,9 @@ class MarkdownTreeDataProvider {
                 } else {
                     description = `${element.readingTime}min read`;
                 }
+            } else if (element.getReadingStatusDescription() !== 'Unread') {
+                // Show status even without reading time metadata
+                description = element.getReadingStatusDescription();
             }
             
             treeItem.description = description;
@@ -1299,7 +1352,7 @@ class MarkdownTreeDataProvider {
                     // This is a markdown file
                     const fileNode = new MarkdownNode(name, childUri, 'file');
                     
-                    // Extract first level header for enhanced display
+                    // Extract first level header and set metadata for enhanced display
                     try {
                         const content = await vscode.workspace.fs.readFile(childUri);
                         const text = Buffer.from(content).toString('utf8');
@@ -1307,8 +1360,24 @@ class MarkdownTreeDataProvider {
                         if (firstHeader) {
                             fileNode.setFirstLevelHeader(firstHeader);
                         }
+                        
+                        // Calculate and set file metadata
+                        const stats = await vscode.workspace.fs.stat(childUri);
+                        const wordCount = text.split(/\s+/).length;
+                        const readingTime = Math.max(1, Math.ceil(wordCount / 200)); // Average 200 words per minute
+                          fileNode.setMetadata({
+                            size: stats.size,
+                            lastModified: new Date(stats.mtime),
+                            readingTime: readingTime
+                        });
+                        
+                        // Restore reading status from storage
+                        const savedStatus = this._loadReadingStatus(childUri.fsPath);
+                        if (savedStatus) {
+                            fileNode.setReadingStatus(savedStatus.progress, savedStatus.hasBeenRead, savedStatus.isModified);
+                        }
                     } catch (error) {
-                        // If we can't read the file, just continue without the header
+                        // If we can't read the file, just continue without the header and metadata
                         console.warn(`Could not read file ${childUri.fsPath} for header extraction:`, error);
                     }
                     
@@ -1685,6 +1754,8 @@ class MarkdownHeaderViewProvider {
     }
 }
 
+// FavoritesTreeDataProvider is now imported from favorites-provider.js
+
 /**
  * Called when the extension is activated
  * @param {vscode.ExtensionContext} context
@@ -1692,9 +1763,10 @@ class MarkdownHeaderViewProvider {
 function activate(context) {
     console.log('Markdown Navigator extension is being activated');
 
-    // Create the tree data provider
-    const treeDataProvider = new MarkdownTreeDataProvider();
+    // Create the tree data provider with context for persistence
+    const treeDataProvider = new MarkdownTreeDataProvider(context);
     const headerProvider = new MarkdownHeaderViewProvider();
+    const favoritesProvider = new FavoritesTreeDataProvider(context, treeDataProvider);
 
     // Register the tree view
     const treeView = vscode.window.createTreeView('markdownNavigator', {
@@ -1705,13 +1777,25 @@ function activate(context) {
     // Register the header view
     const headerView = vscode.window.createTreeView('markdownHeaders', {
         treeDataProvider: headerProvider
-    });    // Track tree view events for proper icon updates
+    });
+
+    // Register the favorites view
+    const favoritesView = vscode.window.createTreeView('markdownFavorites', {
+        treeDataProvider: favoritesProvider
+    });    
+    // Track tree view events for proper icon updates
     context.subscriptions.push(
         treeView.onDidExpandElement(e => {
             treeDataProvider._onTreeItemExpanded(e.element);
         }),
         treeView.onDidCollapseElement(e => {
             treeDataProvider._onTreeItemCollapsed(e.element);
+        }),
+        favoritesView.onDidExpandElement(e => {
+            favoritesProvider._onTreeItemExpanded(e.element);
+        }),
+        favoritesView.onDidCollapseElement(e => {
+            favoritesProvider._onTreeItemCollapsed(e.element);
         })
     );
 
@@ -1764,6 +1848,18 @@ function activate(context) {
         treeDataProvider.refresh();
     });
 
+    const addToFavoritesCommand = vscode.commands.registerCommand('markdown-navigator.addToFavorites', async (node) => {
+        if (node && node.uri) {
+            await favoritesProvider.addToFavorites(node);
+        }
+    });
+
+    const removeFromFavoritesCommand = vscode.commands.registerCommand('markdown-navigator.removeFromFavorites', async (node) => {
+        if (node && node.uri) {
+            await favoritesProvider.removeFromFavorites(node);
+        }
+    });
+
     const searchCommand = vscode.commands.registerCommand('markdownNavigator.search', async () => {
         const query = await vscode.window.showInputBox({
             placeHolder: 'Search markdown files...',
@@ -1782,7 +1878,9 @@ function activate(context) {
 
     const toggleGitIgnoreCommand = vscode.commands.registerCommand('markdownNavigator.toggleGitIgnore', () => {
         treeDataProvider.toggleGitIgnoreFiltering();
-    });    const previewCommand = vscode.commands.registerCommand('markdown-navigator.previewMarkdownFile', async (node) => {
+    });    
+    
+    const previewCommand = vscode.commands.registerCommand('markdown-navigator.previewMarkdownFile', async (node) => {
         if (node && node.uri) {
             try {
                 // Open the markdown file in preview mode
@@ -1797,13 +1895,16 @@ function activate(context) {
                 // Try to reveal the item in the tree view
                 await treeDataProvider.findAndRevealTreeItem(node.uri, treeView);
                 
+                
                 console.log(`Previewed markdown file: ${node.uri.fsPath}`);
             } catch (error) {
                 console.error('Error previewing markdown file:', error);
                 vscode.window.showErrorMessage(`Could not preview file: ${error.message}`);
             }
         }
-    });    const goToHeaderCommand = vscode.commands.registerCommand('markdown-navigator.goToHeader', async (lineNumber) => {
+    });    
+    
+    const goToHeaderCommand = vscode.commands.registerCommand('markdown-navigator.goToHeader', async (lineNumber) => {
         try {
             if (!headerProvider._currentFile || !lineNumber) {
                 console.warn('No current file or line number for header navigation');
@@ -1880,8 +1981,8 @@ function activate(context) {
                 try {
                     await vscode.commands.executeCommand('markdown.showSelectionInPreview');
                     console.log('Selection synced to preview');
-                } catch (syncError) {
-                    console.log('Could not sync to preview, opening fresh preview');
+                } catch (error) {
+                    console.log('Could not sync to preview, opening fresh preview:', error.message);
                     // Step 5: Open preview in side panel if sync fails
                     await vscode.commands.executeCommand('markdown.showPreviewToSide', headerProvider._currentFile);
                 }
@@ -1938,8 +2039,7 @@ function activate(context) {
                 vscode.window.showInformationMessage(
                     `Preview opened. Header "${headerText}" is approximately ${Math.round(scrollPercentage)}% down the document.`
                 );
-                
-            } catch (fallbackError) {
+                  } catch (fallbackError) {
                 console.error('All navigation methods failed:', fallbackError);
                 vscode.window.showErrorMessage('Could not navigate to header in preview');
             }
@@ -2070,21 +2170,53 @@ function activate(context) {
         } else {
             vscode.window.showWarningMessage('No markdown file is currently active');
         }
-    });
-
-    const markAsReadCommand = vscode.commands.registerCommand('markdown-navigator.markAsRead', async (node) => {
+    });    const markAsReadCommand = vscode.commands.registerCommand('markdown-navigator.markAsRead', async (node) => {
         if (node && node.isMarkdownFile) {
+            console.log(`DEBUG: markAsRead command called for ${node.label}`);
             node.setReadingStatus(100, true, false);
+            console.log(`DEBUG: After setReadingStatus - readingProgress: ${node.readingProgress}, hasBeenRead: ${node.hasBeenRead}`);
+            
+            // Save reading status to persistent storage
+            treeDataProvider._saveReadingStatus(node.uri.fsPath, {
+                progress: node.readingProgress,
+                hasBeenRead: node.hasBeenRead,
+                isModified: node.isModified
+            });
+            
             treeDataProvider.refresh();
             vscode.window.showInformationMessage(`Marked "${node.label}" as read`);
         }
-    });
-
-    const markAsUnreadCommand = vscode.commands.registerCommand('markdown-navigator.markAsUnread', async (node) => {
+    });    const markAsUnreadCommand = vscode.commands.registerCommand('markdown-navigator.markAsUnread', async (node) => {
         if (node && node.isMarkdownFile) {
             node.setReadingStatus(0, false, false);
+            
+            // Save reading status to persistent storage
+            treeDataProvider._saveReadingStatus(node.uri.fsPath, {
+                progress: node.readingProgress,
+                hasBeenRead: node.hasBeenRead,
+                isModified: node.isModified
+            });
+            
             treeDataProvider.refresh();
             vscode.window.showInformationMessage(`Marked "${node.label}" as unread`);
+        }
+    });    // Add a command for testing partial reading progress
+    const markAsPartialCommand = vscode.commands.registerCommand('markdown-navigator.markAsPartial', async (node) => {
+        if (node && node.isMarkdownFile) {
+            console.log(`DEBUG: markAsPartial command called for ${node.label}`);
+            // Set to 50% read for testing
+            node.setReadingStatus(50, false, false);
+            console.log(`DEBUG: After setReadingStatus - readingProgress: ${node.readingProgress}, hasBeenRead: ${node.hasBeenRead}`);
+            
+            // Save reading status to persistent storage
+            treeDataProvider._saveReadingStatus(node.uri.fsPath, {
+                progress: node.readingProgress,
+                hasBeenRead: node.hasBeenRead,
+                isModified: node.isModified
+            });
+            
+            treeDataProvider.refresh();
+            vscode.window.showInformationMessage(`Marked "${node.label}" as 50% read`);
         }
     });
 
@@ -2130,7 +2262,10 @@ function activate(context) {
     context.subscriptions.push(
         treeView,
         headerView,
+        favoritesView,
         refreshCommand,
+        addToFavoritesCommand,
+        removeFromFavoritesCommand,
         searchCommand,
         clearSearchCommand,
         toggleGitIgnoreCommand,
@@ -2146,6 +2281,7 @@ function activate(context) {
         refreshHeadersCommand,
         markAsReadCommand,
         markAsUnreadCommand,
+        markAsPartialCommand,
         showStatsCommand
     );
 
@@ -2248,7 +2384,7 @@ function generateAlternativeAnchors(headerText) {
             headerText.toLowerCase().replace(/\s+/g, '-')
         );
         if (encodedAnchor) alternatives.push(encodedAnchor);
-    } catch (e) {
+    } catch {
         // Ignore encoding errors
     }
     

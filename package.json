@@ -2,7 +2,7 @@
   "name": "markdown-navigator",
   "displayName": "Markdown Navigator",
   "description": "Navigate and preview all Markdown files in your workspace",
-  "version": "1.6.6",
+  "version": "1.6.11",
   "publisher": "Websolete",
   "author": {
     "name": "Kevin J. Miller",
@@ -48,6 +48,11 @@
     "views": {
       "markdown-navigator": [
         {
+          "id": "markdownFavorites",
+          "name": "Favorites",
+          "icon": "./icons/bullets/search-highlight.svg"
+        },
+        {
           "id": "markdownNavigator",
           "name": "Documentation Files",
           "icon": "./icons/markdown.svg"
@@ -80,6 +85,21 @@
           "command": "markdown-navigator.markAsUnread",
           "when": "view == markdownNavigator && viewItem == markdownFile",
           "group": "status"
+        },
+        {
+          "command": "markdown-navigator.markAsPartial",
+          "when": "view == markdownNavigator && viewItem == markdownFile",
+          "group": "status"
+        },
+        {
+          "command": "markdown-navigator.addToFavorites",
+          "when": "view == markdownNavigator && viewItem == markdownFile",
+          "group": "favorites"
+        },
+        {
+          "command": "markdown-navigator.removeFromFavorites",
+          "when": "view == markdownFavorites && viewItem == markdownFile",
+          "group": "favorites"
         }
       ],
       "view/title": [
@@ -174,6 +194,11 @@
         "icon": "$(circle-large-outline)"
       },
       {
+        "command": "markdown-navigator.markAsPartial",
+        "title": "Mark as 50% Read",
+        "icon": "$(clock)"
+      },
+      {
         "command": "markdown-navigator.showWorkspaceStats",
         "title": "Show Workspace Statistics",
         "icon": "$(graph)"
@@ -189,6 +214,16 @@
       {
         "command": "markdown-navigator.copyPath",
         "title": "Copy Path"
+      },
+      {
+        "command": "markdown-navigator.addToFavorites",
+        "title": "Add to Favorites",
+        "icon": "$(bookmark)"
+      },
+      {
+        "command": "markdown-navigator.removeFromFavorites",
+        "title": "Remove from Favorites",
+        "icon": "$(bookmark-remove)"
       }
     ],
     "configuration": {
