@@ -1,0 +1,215 @@
+{
+  "name": "markdown-navigator",
+  "displayName": "Markdown Navigator",
+  "description": "Navigate and preview all Markdown files in your workspace",
+  "version": "1.6.5",
+  "publisher": "Websolete",
+  "author": {
+    "name": "Kevin J. Miller",
+    "email": "websolete@gmail.com"
+  },
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/websolete/markdown-navigator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/websolete/markdown-navigator/issues"
+  },
+  "homepage": "https://github.com/websolete/markdown-navigator#readme",
+  "keywords": [
+    "markdown",
+    "navigation",
+    "document",
+    "outline",
+    "preview",
+    "tree view",
+    "headers"
+  ],
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "markdown-navigator",
+          "title": "Markdown Navigator",
+          "icon": "./icons/m-compass-clean.svg"
+        }
+      ]
+    },
+    "views": {
+      "markdown-navigator": [
+        {
+          "id": "markdownNavigator",
+          "name": "Documentation Files",
+          "icon": "./icons/markdown.svg"
+        },
+        {
+          "id": "markdownHeaders",
+          "name": "Current Document",
+          "icon": "./icons/header-list.svg"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "markdown-navigator.previewMarkdownFile",
+          "when": "view == markdownNavigator && viewItem == markdownFile",
+          "group": "navigation"
+        },
+        {
+          "command": "markdown-navigator.copyHeaderLink",
+          "when": "view == markdownHeaders && viewItem == markdownHeader",
+          "group": "navigation"
+        },
+        {
+          "command": "markdown-navigator.markAsRead",
+          "when": "view == markdownNavigator && viewItem == markdownFile",
+          "group": "status"
+        },
+        {
+          "command": "markdown-navigator.markAsUnread",
+          "when": "view == markdownNavigator && viewItem == markdownFile",
+          "group": "status"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "markdown-navigator.refresh",
+          "when": "view == markdownNavigator",
+          "group": "navigation"
+        },
+        {
+          "command": "markdownNavigator.toggleGitIgnore",
+          "when": "view == markdownNavigator",
+          "group": "navigation"
+        },
+        {
+          "command": "markdown-navigator.searchInSidebar",
+          "when": "view == markdownNavigator",
+          "group": "navigation@1"
+        },
+        {
+          "command": "markdown-navigator.clearSearch",
+          "when": "view == markdownNavigator && markdown-navigator:isSearchActive",
+          "group": "navigation@2"
+        },
+        {
+          "command": "markdown-navigator.searchMarkdownFiles",
+          "when": "view == markdownNavigator",
+          "group": "navigation@3"
+        },
+        {
+          "command": "markdown-navigator.refreshHeaders",
+          "when": "view == markdownHeaders",
+          "group": "navigation"
+        },
+        {
+          "command": "markdown-navigator.showWorkspaceStats",
+          "when": "view == markdownNavigator",
+          "group": "navigation@4"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "markdown-navigator.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "markdownNavigator.toggleGitIgnore",
+        "title": "Toggle .gitignore Filtering",
+        "icon": "$(source-control)"
+      },
+      {
+        "command": "markdown-navigator.previewMarkdownFile",
+        "title": "Preview Markdown File"
+      },
+      {
+        "command": "markdown-navigator.refreshHeaders",
+        "title": "Refresh Headers",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "markdown-navigator.copyHeaderLink",
+        "title": "Copy Header Link"
+      },
+      {
+        "command": "markdown-navigator.goToHeader",
+        "title": "Go to Header in Preview"
+      },
+      {
+        "command": "markdown-navigator.searchMarkdownFiles",
+        "title": "Search Markdown Files",
+        "icon": "$(search)"
+      },
+      {
+        "command": "markdown-navigator.searchInSidebar",
+        "title": "Filter in Sidebar",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "markdown-navigator.clearSearch",
+        "title": "Clear Search Filter",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "markdown-navigator.markAsRead",
+        "title": "Mark as Read",
+        "icon": "$(check)"
+      },
+      {
+        "command": "markdown-navigator.markAsUnread",
+        "title": "Mark as Unread",
+        "icon": "$(circle-large-outline)"
+      },
+      {
+        "command": "markdown-navigator.showWorkspaceStats",
+        "title": "Show Workspace Statistics",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "markdown-navigator.openFile",
+        "title": "Open Markdown File"
+      },
+      {
+        "command": "markdown-navigator.openInEditor",
+        "title": "Open in Editor"
+      },
+      {
+        "command": "markdown-navigator.copyPath",
+        "title": "Copy Path"
+      }
+    ],
+    "configuration": {
+      "title": "Markdown Navigator",
+      "properties": {}
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "ignore": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.100.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "eslint": "^9.25.1",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}

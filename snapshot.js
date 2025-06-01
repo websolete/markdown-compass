@@ -41,7 +41,9 @@ function createSnapshot() {
           // Core files to snapshot
         const filesToSnapshot = [
             'extension.js',
+            'enhanced-preview-provider.js',
             'favorites-provider.js',
+            'package-and-test.js',
             'package.json',
             'package-lock.json',
             'CHANGELOG.md',

@@ -1,0 +1,398 @@
+/* CFML Syntax Highlighting - Enhanced Visual Styling for VS Code Native Highlighting */
+
+/* Target pre blocks containing CFML code */
+pre:has(code[class*="language-cfml"]),
+pre:has(code[class*="language-coldfusion"]),
+pre:has(code[class*="language-cf"]),
+pre:has(code[class*="language-cfscript"]),
+pre code[class*="language-cfml"],
+pre code[class*="language-coldfusion"],
+pre code[class*="language-cf"],
+pre code[class*="language-cfscript"] {
+    position: relative;
+    border-left: 4px solid #28a745 !important;
+    background-color: var(--vscode-textCodeBlock-background, #f8f9fa) !important;
+    border-radius: 6px !important;
+    padding: 16px !important;
+    margin: 16px 0 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    font-family: var(--vscode-editor-font-family, 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', monospace) !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+    overflow-x: auto !important;
+}
+
+/* Dark theme support */
+.vscode-dark pre:has(code[class*="language-cfml"]),
+.vscode-dark pre:has(code[class*="language-coldfusion"]),
+.vscode-dark pre:has(code[class*="language-cf"]),
+.vscode-dark pre:has(code[class*="language-cfscript"]),
+.vscode-dark pre code[class*="language-cfml"],
+.vscode-dark pre code[class*="language-coldfusion"],
+.vscode-dark pre code[class*="language-cf"],
+.vscode-dark pre code[class*="language-cfscript"] {
+    background-color: var(--vscode-textCodeBlock-background, #1e1e1e) !important;
+    color: var(--vscode-editor-foreground, #d4d4d4) !important;
+}
+
+/* Language badges */
+pre:has(code[class*="language-cfml"])::before,
+pre:has(code[class*="language-coldfusion"])::before,
+pre:has(code[class*="language-cf"])::before {
+    content: "CFML";
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: #28a745;
+    color: white;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    z-index: 10;
+    opacity: 0.9;
+    font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
+pre:has(code[class*="language-cfscript"])::before {
+    content: "CFScript";
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: #6610f2;
+    color: white;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    z-index: 10;
+    opacity: 0.9;
+    font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
+/* Fallback for older browsers that don't support :has() */
+@supports not (selector(:has(*))) {
+    code[class*="language-cfml"],
+    code[class*="language-coldfusion"],
+    code[class*="language-cf"],
+    code[class*="language-cfscript"] {
+        position: relative;
+        border-left: 4px solid #28a745 !important;
+        background-color: var(--vscode-textCodeBlock-background, #f8f9fa) !important;
+        border-radius: 6px !important;
+        padding: 16px !important;
+        margin: 16px 0 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        font-family: var(--vscode-editor-font-family, 'SF Mono', Monaco, monospace) !important;
+        display: block !important;
+    }
+    
+    code[class*="language-cfml"]::before,
+    code[class*="language-coldfusion"]::before,
+    code[class*="language-cf"]::before {
+        content: "CFML";
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        background: #28a745;
+        color: white;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: bold;
+        border-radius: 4px;
+        z-index: 10;
+        opacity: 0.9;
+    }
+    
+    code[class*="language-cfscript"]::before {
+        content: "CFScript";
+        background: #6610f2;
+        /* other properties same as above */
+    }
+}
+pre:has(code.language-cfscript) {
+    background-color: #f6f8fa !important;
+    border: 1px solid #d0d7de !important;
+    border-left: 3px solid #4CAF50 !important; /* Green left border for CFML */
+    border-radius: 6px;
+    padding: 20px 16px 16px 16px;
+    overflow: auto;
+    position: relative;
+}
+
+.vscode-dark pre:has(code.language-cfml),
+.vscode-dark pre:has(code.language-coldfusion),
+.vscode-dark pre:has(code.language-cf),
+.vscode-dark pre:has(code.language-cfscript) {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+    border-left-color: #4CAF50 !important;
+}
+
+/* Fallback for browsers that don't support :has() */
+pre code.language-cfml,
+pre code.language-coldfusion,
+pre code.language-cf,
+pre code.language-cfscript {
+    background: transparent !important;
+    border: none !important;
+    padding: 0;
+}
+
+/* CFML syntax highlighting classes */
+.cfml-tag {
+    color: #116329 !important;
+    font-weight: 600 !important;
+}
+.vscode-dark .cfml-tag {
+    color: #7ee787 !important;
+}
+
+.cfml-attribute {
+    color: #0550ae !important;
+    font-weight: 500 !important;
+}
+.vscode-dark .cfml-attribute {
+    color: #79c0ff !important;
+}
+
+.cfml-string {
+    color: #032f62 !important;
+    font-weight: 500 !important;
+}
+.vscode-dark .cfml-string {
+    color: #9ecbff !important;
+}
+
+.cfml-comment {
+    color: #6a737d !important;
+    font-style: italic !important;
+}
+.vscode-dark .cfml-comment {
+    color: #8b949e !important;
+}
+
+.cfml-keyword {
+    color: #d73a49 !important;
+    font-weight: 600 !important;
+}
+.vscode-dark .cfml-keyword {
+    color: #f97583 !important;
+}
+
+.cfml-cfscript-keyword {
+    color: #cf222e !important;
+    font-weight: 700 !important;
+}
+.vscode-dark .cfml-cfscript-keyword {
+    color: #ff7b72 !important;
+}
+
+.cfml-function {
+    color: #6f42c1 !important;
+}
+.vscode-dark .cfml-function {
+    color: #b392f0 !important;
+}
+
+.cfml-builtin-function {
+    color: #8250df !important;
+    font-weight: 600 !important;
+}
+.vscode-dark .cfml-builtin-function {
+    color: #d2a8ff !important;
+}
+
+.cfml-variable {
+    color: #e36209 !important;
+    font-weight: 500 !important;
+}
+.vscode-dark .cfml-variable {
+    color: #ffab70 !important;
+}
+
+.cfml-scope {
+    color: #6f42c1 !important;
+    font-weight: 600 !important;
+}
+.vscode-dark .cfml-scope {
+    color: #b392f0 !important;
+}
+
+.cfml-operator {
+    color: #d73a49 !important;
+}
+.vscode-dark .cfml-operator {
+    color: #f97583 !important;
+}
+
+.cfml-number {
+    color: #005cc5 !important;
+    font-weight: 500 !important;
+}
+.vscode-dark .cfml-number {
+    color: #79b8ff !important;
+}
+
+.cfml-boolean {
+    color: #d73a49 !important;
+    font-weight: 600 !important;
+}
+.vscode-dark .cfml-boolean {
+    color: #f97583 !important;
+}
+
+.cfml-component-keyword {
+    color: #6f42c1 !important;
+    font-weight: 700 !important;
+    text-decoration: underline !important;
+}
+.vscode-dark .cfml-component-keyword {
+    color: #b392f0 !important;
+}
+
+.cfml-annotation {
+    color: #6a737d !important;
+    font-style: italic !important;
+    font-weight: 500 !important;
+}
+.vscode-dark .cfml-annotation {
+    color: #8b949e !important;
+}
+
+.cfml-bracket {
+    color: #24292e !important;
+    font-weight: 600 !important;
+}
+.vscode-dark .cfml-bracket {
+    color: #e1e4e8 !important;
+}
+
+/* Visual indicator for highlighted code - subtle */
+code.cfml-highlighted::after {
+    content: "✓ Enhanced";
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    background: rgba(76, 175, 80, 0.8);
+    color: white;
+    padding: 1px 4px;
+    font-size: 8px;
+    border-radius: 2px;
+    opacity: 0.6;
+}
+
+.vscode-dark code.cfml-highlighted::after {
+    background: rgba(76, 175, 80, 0.9);
+}
+
+/* Enhanced block container improvements */
+.cfml-enhanced-block {
+    position: relative;
+    margin: 16px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.vscode-dark .cfml-enhanced-block {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Improve readability with better spacing */
+.cfml-enhanced-block pre {
+    margin: 0 !important;
+    padding: 16px !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.cfml-enhanced-block code {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', Menlo, monospace !important;
+}
+
+/* CFML Syntax Highlighting for Enhanced Markdown Preview */
+
+/* Base styling for all CFML code blocks */
+code.language-cfml,
+code.language-coldfusion,
+code.language-cf,
+code.language-cfscript {
+    display: block !important;
+    padding: 16px !important;
+    margin: 16px 0 !important;
+    background: var(--vscode-textCodeBlock-background, #f8f9fa) !important;
+    border: 1px solid var(--vscode-widget-border, #e1e4e8) !important;
+    border-left: 4px solid #28a745 !important;
+    border-radius: 6px !important;
+    font-family: var(--vscode-editor-font-family, 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', Menlo, monospace) !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+    white-space: pre-wrap !important;
+    overflow-x: auto !important;
+    position: relative !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+/* Language badges */
+code.language-cfml::before {
+    content: "CFML";
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: #28a745;
+    color: white;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    opacity: 0.8;
+    z-index: 10;
+}
+
+code.language-coldfusion::before {
+    content: "ColdFusion";
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: #28a745;
+    color: white;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    opacity: 0.8;
+    z-index: 10;
+}
+
+code.language-cf::before {
+    content: "CF";
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: #28a745;
+    color: white;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    opacity: 0.8;
+    z-index: 10;
+}
+
+code.language-cfscript::before {
+    content: "CFScript";
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: #6610f2;
+    color: white;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    opacity: 0.8;
+    z-index: 10;
+}

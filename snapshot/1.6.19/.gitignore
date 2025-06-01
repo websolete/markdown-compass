@@ -1,0 +1,11 @@
+# Test .gitignore for markdown navigator
+*.log
+temp/
+node_modules/
+.vscode-test/
+ignored-docs/
+test-ignored.md
+dev/
+test/
+snapshot/
+testing/

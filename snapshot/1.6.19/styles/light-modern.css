@@ -1,0 +1,160 @@
+/* Light Modern Theme */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #2c3e50;
+    background-color: #ffffff;
+    max-width: 95%;
+    margin: 0 auto;
+    padding: 50px 30px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.25;
+    color: #1a202c;
+    margin-top: 36px;
+    margin-bottom: 18px;
+}
+
+h1 { 
+    font-size: 2.25em; 
+    letter-spacing: -0.025em; 
+}
+
+h2 { 
+    font-size: 1.75em; 
+    border-bottom: 2px solid #edf2f7; 
+    padding-bottom: 0.3em; 
+}
+
+h3 { 
+    font-size: 1.5em; 
+    color: #3182ce; 
+}
+
+h4 { 
+    font-size: 1.25em; 
+}
+
+h5 { 
+    font-size: 1em; 
+    color: #4a5568; 
+}
+
+h6 { 
+    font-size: 0.875em; 
+    color: #718096;
+    font-weight: 500;
+}
+
+p {
+    margin-bottom: 20px;
+    line-height: 1.8;
+}
+
+code {
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #7c3aed;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+pre {
+    background-color: #f8f9fa;
+    padding: 16px;
+    border-radius: 6px;
+    overflow: auto;
+    border: 1px solid #e2e8f0;
+    margin: 20px 0;
+}
+
+pre code {
+    background-color: transparent;
+    padding: 0;
+    color: #4a5568;
+}
+
+a {
+    color: #3182ce;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #2c5282;
+}
+
+blockquote {
+    border-left: 4px solid #3182ce;
+    padding: 0 16px;
+    color: #4a5568;
+    background-color: #f7fafc;
+    margin: 20px 0;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+}
+
+th, td {
+    border: 1px solid #e2e8f0;
+    padding: 10px 16px;
+    text-align: left;
+}
+
+th {
+    background-color: #f7fafc;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+tr:nth-child(even) {
+    background-color: #f7fafc;
+}
+
+ul, ol {
+    margin: 20px 0;
+    padding-left: 24px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #e2e8f0;
+    margin: 40px 0;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    margin: 24px 0;
+    border-radius: 6px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.note {
+    background-color: #ebf8ff;
+    border-left: 4px solid #3182ce;
+    padding: 16px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.warning {
+    background-color: #fff5f5;
+    border-left: 4px solid #e53e3e;
+    padding: 16px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
