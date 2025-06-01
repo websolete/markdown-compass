@@ -219,6 +219,7 @@ function openExtensionHost() {
                 });
 
                 codeProcess.on('error', (error) => {
+                    // @ts-ignore
                     if (error.code === 'ENOENT') {
                         // Command not found, try next one
                         tryNextCommand(index + 1);
