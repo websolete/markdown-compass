@@ -5,6 +5,22 @@ All notable changes to the "Markdown Navigator" extension will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.13] - 2025-05-31
+
+### Added
+- **Expanded Theme Selection**: Added six new markdown preview themes (three light, three dark) for better customization options:
+  - **Light Themes**: Light Modern, Light Sepia, Light Technical
+  - **Dark Themes**: Dark Vibrant, Dark Elegant, Dark Technical
+- **Alphabetically Sorted Themes**: All theme options are now sorted alphabetically in the theme selection dialog
+- **Theme Showcase**: Added a new theme showcase file in testing directory to demonstrate all available themes
+- **Enhanced Documentation**: Updated README.md with detailed theme descriptions and categorization
+
+### Technical Implementation
+- Added CSS files for all new themes in both styles directory and root directory
+- Enhanced theme switching functionality in extension.js
+- Updated package.json configuration schema to include new theme options
+- Reorganized theme options to be alphabetically sorted in extension.js and package.json
+
 ## [1.6.5] - 2025-05-30
 
 ### Added

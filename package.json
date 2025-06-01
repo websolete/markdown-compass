@@ -2,7 +2,7 @@
   "name": "markdown-navigator",
   "displayName": "Markdown Navigator",
   "description": "Navigate and preview all Markdown files in your workspace",
-  "version": "1.6.12",
+  "version": "1.6.19",
   "publisher": "Websolete",
   "author": {
     "name": "Kevin J. Miller",
@@ -234,6 +234,11 @@
         "command": "markdown-navigator.selectPreviewTheme",
         "title": "Select Preview Theme",
         "icon": "$(symbol-color)"
+      },
+      {
+        "command": "markdown-navigator.resetStyles",
+        "title": "Reset Markdown Styles",
+        "icon": "$(trash)"
       }
     ],
     "configuration": {
@@ -242,17 +247,29 @@
         "markdownNavigator.previewTheme": {
           "type": "string",
           "enum": [
+            "academic",
+            "dark-elegant",
+            "dark-enhanced",
+            "dark-technical",
+            "dark-vibrant",
             "default",
             "github",
-            "academic", 
-            "dark-enhanced",
+            "light-modern",
+            "light-sepia",
+            "light-technical",
             "minimal"
           ],
           "enumDescriptions": [
+            "Academic paper style with serif fonts and proper spacing",
+            "Elegant dark theme with muted colors and refined typography",
+            "Enhanced dark mode with better contrast and readability",
+            "Technical documentation dark theme optimized for code blocks",
+            "Vibrant dark theme with colorful accents",
             "VS Code default markdown preview styling",
             "GitHub-style markdown with clean typography",
-            "Academic paper style with serif fonts and proper spacing",
-            "Enhanced dark mode with better contrast and readability",
+            "Modern light theme with clean layout and subtle accents",
+            "Light sepia-toned theme for comfortable reading",
+            "Technical documentation light theme with code-friendly styling",
             "Minimal style with focus on content"
           ],
           "default": "default",
@@ -266,7 +283,7 @@
         "markdownNavigator.useRelativePaths": {
           "type": "boolean",
           "default": true,
-          "description": "Use paths relative to extension directory for theme CSS files (recommended)"
+          "description": "Use file URIs instead of absolute paths for theme CSS files (recommended for better compatibility)"
         }
       }
     }
