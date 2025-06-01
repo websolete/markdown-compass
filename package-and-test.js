@@ -314,6 +314,61 @@ async function runPreflightChecks(options = {}) {
     log.success('Pre-flight checks completed');
 }
 
+// Check if extension is currently installed
+function checkExtensionInstalled(extensionId) {
+    try {
+        const result = execCommandSafe(`code --list-extensions`, 'Check installed extensions');
+        if (result.success) {
+            const installedExtensions = result.result.split('\n').map(ext => ext.trim().toLowerCase());
+            return installedExtensions.includes(extensionId.toLowerCase());
+        }
+        return false;
+    } catch (error) {
+        log.warning(`Could not check installed extensions: ${error.message}`);
+        return false;
+    }
+}
+
+// Uninstall previous version of the extension
+function uninstallPreviousVersion(extensionId) {
+    try {
+        log.step(`Checking for previous installation of ${extensionId}...`);
+        
+        if (checkExtensionInstalled(extensionId)) {
+            log.gray(`Previous installation found, uninstalling...`);
+            const uninstallCommand = `code --uninstall-extension ${extensionId}`;
+            execCommand(uninstallCommand, 'Extension uninstallation');
+            log.success(`Successfully uninstalled previous version of ${extensionId}`);
+            
+            // Give VS Code a moment to complete the uninstallation
+            log.gray('Waiting for uninstallation to complete...');
+            const { execSync } = require('child_process');
+            // Use a simple sleep command that works cross-platform
+            if (process.platform === 'win32') {
+                execSync('timeout /t 2 /nobreak', { stdio: 'ignore' });
+            } else {
+                execSync('sleep 2', { stdio: 'ignore' });
+            }
+            
+            // Verify uninstallation
+            if (!checkExtensionInstalled(extensionId)) {
+                log.success('Previous version successfully removed');
+                return true;
+            } else {
+                log.warning('Previous version may still be installed');
+                return false;
+            }
+        } else {
+            log.gray('No previous installation found');
+            return true;
+        }
+    } catch (error) {
+        log.warning(`Error during uninstallation: ${error.message}`);
+        log.gray('Continuing with installation - manual uninstall may be required');
+        return false;
+    }
+}
+
 // Main function
 async function main() {
     const options = parseArgs();
@@ -338,8 +393,10 @@ async function main() {
         const packageJsonPath = path.join(__dirname, 'package.json');
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         const currentVersion = packageJson.version;
+        const extensionId = `${packageJson.publisher}.${packageJson.name}`;
         
         log.step(`Current version: ${currentVersion}`);
+        log.step(`Extension ID: ${extensionId}`);
         
         // Calculate new version
         const newVersion = incrementVersion(currentVersion, options.versionType);
@@ -348,6 +405,7 @@ async function main() {
         if (options.dryRun) {
             log.info('DRY RUN MODE - No changes will be made');
             log.gray(`Would increment version from ${currentVersion} to ${newVersion}`);
+            log.gray(`Would check for and uninstall previous version of ${extensionId}`);
             log.gray(`Would package extension to dist/ directory`);
             if (!options.skipInstall) {
                 log.gray(`Would install extension in VS Code`);
@@ -393,15 +451,33 @@ async function main() {
         
         // Install the extension if not skipped
         if (!options.skipInstall) {
+            // First, uninstall any previous version
+            const uninstallSuccess = uninstallPreviousVersion(extensionId);
+            
             log.step('Installing extension...');
             try {
                 const installCommand = `code --install-extension "${vsixPath}" --force`;
                 execCommand(installCommand, 'Extension installation');
                 log.success('Extension installed successfully');
                 installResult.success = true;
+                
+                // Verify installation
+                log.gray('Verifying installation...');
+                setTimeout(() => {
+                    if (checkExtensionInstalled(extensionId)) {
+                        log.success(`✓ Installation verified: ${extensionId} is now installed`);
+                    } else {
+                        log.warning(`⚠ Installation verification failed: ${extensionId} not found in extension list`);
+                        log.gray('Extension may need time to initialize or VS Code may need to be restarted');
+                    }
+                }, 2000);
+                
             } catch (installError) {
                 log.warning('Extension installation failed - VS Code CLI may not be available');
                 log.gray(`Manual installation: code --install-extension "${vsixPath}" --force`);
+                if (uninstallSuccess) {
+                    log.gray(`Manual uninstall first: code --uninstall-extension ${extensionId}`);
+                }
                 installResult.success = false;
             }
         } else {
@@ -426,12 +502,15 @@ async function main() {
         console.log();
         log.header('✅ Build Summary');
         log.success(`Version: ${currentVersion} → ${newVersion}`);
+        log.success(`Extension ID: ${extensionId}`);
         log.success(`Package: ${vsixFile} (${fileSizeKB} KB)`);
         if (!options.skipInstall) {
             if (installResult.success) {
-                log.success('Installation: Completed successfully');
+                log.success('Installation: Completed successfully (with previous version cleanup)');
             } else {
                 log.warning('Installation: Manual installation required');
+                log.gray(`Uninstall previous: code --uninstall-extension ${extensionId}`);
+                log.gray(`Install new: code --install-extension "${vsixPath}" --force`);
             }
         }
         if (!options.skipTest) {
