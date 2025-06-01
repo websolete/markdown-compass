@@ -50,11 +50,9 @@ class EnhancedPreviewProvider {
             }
 
             this.currentUri = uri;
-            this.addDebugInfo(`Opening enhanced preview for: ${uri.toString()}`);
-
-            if (this.panel) {
+            this.addDebugInfo(`Opening enhanced preview for: ${uri.toString()}`);            if (this.panel) {
                 this.addDebugInfo('Panel exists, revealing and updating content');
-                this.panel.reveal(vscode.ViewColumn.Two);
+                this.panel.reveal(vscode.ViewColumn.Active);
                 await this.updateContent();
             } else {
                 this.addDebugInfo('Creating new panel');
@@ -67,11 +65,10 @@ class EnhancedPreviewProvider {
         }
     }    async createPanel() {
         try {
-            this.addDebugInfo(`Creating panel for file: ${this.currentUri.fsPath}`);
-              this.panel = vscode.window.createWebviewPanel(
+            this.addDebugInfo(`Creating panel for file: ${this.currentUri.fsPath}`);              this.panel = vscode.window.createWebviewPanel(
                 'enhancedMarkdownPreview',
                 'Enhanced Markdown Preview',
-                vscode.ViewColumn.Two,
+                vscode.ViewColumn.Active,
                 {
                     enableScripts: true,
                     retainContextWhenHidden: true,
@@ -113,21 +110,23 @@ class EnhancedPreviewProvider {
             // Check if file exists and is readable
             try {
                 const content = await vscode.workspace.fs.readFile(this.currentUri);
-                const markdownText = Buffer.from(content).toString('utf8');
-                this.addDebugInfo(`File content length: ${markdownText.length} characters`);
+                let markdownText = Buffer.from(content).toString('utf8');
+                this.addDebugInfo(`File content length: ${markdownText.length} characters`);                // Pre-process CFML code blocks BEFORE markdown conversion
+                this.addDebugInfo('Pre-processing CFML code blocks...');
+                markdownText = this.preprocessCfmlCodeBlocks(markdownText);
 
                 // Convert markdown to HTML using marked
                 this.addDebugInfo('Converting markdown to HTML with marked library');
-                const htmlContent = await marked(markdownText);
+                let htmlContent = await marked(markdownText);
                 this.addDebugInfo(`Generated HTML content length: ${htmlContent.length} characters`);
-
-                // Enhance CFML code blocks
-                this.addDebugInfo('Enhancing CFML code blocks...');
-                const enhancedHtml = this.enhanceCfmlInHtml(htmlContent);
+                
+                // Post-process CFML code blocks AFTER markdown conversion
+                this.addDebugInfo('Post-processing CFML syntax highlighting...');
+                htmlContent = this.postProcessCfmlSyntaxHighlighting(htmlContent);
                 
                 // Generate full HTML page
                 this.addDebugInfo('Generating full HTML page...');
-                const fullHtml = this.generateHtmlPage(enhancedHtml);
+                const fullHtml = this.generateHtmlPage(htmlContent);
                 
                 // Check panel is still valid before setting content
                 if (!this.panel || this.isDisposed) {
@@ -157,51 +156,72 @@ class EnhancedPreviewProvider {
                 }
             }
         }
-    }
-
-    enhanceCfmlInHtml(htmlContent) {
-        this.addDebugInfo('Enhancing CFML syntax in HTML content');
+    }    preprocessCfmlCodeBlocks(markdownText) {
+        this.addDebugInfo('Pre-processing CFML code blocks (identification only)');
         
         try {
-            // Find code blocks that should be CFML
-            // Look for <code class="language-cfml"> or similar patterns
-            let enhanced = htmlContent;
+            // Find CFML code blocks and just count them - no HTML injection at this stage
+            const cfmlCodeBlockPattern = /```cfml\n([\s\S]*?)\n```/g;
             
-            // Pattern to find CFML code blocks
-            const cfmlCodePattern = /<code class="language-cfml">([\s\S]*?)<\/code>/g;
+            // Count matches for debugging
+            const matches = [...markdownText.matchAll(cfmlCodeBlockPattern)];
+            this.addDebugInfo(`Found ${matches.length} CFML code blocks for later post-processing`);
             
-            enhanced = enhanced.replace(cfmlCodePattern, (match, codeContent) => {
-                this.addDebugInfo('Found CFML code block, applying enhancements');
-                const enhancedCode = this.applyCfmlSyntaxHighlighting(codeContent);
-                return `<code class="language-cfml cfml-enhanced">${enhancedCode}</code>`;
-            });
-
-            // Also handle <pre><code> blocks that might contain CFML
-            const preCodePattern = /<pre><code class="language-cfml">([\s\S]*?)<\/code><\/pre>/g;
+            // Return unchanged markdown text - post-processing will handle syntax highlighting
+            this.addDebugInfo('Pre-processing completed - passing through unchanged for marked conversion');
+            return markdownText;
             
-            enhanced = enhanced.replace(preCodePattern, (match, codeContent) => {
-                this.addDebugInfo('Found CFML pre code block, applying enhancements');
-                const enhancedCode = this.applyCfmlSyntaxHighlighting(codeContent);
-                return `<pre><code class="language-cfml cfml-enhanced">${enhancedCode}</code></pre>`;
-            });
-
-            this.addDebugInfo('CFML enhancement completed');
-            return enhanced;
-
         } catch (error) {
-            this.addDebugInfo(`ERROR in CFML enhancement: ${error.message}`);
-            return htmlContent; // Return original on error
+            this.addDebugInfo(`ERROR in CFML preprocessing: ${error.message}`);
+            return markdownText; // Return original on error
         }
     }
 
     applyCfmlSyntaxHighlighting(codeContent) {
-        this.addDebugInfo('Applying CFML-specific syntax highlighting');
+        this.addDebugInfo('Applying CFML-specific syntax highlighting to raw text');
         
         try {
             let highlighted = codeContent;
             
-            // Enhanced CFML-specific highlighting patterns
+            // Enhanced CFML-specific highlighting patterns for raw text
+            // Order matters - more specific patterns first to avoid conflicts
             const cfmlPatterns = [
+                // Multi-line comments
+                { 
+                    pattern: /\/\*[\s\S]*?\*\//g, 
+                    replacement: '<span class="cfml-comment">$&</span>',
+                    name: 'multi-line comments'
+                },
+                // Single-line comments
+                { 
+                    pattern: /\/\/.*$/gm, 
+                    replacement: '<span class="cfml-comment">$&</span>',
+                    name: 'single-line comments'
+                },
+                // String literals (double quotes)
+                { 
+                    pattern: /"(?:[^"\\]|\\.)*"/g, 
+                    replacement: '<span class="cfml-string">$&</span>',
+                    name: 'double-quoted strings'
+                },
+                // String literals (single quotes)
+                { 
+                    pattern: /'(?:[^'\\]|\\.)*'/g, 
+                    replacement: '<span class="cfml-string">$&</span>',
+                    name: 'single-quoted strings'
+                },
+                // CFML Tags (opening and closing)
+                { 
+                    pattern: /<\/?(cf\w+)(?:\s[^>]*)?\/?>/g, 
+                    replacement: '<span class="cfml-tag">$&</span>',
+                    name: 'CFML tags'
+                },
+                // Component/function attributes
+                { 
+                    pattern: /\b(access|returntype|type|required|hint|displayname|extends|implements|inject)\s*=\s*"[^"]*"/g, 
+                    replacement: '<span class="cfml-attribute">$&</span>',
+                    name: 'CFML attributes'
+                },
                 // Access modifiers
                 { 
                     pattern: /\b(public|private|package|remote)\b/g, 
@@ -210,27 +230,33 @@ class EnhancedPreviewProvider {
                 },
                 // Data types
                 { 
-                    pattern: /\b(any|string|numeric|boolean|array|struct|query|void)\b/g, 
+                    pattern: /\b(any|string|numeric|boolean|array|struct|query|void|component|date|binary)\b/g, 
                     replacement: '<span class="cfml-type">$1</span>',
                     name: 'data types'
                 },
-                // CFML functions and keywords
+                // CFML/CFScript keywords and functions
                 { 
-                    pattern: /\b(function|var|arguments|required|len|queryExecute)\b/g, 
+                    pattern: /\b(function|var|arguments|required|len|queryExecute|cfquery|cfoutput|cfset|cfreturn|cfif|cfelse|cfelseif|cfloop|cfswitch|cfcase|cfdefaultcase|cftry|cfcatch|cffinally|cfthrow|component|property|extends|implements|transaction|throw|writeLog|structKeyExists|isValid|isNull|isNumeric|deserializeJSON|serializeJSON|arrayEach|structEach|queryNew|if|else|for|while|do|switch|case|default|try|catch|finally|return|break|continue|this|super|variables|application|session|request|form|url|cgi|server|cookie)\b/g, 
                     replacement: '<span class="cfml-keyword">$1</span>',
                     name: 'CFML keywords'
                 },
-                // String literals
+                // Boolean values
                 { 
-                    pattern: /"([^"]*)"/g, 
-                    replacement: '<span class="cfml-string">"$1"</span>',
-                    name: 'string literals'
+                    pattern: /\b(true|false|yes|no)\b/gi, 
+                    replacement: '<span class="cfml-boolean">$1</span>',
+                    name: 'boolean values'
                 },
-                // Comments
+                // Numbers
                 { 
-                    pattern: /\/\/(.*)$/gm, 
-                    replacement: '<span class="cfml-comment">//$1</span>',
-                    name: 'line comments'
+                    pattern: /\b\d+(?:\.\d+)?\b/g, 
+                    replacement: '<span class="cfml-number">$&</span>',
+                    name: 'numbers'
+                },
+                // Operators
+                { 
+                    pattern: /\b(AND|OR|NOT|EQ|NEQ|LT|GT|LTE|GTE|CONTAINS|LIKE|IS|MOD)\b/gi, 
+                    replacement: '<span class="cfml-operator">$1</span>',
+                    name: 'CFML operators'
                 }
             ];
 
@@ -247,7 +273,45 @@ class EnhancedPreviewProvider {
             this.addDebugInfo(`ERROR in CFML highlighting: ${error.message}`);
             return codeContent; // Return original on error
         }
-    }    generateHtmlPage(bodyContent) {
+    }postProcessCfmlSyntaxHighlighting(htmlContent) {
+        this.addDebugInfo('Post-processing CFML syntax highlighting in HTML content');
+        
+        try {
+            // Find CFML code blocks in the HTML output from marked
+            const cfmlCodeBlockPattern = /<pre><code class="language-cfml">([\s\S]*?)<\/code><\/pre>/g;
+            
+            // Count matches before processing
+            const matches = [...htmlContent.matchAll(cfmlCodeBlockPattern)];
+            this.addDebugInfo(`Found ${matches.length} CFML code blocks in HTML to process`);
+            
+            const processed = htmlContent.replace(cfmlCodeBlockPattern, (match, codeContent) => {
+                this.addDebugInfo(`Post-processing CFML code block with ${codeContent.length} characters`);
+                
+                // Decode HTML entities first
+                const decodedContent = codeContent
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'");
+                
+                this.addDebugInfo(`After HTML decoding: ${decodedContent.length} characters`);
+                
+                const highlightedCode = this.applyCfmlSyntaxHighlighting(decodedContent.trim());
+                
+                this.addDebugInfo(`After highlighting: ${highlightedCode.length} characters`);
+                
+                return `<pre><code class="language-cfml cfml-enhanced">${highlightedCode}</code></pre>`;
+            });
+
+            this.addDebugInfo('CFML post-processing completed');
+            return processed;
+
+        } catch (error) {
+            this.addDebugInfo(`ERROR in CFML post-processing: ${error.message}`);
+            return htmlContent; // Return original on error
+        }
+    }generateHtmlPage(bodyContent) {
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -306,9 +370,7 @@ class EnhancedPreviewProvider {
             border-radius: 3px;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 13px;
-        }
-
-        /* Enhanced CFML Syntax Highlighting */
+        }        /* Enhanced CFML Syntax Highlighting */
         .cfml-enhanced {
             background: #f8f9fa !important;
         }
@@ -331,6 +393,26 @@ class EnhancedPreviewProvider {
         .cfml-comment {
             color: #6a737d;
             font-style: italic;
+        }
+        .cfml-tag {
+            color: #22863a;
+            font-weight: bold;
+        }
+        .cfml-operator {
+            color: #e36209;
+            font-weight: bold;
+        }
+        .cfml-attribute {
+            color: #b07219;
+            font-weight: normal;
+        }
+        .cfml-boolean {
+            color: #0366d6;
+            font-weight: bold;
+        }
+        .cfml-number {
+            color: #032f62;
+            font-weight: normal;
         }
 
         /* Lists */
@@ -362,20 +444,60 @@ class EnhancedPreviewProvider {
     </div>    <script>
         console.log('Enhanced Preview loaded successfully');
         
-        // Log any CFML syntax highlighting
-        const cfmlElements = document.querySelectorAll('.cfml-access, .cfml-type, .cfml-keyword, .cfml-string, .cfml-comment');
-        console.log('CFML highlighted elements found:', cfmlElements.length);
-        cfmlElements.forEach((el, index) => {
-            console.log(\`CFML element \${index + 1}: \${el.className} = "\${el.textContent}"\`);
+        // Log all CFML syntax highlighting classes
+        const cfmlClasses = [
+            'cfml-access', 'cfml-type', 'cfml-keyword', 'cfml-string', 
+            'cfml-comment', 'cfml-tag', 'cfml-operator', 'cfml-attribute', 
+            'cfml-boolean', 'cfml-number'
+        ];
+        
+        let totalElements = 0;
+        cfmlClasses.forEach(className => {
+            const elements = document.querySelectorAll('.' + className);
+            if (elements.length > 0) {
+                console.log('Found ' + elements.length + ' elements with class \\'' + className + '\\'');
+                elements.forEach((el, index) => {
+                    if (index < 3) { // Show first 3 examples
+                        console.log('  ' + className + ' example ' + (index + 1) + ': "' + el.textContent + '"');
+                    }
+                });
+                totalElements += elements.length;
+            }
         });
         
-        // Check for any corrupted spans
+        console.log('Total CFML highlighted elements: ' + totalElements);
+        
+        // Check for any corrupted spans or malformed HTML
         const allSpans = document.querySelectorAll('span');
+        console.log('Total spans found: ' + allSpans.length);
+        
+        let corruptedCount = 0;
         allSpans.forEach((span, index) => {
             if (span.textContent.includes('cfml-') && !span.className.includes('cfml-')) {
                 console.warn('Potential span corruption detected:', span.outerHTML);
+                corruptedCount++;
             }
         });
+        
+        if (corruptedCount === 0) {
+            console.log('✅ No span corruption detected');
+        } else {
+            console.warn('⚠️ Found ' + corruptedCount + ' potentially corrupted spans');
+        }
+        
+        // Check for CFML code blocks
+        const codeBlocks = document.querySelectorAll('pre code');
+        let cfmlCodeBlocks = 0;
+        codeBlocks.forEach(block => {
+            if (block.className.includes('language-cfml')) {
+                cfmlCodeBlocks++;
+                console.log('CFML code block ' + cfmlCodeBlocks + ':', block.className);
+                const highlightedSpans = block.querySelectorAll('span[class*="cfml-"]');
+                console.log('  Contains ' + highlightedSpans.length + ' highlighted elements');
+            }
+        });
+        
+        console.log('Found ' + cfmlCodeBlocks + ' CFML code blocks');
     </script>
 </body>
 </html>`;
