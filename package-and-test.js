@@ -44,24 +44,31 @@ function parseArgs() {
         switch (args[i]) {
             case '--version-type':
             case '-v':
-                options.versionType = args[++i];
+                if (i + 1 < args.length) {
+                    options.versionType = args[++i];
+                }
                 break;
+
             case '--skip-install':
             case '-s':
                 options.skipInstall = true;
                 break;
+
             case '--skip-test':
             case '-t':
                 options.skipTest = true;
                 break;
+
             case '--dry-run':
             case '-d':
                 options.dryRun = true;
                 break;
+
             case '--force':
             case '-f':
                 options.force = true;
                 break;
+
             case '--help':
             case '-h':
                 options.help = true;
@@ -286,18 +293,19 @@ async function runPreflightChecks(options = {}) {
     } catch (error) {
         log.warning('Could not check VS Code CLI availability');
     }
-      // Check git status for uncommitted changes
+    
+    // Check git status for uncommitted changes
     try {
         const gitResult = execCommandSafe('git status --porcelain', 'Git status check');
         if (gitResult.success && gitResult.result.trim()) {
             if (options.force) {
-                log.warning('Uncommitted changes detected - continuing due to --force flag');
+                log.warning('Uncommitted changes detected but --force flag specified, continuing...');
             } else {
-                log.warning('Uncommitted changes detected - consider committing before build');
-                log.gray('Use --force flag to ignore this warning');
+                log.error('Uncommitted changes detected. Commit changes or use --force flag to continue.');
+                process.exit(1);
             }
         } else {
-            log.gray('Git working directory clean');
+            log.gray('Working directory is clean');
         }
     } catch (gitError) {
         log.gray('Git status check skipped (not a git repository)');
@@ -313,141 +321,129 @@ async function main() {
     if (options.help) {
         showHelp();
         return;
-    }    log.header('🚀 Markdown Navigator Extension Builder');
+    }
+    
+    log.header('🚀 Markdown Navigator Extension Builder');
     log.header('=======================================');
-    console.log();    // Run pre-flight checks
+    console.log();
+    
+    // Run pre-flight checks
     await runPreflightChecks(options);
     console.log();
 
-    let installResult = { success: false }; // Initialize outside try block
-
+    let installResult = { success: false };
+    
     try {
-        // Verify we're in the right directory
+        // Read current version from package.json
         const packageJsonPath = path.join(__dirname, 'package.json');
-        if (!fs.existsSync(packageJsonPath)) {
-            throw new Error('package.json not found. Run this script from the extension root directory.');
-        }
-
-        // Read and update version
-        log.step('Reading package.json...');
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         const currentVersion = packageJson.version;
-        log.gray(`Current version: ${currentVersion}`);        const newVersion = incrementVersion(currentVersion, options.versionType);
-        log.step(`Incrementing ${options.versionType} version to: ${newVersion}`);
-
+        
+        log.step(`Current version: ${currentVersion}`);
+        
+        // Calculate new version
+        const newVersion = incrementVersion(currentVersion, options.versionType);
+        log.step(`New version will be: ${newVersion}`);
+        
         if (options.dryRun) {
-            log.info('DRY RUN - No changes will be made');
-            log.gray(`Would update version: ${currentVersion} → ${newVersion}`);
-            log.gray(`Would create: dist/markdown-navigator-${newVersion}.vsix`);
-            log.gray('Would move previous versions to snapshot/');
+            log.info('DRY RUN MODE - No changes will be made');
+            log.gray(`Would increment version from ${currentVersion} to ${newVersion}`);
+            log.gray(`Would package extension to dist/ directory`);
             if (!options.skipInstall) {
-                log.gray('Would install extension in VS Code');
+                log.gray(`Would install extension in VS Code`);
             }
             if (!options.skipTest) {
-                log.gray('Would open extension host window');
+                log.gray(`Would open extension development host`);
             }
             return;
         }
-
-        // Update package.json
+        
+        // Move previous versions to snapshot before building new one
+        movePreviousVersionToSnapshot(newVersion);
+        
+        // Update version in package.json
         packageJson.version = newVersion;
-        fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
-        log.success('Version updated successfully');        // Ensure dist directory exists
+        fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+        log.success(`Updated package.json version to ${newVersion}`);
+        
+        // Ensure dist directory exists
         const distDir = path.join(__dirname, 'dist');
         if (!fs.existsSync(distDir)) {
             fs.mkdirSync(distDir, { recursive: true });
             log.gray('Created dist directory');
         }
-
-        // Package extension
+        
+        // Package the extension
         log.step('Packaging extension...');
-        execCommand('npx vsce package --allow-star-activation --out dist/', 'Extension packaging');
-
-        const newVsixFile = `markdown-navigator-${newVersion}.vsix`;
-        const newVsixPath = path.join(distDir, newVsixFile);
-        if (fs.existsSync(newVsixPath)) {
-            log.success(`Extension packaged: dist/${newVsixFile}`);
-        } else {
-            throw new Error(`Expected package file not found: dist/${newVsixFile}`);
+        const packageCommand = `npx vsce package --allow-star-activation --out dist/`;
+        execCommand(packageCommand, 'Extension packaging');
+        
+        // Find the created VSIX file
+        const vsixFiles = fs.readdirSync(distDir).filter(file => file.endsWith('.vsix'));
+        if (vsixFiles.length === 0) {
+            throw new Error('No VSIX file found after packaging');
         }
-
-        // Move previous version files to snapshot
-        log.step('Moving previous versions to snapshot...');
-        movePreviousVersionToSnapshot(newVersion);
-
-        // Install extension
+        
+        const vsixFile = vsixFiles[0];
+        const vsixPath = path.join(distDir, vsixFile);
+        const stats = fs.statSync(vsixPath);
+        const fileSizeKB = Math.round(stats.size / 1024);
+        
+        log.success(`Extension packaged successfully: ${vsixFile} (${fileSizeKB} KB)`);
+        
+        // Install the extension if not skipped
         if (!options.skipInstall) {
             log.step('Installing extension...');
-            installResult = execCommandSafe(`code --install-extension "${newVsixPath}" --force`, 'Extension installation');
-            if (installResult.success) {
-                log.success('Extension installed');            } else {
-                log.warning('Extension installation failed - VS Code may not be in PATH');
-                log.gray(`You can manually install with: code --install-extension "dist/${newVsixFile}" --force`);
+            try {
+                const installCommand = `code --install-extension "${vsixPath}" --force`;
+                execCommand(installCommand, 'Extension installation');
+                log.success('Extension installed successfully');
+                installResult.success = true;
+            } catch (installError) {
+                log.warning('Extension installation failed - VS Code CLI may not be available');
+                log.gray(`Manual installation: code --install-extension "${vsixPath}" --force`);
+                installResult.success = false;
             }
         } else {
-            log.warning('Skipping installation');
-            installResult = { success: false, skipped: true };
+            log.gray('Skipping extension installation');
         }
-
-        // Open extension host for testing
+        
+        // Open extension host for testing if not skipped
         if (!options.skipTest) {
-            log.step('Opening extension host for testing...');
-            
-            // Alternative approach: use execCommandSafe instead of spawn
-            const hostResult = execCommandSafe(`code --extensionDevelopmentPath="${__dirname}" "${__dirname}"`, 'Extension host launch');
-            
-            if (hostResult.success) {
-                log.success('Extension host opened successfully');
-            } else {
-                log.warning('VS Code extension host failed to launch - trying alternative method...');
+            log.step('Opening extension development host...');
+            try {
                 await openExtensionHost();
-                log.success('Extension host window attempted');
+                log.success('Extension development host opened');
+            } catch (hostError) {
+                log.warning('Could not open extension development host automatically');
+                log.gray(`Manual command: code --extensionDevelopmentPath="${__dirname}" "${__dirname}"`);
             }
         } else {
-            log.warning('Skipping test window');
-        }        // Summary with detailed results
-        console.log();
-        log.header('🎉 Build Complete!');
-        log.header('=================');
-        
-        // Build summary
-        console.log(`${colors.green}Version:${colors.reset} ${currentVersion} → ${newVersion}`);
-        console.log(`${colors.green}Package:${colors.reset} dist/${newVsixFile}`);
-        console.log(`${colors.green}Installed:${colors.reset} ${options.skipInstall ? 'Skipped' : (installResult.success ? 'Yes' : 'Failed')}`);
-        console.log(`${colors.green}Test Window:${colors.reset} ${options.skipTest ? 'Skipped' : 'Attempted'}`);
-        
-        // File operations summary
-        console.log();
-        log.info('Files created/updated:');
-        log.gray(`• dist/${newVsixFile} (${Math.round(fs.statSync(newVsixPath).size / 1024)} KB)`);
-        log.gray('• package.json (version updated)');
-        
-        // Check if any files were moved to snapshot
-        try {
-            const snapshotFiles = fs.readdirSync(path.join(__dirname, 'snapshot'))
-                .filter(f => f.includes(currentVersion));
-            if (snapshotFiles.length > 0) {
-                log.gray(`• snapshot/${snapshotFiles[0]} (previous version archived)`);
-            }        } catch {
-            // Ignore snapshot check errors
+            log.gray('Skipping extension host launch');
         }
         
+        // Final summary
         console.log();
+        log.header('✅ Build Summary');
+        log.success(`Version: ${currentVersion} → ${newVersion}`);
+        log.success(`Package: ${vsixFile} (${fileSizeKB} KB)`);
+        if (!options.skipInstall) {
+            if (installResult.success) {
+                log.success('Installation: Completed successfully');
+            } else {
+                log.warning('Installation: Manual installation required');
+            }
+        }
+        if (!options.skipTest) {
+            log.success('Development host: Launched for testing');
+        }
         
-        log.info('Next steps:');
-        log.gray('• Test the extension in VS Code');
-        log.gray('• Verify all features work as expected');
-        log.gray(`• Commit: git add . ; git commit -m "Release v${newVersion}"`);
-        log.gray('• Push: git push origin main');
-        if (!installResult.success && !installResult.skipped) {
-            log.gray(`• Install manually: code --install-extension "dist/${newVsixFile}" --force`);
-        }
-        if (options.skipTest) {
-            log.gray(`• Open extension host: code --extensionDevelopmentPath="${__dirname}" "${__dirname}"`);
-        }
-
+        log.header('🎉 Build completed successfully!');
+        
     } catch (error) {
         log.error(`Build failed: ${error.message}`);
+        if (error.stdout) log.gray(error.stdout);
+        if (error.stderr) log.gray(error.stderr);
         process.exit(1);
     }
 }
