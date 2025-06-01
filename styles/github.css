@@ -5,7 +5,7 @@ body {
     line-height: 1.5;
     color: #24292f;
     background-color: #ffffff;
-    max-width: 1012px;
+    max-width: 95%;
     margin: 0 auto;
     padding: 45px;
 }
@@ -20,7 +20,9 @@ h2 { font-size: 1.5em; border-bottom: 1px solid #d0d7de; padding-bottom: 0.3em; 
 p { margin-top: 0; margin-bottom: 16px; }
 code {
     padding: 0.2em 0.4em;
-    background-color: rgba(175, 184, 193, 0.2);
+    background-color: #f6f8fa;
+    border: 1px solid #d0d7de;
     border-radius: 6px;
+    color: #cf222e;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace;
 }

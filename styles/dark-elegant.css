@@ -5,7 +5,7 @@ body {
     line-height: 1.7;
     color: #e1e4e8;
     background-color: #0d1117;
-    max-width: 1000px;
+    max-width: 95%;
     margin: 0 auto;
     padding: 2rem;
 }
@@ -51,9 +51,10 @@ pre {
 }
 
 code {
-    background-color: #21262d;
+    background-color: #161b22;
+    border: 1px solid #30363d;
     border-radius: 4px;
-    color: #f85149;
+    color: #ff7b72;
     font-size: 85%;
     padding: 0.3em 0.5em;
 }

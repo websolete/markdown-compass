@@ -17,13 +17,30 @@ class FavoritesTreeDataProvider {
 
     refresh() {
         this._onDidChangeTreeData.fire();
-    }
-
-    getTreeItem(element) {
-        const treeItem = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
+    }    async getTreeItem(element) {
+        // Determine display label and description based on header content
+        let displayLabel = element.label;
+        let description = '';
+        
+        // If we have a header, use it as the main label and filename as description
+        if (element.firstLevelHeader) {
+            displayLabel = element.firstLevelHeader;
+            description = element.label;
+        }
+        
+        const treeItem = new vscode.TreeItem(displayLabel, vscode.TreeItemCollapsibleState.None);
         treeItem.resourceUri = element.uri;
-        treeItem.tooltip = element.uri.fsPath;
-        treeItem.iconPath = new vscode.ThemeIcon('star-full');        treeItem.contextValue = 'markdownFile';
+        treeItem.description = description;
+        
+        // Enhanced tooltip with header and file information
+        let tooltip = element.uri.fsPath;
+        if (element.firstLevelHeader) {
+            tooltip = `${element.firstLevelHeader}\nFile: ${element.label}\n\n${tooltip}`;
+        }
+        treeItem.tooltip = tooltip;
+        
+        treeItem.iconPath = new vscode.ThemeIcon('star-full');
+        treeItem.contextValue = 'markdownFile';
         
         // Command to open the file
         treeItem.command = {
@@ -40,9 +57,7 @@ class FavoritesTreeDataProvider {
             return this._favorites;
         }
         return [];
-    }
-
-    /**
+    }    /**
      * Add a file to favorites
      */
     async addToFavorites(node) {
@@ -57,12 +72,30 @@ class FavoritesTreeDataProvider {
             return;
         }
 
-        // Add to favorites
-        this._favorites.push({
+        // Extract first level header if it's not already available
+        let firstLevelHeader = node.firstLevelHeader;
+        if (!firstLevelHeader && node.isMarkdownFile) {
+            try {
+                const content = await vscode.workspace.fs.readFile(node.uri);
+                const text = Buffer.from(content).toString('utf8');
+                firstLevelHeader = this._extractFirstLevelHeader(text);
+            } catch (error) {
+                console.error(`Error reading file ${node.uri.fsPath} for header extraction:`, error);
+            }
+        }
+
+        // Add to favorites with header information
+        const favoriteItem = {
             label: node.label,
             uri: node.uri,
             type: 'file'
-        });
+        };
+
+        if (firstLevelHeader) {
+            favoriteItem.firstLevelHeader = firstLevelHeader;
+        }
+
+        this._favorites.push(favoriteItem);
 
         this._saveFavorites();
         this.refresh();
@@ -87,9 +120,7 @@ class FavoritesTreeDataProvider {
         this._saveFavorites();
         this.refresh();
         vscode.window.showInformationMessage(`Removed ${node.label} from favorites`);
-    }
-
-    /**
+    }    /**
      * Load favorites from storage
      */
     _loadFavorites() {
@@ -97,20 +128,40 @@ class FavoritesTreeDataProvider {
         return stored.map(item => ({
             label: item.label,
             uri: vscode.Uri.parse(item.uri),
-            type: item.type
+            type: item.type,
+            firstLevelHeader: item.firstLevelHeader // Restore header information
         }));
-    }
-
-    /**
+    }/**
      * Save favorites to storage
      */
     _saveFavorites() {
         const toStore = this._favorites.map(item => ({
             label: item.label,
             uri: item.uri.toString(),
-            type: item.type
+            type: item.type,
+            firstLevelHeader: item.firstLevelHeader // Include header in storage
         }));
         this._context.globalState.update('markdownNavigator.favorites', toStore);
+    }
+
+    /**
+     * Extract the first level 1 header from markdown content
+     * @param {string} content Markdown file content
+     * @returns {string|null} First H1 header text or null if none found
+     */
+    _extractFirstLevelHeader(content) {
+        const lines = content.split('\n');
+
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            const headerMatch = trimmedLine.match(/^#{1}\s+(.+)$/);
+
+            if (headerMatch) {
+                return headerMatch[1].trim();
+            }
+        }
+
+        return null;
     }
 }
 

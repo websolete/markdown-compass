@@ -7,5 +7,6 @@ ignored-docs/
 test-ignored.md
 dev/
 test/
+dist/
 snapshot/
 testing/
