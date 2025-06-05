@@ -5,31 +5,35 @@ const vscode = require('vscode');
 const { marked } = require('marked');
 const path = require('path');
 
-class EnhancedPreviewProvider {
-    constructor() {
+class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingState = null) {
         this.panel = null;
         this.currentUri = null;
         this.isDisposed = false;
         this.debugInfo = [];
         this.styleWatcher = null; // Add file watcher for styles
         this.targetLineNumber = null; // For navigating to specific headers
+        this.targetHeaderText = null; // For precise header text matching
+        
+        // Header tracking integration
+        this.headerProvider = headerProvider;
+        this.trackingState = trackingState; // Object with { getLastPreviewedFile, setLastPreviewedFile }
         
         // Initialize debug mode from configuration
         const config = vscode.workspace.getConfiguration('markdownNavigator');
         this.showDebugInfo = config.get('enhancedPreview.debugMode', false);
-    }    static register(context) {
-        const provider = new EnhancedPreviewProvider();
+    }static register(context, headerProvider = null, trackingState = null) {
+        const provider = new EnhancedPreviewProvider(headerProvider, trackingState);
         
         // Register the command
         const disposable = vscode.commands.registerCommand('markdown-navigator.openEnhancedPreview', (node) => {
             provider.openEnhancedPreview(node);
         });
-        
-        // Register command to open preview at specific header
-        const headerPreview = vscode.commands.registerCommand('markdown-navigator.openEnhancedPreviewAtHeader', (fileUri, lineNumber) => {
+          // Register command to open preview at specific header
+        const headerPreview = vscode.commands.registerCommand('markdown-navigator.openEnhancedPreviewAtHeader', (fileUri, lineNumber, headerText) => {
             provider.openEnhancedPreview(fileUri);
-            // Store line number for future implementation of auto-scrolling to header
+            // Store both line number and header text for precise header matching
             provider.targetLineNumber = lineNumber;
+            provider.targetHeaderText = headerText;
         });
         
         // Register debug toggle command
@@ -41,15 +45,17 @@ class EnhancedPreviewProvider {
         
         context.subscriptions.push(disposable, headerPreview, debugToggle);
         return provider;
-    }    addDebugInfo(message) {
+    }addDebugInfo(message) {
         const timestamp = new Date().toISOString();
         this.debugInfo.push(`[${timestamp}] ${message}`);
         console.log(`[Enhanced Preview] ${message}`);
     }
-    
-    async openEnhancedPreview(node) {
-        try {
+      async openEnhancedPreview(node) {        try {
             this.addDebugInfo('=== Enhanced Preview Opening ===');
+            
+            // Clear target values when opening normally (not via header navigation)
+            this.targetLineNumber = null;
+            this.targetHeaderText = null;
             
             // Handle different parameter types
             let uri = node;
@@ -70,8 +76,11 @@ class EnhancedPreviewProvider {
                 }
             }
 
-                        this.currentUri = uri;
+            this.currentUri = uri;
             this.addDebugInfo(`Opening enhanced preview for: ${uri.toString()}`);
+            
+            // Update header tracking when enhanced preview is opened
+            this.updateHeaderTracking(uri);
             
             if (this.panel) {
                 this.addDebugInfo('Panel exists, revealing and updating content');
@@ -142,19 +151,66 @@ class EnhancedPreviewProvider {
                 this.addDebugInfo('Panel disposed');
                 this.panel = null;
                 this.isDisposed = true;
-            });
-
-            // Add a small delay to ensure panel is fully initialized
+            });            // Add webview message handler
+            this.panel.webview.onDidReceiveMessage(
+                message => {
+                    switch (message.command) {
+                        case 'clearTargetLineNumber':
+                            this.addDebugInfo('Received clearTargetLineNumber message from webview');
+                            this.targetLineNumber = null;
+                            break;
+                        case 'clearTargetHeaderInfo':
+                            this.addDebugInfo('Received clearTargetHeaderInfo message from webview');
+                            this.targetLineNumber = null;
+                            this.targetHeaderText = null;
+                            break;
+                        default:
+                            this.addDebugInfo(`Unknown message from webview: ${message.command}`);
+                    }
+                },
+                undefined,
+                // Note: We don't add this to context.subscriptions here since the panel handles its own disposal
+            );            // Add a small delay to ensure panel is fully initialized
             this.addDebugInfo('Waiting for panel initialization...');
             await new Promise(resolve => setTimeout(resolve, 100));
             
+            // Update header tracking for the newly created panel
+            this.updateHeaderTracking(this.currentUri);
+            
             this.addDebugInfo('Starting content update...');
-            await this.updateContent();
-
-        } catch (error) {
+            await this.updateContent();} catch (error) {
             this.addDebugInfo(`ERROR in createPanel: ${error.message}`);
             this.addDebugInfo(`Error stack: ${error.stack}`);
             throw error;        }
+    }
+
+    /**
+     * Update header tracking when enhanced preview is opened
+     */
+    updateHeaderTracking(fileUri) {
+        try {
+            if (this.headerProvider && fileUri) {
+                this.addDebugInfo(`Updating header tracking for: ${fileUri.toString()}`);
+                
+                // Update the header provider with the current file
+                this.headerProvider.updateHeaders(fileUri);
+                
+                // Update the tracking state if available
+                if (this.trackingState && this.trackingState.setLastPreviewedFile) {
+                    this.trackingState.setLastPreviewedFile(fileUri);
+                }
+                
+                // Set VS Code context to show that we have an active markdown document
+                vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+                
+                this.addDebugInfo('Header tracking updated successfully');
+            } else {
+                this.addDebugInfo('Header tracking not available - headerProvider or fileUri missing');
+            }
+        } catch (error) {
+            this.addDebugInfo(`ERROR updating header tracking: ${error.message}`);
+            console.error('[Enhanced Preview] Error updating header tracking:', error);
+        }
     }
 
     async updateContent() {
@@ -657,9 +713,99 @@ class EnhancedPreviewProvider {
     <div class="markdown-content">
         ${bodyContent}
     </div>
-    ${debugPanelHtml}
-    <script>
+    ${debugPanelHtml}    <script>
         console.log('Enhanced Preview loaded successfully');
+          // Header navigation functionality
+        const targetLineNumber = ${this.targetLineNumber || 'null'};
+        const targetHeaderText = ${this.targetHeaderText ? JSON.stringify(this.targetHeaderText) : 'null'};
+        
+        if (targetLineNumber !== null || targetHeaderText !== null) {
+            console.log('Attempting to scroll to header:', targetHeaderText || 'line ' + targetLineNumber);
+            
+            // Function to scroll to header based on text content (preferred) or line number (fallback)
+            function scrollToHeaderAtLine(lineNumber, headerText) {
+                // Get all headers
+                const headers = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                console.log('Found', headers.length, 'headers in document');
+                
+                if (headers.length === 0) {
+                    console.log('No headers found to scroll to');
+                    return false;
+                }
+                
+                let targetHeader = null;
+                
+                // Method 1: Match by header text (most accurate)
+                if (headerText) {
+                    const trimmedTargetText = headerText.trim().toLowerCase();
+                    headers.forEach((header, index) => {
+                        const headerTextContent = header.textContent.trim().toLowerCase();
+                        if (headerTextContent === trimmedTargetText) {
+                            targetHeader = header;
+                            console.log('Found exact text match for header:', header.textContent.trim().substring(0, 50));
+                            return;
+                        }
+                    });
+                }
+                
+                // Method 2: Fallback to line number estimation only if text matching failed
+                if (!targetHeader && lineNumber) {
+                    let minDistance = Infinity;
+                    
+                    headers.forEach((header, index) => {
+                        // Estimate line number based on position in document
+                        // This is approximate since we don't have exact line mapping
+                        const estimatedLine = Math.floor((index + 1) * (lineNumber / headers.length));
+                        const distance = Math.abs(estimatedLine - lineNumber);
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            targetHeader = header;
+                        }
+                        
+                        console.log('Header', index + 1, ':', header.textContent.trim().substring(0, 50), '(estimated line:', estimatedLine, ', distance:', distance, ')');
+                    });
+                }
+                
+                if (targetHeader) {
+                    console.log('Scrolling to header:', targetHeader.textContent.trim().substring(0, 50));
+                    targetHeader.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                    
+                    // Highlight the target header briefly
+                    targetHeader.style.backgroundColor = '#ffff99';
+                    targetHeader.style.transition = 'background-color 2s ease-out';
+                    setTimeout(() => {
+                        targetHeader.style.backgroundColor = '';
+                    }, 2000);
+                    
+                    return true;
+                } else {
+                    console.log('No suitable header found for line', lineNumber);
+                    return false;
+                }
+            }              // Try to scroll after content loads
+            setTimeout(() => {
+                const success = scrollToHeaderAtLine(targetLineNumber, targetHeaderText);
+                if (success) {
+                    console.log('Successfully scrolled to target header');
+                } else {
+                    console.log('Failed to find target header');
+                }
+                
+                // Clear the target values after use via postMessage to extension
+                try {
+                    window.acquireVsCodeApi().postMessage({
+                        command: 'clearTargetHeaderInfo'
+                    });
+                } catch (e) {
+                    console.log('Could not communicate with extension to clear target header info');
+                }
+            }, 500);
+        }
         
         // Log all CFML syntax highlighting classes
         const cfmlClasses = [

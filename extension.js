@@ -1674,11 +1674,11 @@ class MarkdownHeaderViewProvider {
             6: 'dash'            // H6 - Dash
         };        treeItem.iconPath = new vscode.ThemeIcon(iconMap[element.level] || 'symbol-field');
 
-        // Command to navigate to header with enhanced preview
+        // Command to navigate to header
         treeItem.command = {
-            command: 'markdown-navigator.openEnhancedPreviewAtHeader',
-            title: 'Open Enhanced Preview at Header',
-            arguments: [this._currentFile, element.line]
+            command: 'markdown-navigator.goToHeader',
+            title: 'Go to Header',
+            arguments: [element.line]
         };
 
         return treeItem;
@@ -1843,8 +1843,16 @@ function activate(context) {
     // Set initial context - ALWAYS show the Current Document view
     vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
     updateMarkdownContext(vscode.window.activeTextEditor);    // Initialize search context
-    vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);    // Register Enhanced Preview Provider v2
-    EnhancedPreviewProvider.register(context);
+    vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);
+
+    // Create tracking state object for Enhanced Preview Provider
+    const trackingState = {
+        getLastPreviewedFile: () => lastPreviewedMarkdownFile,
+        setLastPreviewedFile: (fileUri) => {
+            lastPreviewedMarkdownFile = fileUri;
+        }
+    };    // Register Enhanced Preview Provider v2 with header tracking integration
+    const enhancedPreviewProvider = EnhancedPreviewProvider.register(context, headerProvider, trackingState);
 
     // Register commands - THIS SECTION IS CRITICAL
     // Make sure every command registered here matches what's defined in package.json
@@ -1932,9 +1940,7 @@ function activate(context) {
                     vscode.window.showErrorMessage(`Could not preview file: ${error.message}`);
                 }
             }
-        }),
-
-        // Go to header
+        }),        // Go to header
         vscode.commands.registerCommand('markdown-navigator.goToHeader', async (lineNumber) => {
             try {
                 if (!headerProvider._currentFile || !lineNumber) {
@@ -1957,9 +1963,20 @@ function activate(context) {
                 }
 
                 const headerText = targetHeader.text;
-                console.log(`Found header: "${headerText}" at line ${lineNumber}`);
+                console.log(`Found header: "${headerText}" at line ${lineNumber}`);                // Check if Enhanced Preview is active and use it if available
+                if (enhancedPreviewProvider && enhancedPreviewProvider.panel && !enhancedPreviewProvider.isDisposed) {
+                    console.log('Enhanced Preview is active - using Enhanced Preview navigation');
+                    try {
+                        await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreviewAtHeader', headerProvider._currentFile, lineNumber, headerText);
+                        console.log(`✓ Successfully navigated to header using Enhanced Preview: ${headerText}`);
+                        return;
+                    } catch (enhancedError) {
+                        console.warn('Enhanced Preview navigation failed, falling back to standard methods:', enhancedError.message);
+                        // Continue to fallback methods below
+                    }
+                }
 
-                // Method 1: Try VS Code's fragment navigation with multiple anchor formats
+                // Method 2: Try VS Code's fragment navigation with multiple anchor formats
                 const anchorFormats = [
                     generateVSCodeHeaderAnchor(headerText),
                     generateGitHubStyleAnchor(headerText),
@@ -1990,7 +2007,7 @@ function activate(context) {
                     }
                 }
 
-                // Method 2: Use editor-based navigation with immediate return to preview
+                // Method 3: Use editor-based navigation with immediate return to preview
                 try {
                     console.log('Trying editor-based navigation...');
 
@@ -2029,7 +2046,7 @@ function activate(context) {
                     console.warn('Editor-based navigation failed:', editorError.message);
                 }
 
-                // Method 3: Preview with search suggestion
+                // Method 4: Preview with search suggestion
                 try {
                     console.log('Using preview with search suggestion...');
                     // Open the preview
@@ -2057,7 +2074,7 @@ function activate(context) {
                 } catch (previewError) {
                     console.warn('Preview with search failed:', previewError.message);
                 }
-                // Method 4: Last resort - calculate approximate position
+                // Method 5: Last resort - calculate approximate position
                
                 try {
 
