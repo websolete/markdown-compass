@@ -244,11 +244,15 @@
         "command": "markdown-navigator.resetStyles",
         "title": "Reset Markdown Styles",
         "icon": "$(trash)"
-      },
-      {
+      },      {
         "command": "markdown-navigator.openEnhancedPreview",
         "title": "Open Enhanced Preview",
         "icon": "$(preview)"
+      },
+      {
+        "command": "markdown-navigator.toggleEnhancedPreviewDebug",
+        "title": "Toggle Enhanced Preview Debug Mode",
+        "icon": "$(debug)"
       }
     ],
     "configuration": {
@@ -294,11 +298,15 @@
           "type": "boolean",
           "default": true,
           "description": "Use file URIs instead of absolute paths for theme CSS files (recommended for better compatibility)"
-        },
-        "markdownNavigator.enableCfmlHighlighting": {
+        },        "markdownNavigator.enableCfmlHighlighting": {
           "type": "boolean",
           "default": true,
           "description": "Enable enhanced CFML/ColdFusion code block highlighting with language badges and styling"
+        },
+        "markdownNavigator.enhancedPreview.debugMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug mode for enhanced preview to display diagnostic information"
         },
         "markdownNavigator.disableCodeBlockHover": {
           "type": "boolean",

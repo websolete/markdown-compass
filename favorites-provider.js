@@ -13,11 +13,11 @@ class FavoritesTreeDataProvider {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this._favorites = this._loadFavorites();
-    }
-
-    refresh() {
+    }    refresh() {
         this._onDidChangeTreeData.fire();
-    }    async getTreeItem(element) {
+    }
+    
+    async getTreeItem(element) {
         // Determine display label and description based on header content
         let displayLabel = element.label;
         let description = '';
@@ -36,16 +36,15 @@ class FavoritesTreeDataProvider {
         let tooltip = element.uri.fsPath;
         if (element.firstLevelHeader) {
             tooltip = `${element.firstLevelHeader}\nFile: ${element.label}\n\n${tooltip}`;
-        }
-        treeItem.tooltip = tooltip;
+        }        treeItem.tooltip = tooltip;
         
         treeItem.iconPath = new vscode.ThemeIcon('star-full');
         treeItem.contextValue = 'markdownFile';
         
-        // Command to open the file
+        // Command to open the file with enhanced preview
         treeItem.command = {
-            command: 'markdown-navigator.previewMarkdownFile',
-            title: 'Preview Markdown File',
+            command: 'markdown-navigator.openEnhancedPreview',
+            title: 'Open Enhanced Preview',
             arguments: [element]
         };
 
@@ -54,10 +53,11 @@ class FavoritesTreeDataProvider {
 
     getChildren(element) {
         if (!element) {
-            return this._favorites;
-        }
+            return this._favorites;        }
         return [];
-    }    /**
+    }
+    
+    /**
      * Add a file to favorites
      */
     async addToFavorites(node) {
@@ -118,9 +118,10 @@ class FavoritesTreeDataProvider {
 
         this._favorites.splice(index, 1);
         this._saveFavorites();
-        this.refresh();
-        vscode.window.showInformationMessage(`Removed ${node.label} from favorites`);
-    }    /**
+        this.refresh();        vscode.window.showInformationMessage(`Removed ${node.label} from favorites`);
+    }
+    
+    /**
      * Load favorites from storage
      */
     _loadFavorites() {
@@ -128,10 +129,11 @@ class FavoritesTreeDataProvider {
         return stored.map(item => ({
             label: item.label,
             uri: vscode.Uri.parse(item.uri),
-            type: item.type,
-            firstLevelHeader: item.firstLevelHeader // Restore header information
+            type: item.type,            firstLevelHeader: item.firstLevelHeader // Restore header information
         }));
-    }/**
+    }
+    
+    /**
      * Save favorites to storage
      */
     _saveFavorites() {

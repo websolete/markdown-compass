@@ -930,15 +930,14 @@ class MarkdownTreeDataProvider {
             tooltip += `\nSearch relevance: ${Math.round(element.searchScore)}`;
         }
 
-        treeItem.tooltip = tooltip;
-        if (element.type === 'file' && element.isMarkdownFile) {
-            // Now using our custom preview command that also updates the header view
+        treeItem.tooltip = tooltip;        if (element.type === 'file' && element.isMarkdownFile) {
+            // Using enhanced preview as the default left-click behavior
             treeItem.command = {
-                command: 'markdown-navigator.previewMarkdownFile',
-                title: 'Preview Markdown File',
+                command: 'markdown-navigator.openEnhancedPreview',
+                title: 'Open Enhanced Preview',
                 arguments: [element]
             };
-            treeItem.contextValue = 'markdownFile';              // Use status icon if available, otherwise use file type icon
+            treeItem.contextValue = 'markdownFile';// Use status icon if available, otherwise use file type icon
             const statusIcon = element.getStatusIcon();
             const fileIcon = element.getFileIcon();
 
@@ -1673,15 +1672,13 @@ class MarkdownHeaderViewProvider {
             4: 'note',           // H4 - Note
             5: 'pencil',         // H5 - Pencil
             6: 'dash'            // H6 - Dash
-        };
+        };        treeItem.iconPath = new vscode.ThemeIcon(iconMap[element.level] || 'symbol-field');
 
-        treeItem.iconPath = new vscode.ThemeIcon(iconMap[element.level] || 'symbol-field');
-
-        // Command to navigate to header
+        // Command to navigate to header with enhanced preview
         treeItem.command = {
-            command: 'markdown-navigator.goToHeader',
-            title: 'Go to Header',
-            arguments: [element.line]
+            command: 'markdown-navigator.openEnhancedPreviewAtHeader',
+            title: 'Open Enhanced Preview at Header',
+            arguments: [this._currentFile, element.line]
         };
 
         return treeItem;
