@@ -1,0 +1,6 @@
+{
+    "markdown.styles": [
+        "./.vscode/md-navigator-styles/minimal.css",
+        "./.vscode/md-navigator-styles/cfml-enhanced.css"
+    ]
+}
