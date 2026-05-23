@@ -1,41 +1,62 @@
-# Production .gitignore for markdown navigator
-*.log
-temp/
+# Build output and packaged artifacts
+out/
+dist/
+coverage/
+*.tsbuildinfo
+*.vsix
+
+# Node dependencies and caches
 node_modules/
+.npm
+.node_repl_history
+
+# Local environments
+.env
+.venv/
+venv/
+env/
+
+# VS Code test artifacts
 .vscode-test/
+
+# Local workspace settings (keep tasks, launch, and tracked style assets)
+.vscode/settings.json
+**/.vscode/settings.json
+
+# Local Copirate and reference workspace data
+.copirate/
+.references/
+.debug-archive/
+
+# Local GitHub/Copirate workspace customizations
+.github/*
+!.github/workflows/
+!.github/workflows/**
+*.local.md
+copilot-instructions.local.md
+
+# Local development sandboxes
+dev/
 ignored-docs/
 test-ignored.md
-dev/
-test/
-dist/
+.work-in-progress/
 
-# Development and debugging files
-debug-*
-test-*
-*-test.*
-*test*
-temp-*
-simple-*
-quick-*
-manual-*
-minimal-*
-*-debug.*
-*debug*
-snapshot.js
-create-final-*
-integration-example.*
-package-and-test.*
-syntax-highlighters.js
-enhanced-test.*
-direct-test.*
-*-output.txt
-package-enhanced.json
-testing/
+# Logs and runtime files
+*.log
+npm-debug.log*
+pids
+*.pid
+*.seed
 
-# Old VSIX packages (keep only latest)
-markdown-navigator-1.6.2[0-7].vsix
+# Temporary files
+.tmp/
+temp/
 
-# Development status reports
-*-STATUS.md
-*-REPORT.md
-INTEGRATION-*.md
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
