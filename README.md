@@ -19,7 +19,7 @@ Provide an easy to use and intuitive way to navigate and preview all the Markdow
 - **Toggle .gitignore Filtering**: Enable or disable .gitignore filtering with one click
 - **Search and Filter**: Find markdown files by name or content using the built-in search
 - **File Statistics**: View comprehensive statistics about your markdown documentation
-- **Preview Themes**: Choose from multiple styling themes for markdown previews (GitHub, Academic, Dark Enhanced, Minimal)
+- **Enhanced Preview**: Uses VS Code-native theme tokens instead of extension-owned preview themes
 
 ## Usage
 
@@ -33,7 +33,6 @@ Provide an easy to use and intuitive way to navigate and preview all the Markdow
 8. Use the refresh button to update the view if files are added or changed
 9. Click on the filter icon to toggle .gitignore filtering on/off
 10. Use the statistics button to view comprehensive information about your markdown files
-11. Click on the color icon to select a preview theme for enhanced markdown styling
 
 ## Header Navigation
 
@@ -54,34 +53,15 @@ No special requirements or dependencies.
 
 This extension contributes the following settings:
 
-- `markdownNavigator.previewTheme`: Choose the visual theme for markdown previews from 11 available options:
-  - Light themes: academic, default, github, light-modern, light-sepia, light-technical, minimal
-  - Dark themes: dark-elegant, dark-enhanced, dark-technical, dark-vibrant
-- `markdownNavigator.customCssPath`: Path to custom CSS file for markdown preview (optional, overrides theme selection)
-- `markdownNavigator.useRelativePaths`: Use paths relative to extension directory for theme CSS files (recommended)
+- `markdownNavigator.enhancedPreview.debugMode`: Toggle the enhanced preview debug overlay.
 
-## Preview Themes
+## Enhanced Preview Styling
 
-The extension offers several built-in themes to enhance your markdown preview experience:
+The enhanced preview now follows VS Code-native theme variables instead of shipping its own theme library.
 
-### Light Themes
-- **Academic**: Academic paper style with serif fonts, proper margins, and scholarly formatting
-- **Default**: VS Code's standard markdown preview styling
-- **GitHub**: Clean, GitHub-style markdown with modern typography and spacing
-- **Light Modern**: Modern light theme with clean layout and subtle accent colors
-- **Light Sepia**: Warm sepia-toned theme for comfortable extended reading
-- **Light Technical**: Technical documentation light theme with code-friendly styling
-- **Minimal**: Minimal, distraction-free styling focused on content clarity
-
-### Dark Themes
-- **Dark Elegant**: Elegant dark theme with muted colors and refined typography
-- **Dark Enhanced**: Enhanced dark mode with improved contrast and readability
-- **Dark Technical**: Technical documentation dark theme optimized for code blocks
-- **Dark Vibrant**: Vibrant dark theme with colorful accent headers
-
-**Theme Switching**: Themes are applied immediately when selected and automatically refresh all open markdown previews. Selected themes persist across VS Code sessions.
-
-You can switch themes using the color icon in the Documentation Files toolbar, or by configuring the `markdownNavigator.previewTheme` setting.
+- Preview colors, typography, and code-block backgrounds inherit from the active VS Code theme.
+- Extension-owned CFML syntax coloring has been removed from this extension.
+- For CFML fenced code blocks in markdown, use the dedicated `markdown-cfml-syntax` extension.
 
 ## Known Issues
 

@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Enhanced Preview Icon**: Improved tab icon visibility in dark themes by implementing light/dark icon variants
 - **UI Consistency**: Enhanced preview tab now uses the same colored icon as the extension panel for better recognition
+- **Native Preview Styling**: Removed the extension-owned preview theme surface so enhanced preview styling now follows VS Code theme variables
+- **CFML Highlighting Ownership**: Removed extension-owned CFML code-block highlighting and its configuration surface in favor of the dedicated `markdown-cfml-syntax` extension
 
 ## [1.6.13] - 2025-05-31
 

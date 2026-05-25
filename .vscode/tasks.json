@@ -14,6 +14,42 @@
 			"problemMatcher": ["$tsc"]
 		},
 		{
+			"type": "npm",
+			"script": "watch",
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "package",
+			"group": "build",
+			"presentation": {
+				"reveal": "silent"
+			},
+			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "build:pack",
+			"group": "build",
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "clean",
+			"presentation": {
+				"reveal": "silent"
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Run Extension",
 			"type": "shell",
 			"command": "code",

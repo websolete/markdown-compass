@@ -1,3 +1,5 @@
+// @ts-nocheck
+export {};
 // Enhanced Preview Provider - Simplified approach focusing on core functionality
 // Uses marked library for reliable markdown-to-HTML conversion
 
@@ -7,13 +9,13 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const sanitizeHtml = require('sanitize-html');
+const { getExtensionAssetPath } = require('../utils/extension-assets');
 
 class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingState = null) {
         this.panel = null;
         this.currentUri = null;
         this.isDisposed = false;
         this.debugInfo = [];
-        this.styleWatcher = null; // Add file watcher for styles
         this.targetLineNumber = null; // For navigating to specific headers
         this.targetHeaderText = null; // For precise header text matching
 
@@ -39,12 +41,10 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             provider.targetHeaderText = headerText;
         });
 
-        // Register debug toggle command
+                // Register debug toggle command
         const debugToggle = vscode.commands.registerCommand('markdown-navigator.toggleEnhancedPreviewDebug', () => {
             provider.toggleDebugMode();
         });
-          // Set up style file watcher
-        provider.setupStyleWatcher(context);
 
         context.subscriptions.push(disposable, headerPreview, debugToggle);
         return provider;
@@ -114,31 +114,12 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
     // The openEnhancedPreviewAtHeader functionality has been integrated directly
     // into the command registration for better simplicity and maintainability
 
-    getWorkspaceStylesDirectory() {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders || workspaceFolders.length === 0) {
-            return null;
-        }
-
-        const workspaceStylesDir = path.join(workspaceFolders[0].uri.fsPath, '.vscode', 'md-navigator-styles');
-        return fs.existsSync(workspaceStylesDir) ? workspaceStylesDir : null;
+    getRetainedStylesPath() {
+        return getExtensionAssetPath('styles');
     }
 
-    getResolvedCustomCssPath() {
-        const customCssPath = this.getCustomCssPath();
-        if (!customCssPath || !customCssPath.trim()) {
-            return null;
-        }
-
-        const workspaceRoot = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
-            ? vscode.workspace.workspaceFolders[0].uri.fsPath
-            : '';
-
-        const resolvedPath = path.isAbsolute(customCssPath)
-            ? customCssPath
-            : path.resolve(workspaceRoot, customCssPath);
-
-        return fs.existsSync(resolvedPath) ? resolvedPath : null;
+    getRetainedWebviewsPath() {
+        return getExtensionAssetPath('webviews');
     }
 
     getLocalResourceRoots() {
@@ -163,16 +144,8 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             addRoot(path.dirname(this.currentUri.fsPath));
         }
 
-        addRoot(path.join(__dirname, 'styles'));
-        addRoot(path.join(__dirname, 'webviews'));
-
-        const workspaceStylesDir = this.getWorkspaceStylesDirectory();
-        addRoot(workspaceStylesDir);
-
-        const resolvedCustomCssPath = this.getResolvedCustomCssPath();
-        if (resolvedCustomCssPath) {
-            addRoot(path.dirname(resolvedCustomCssPath));
-        }
+        addRoot(this.getRetainedStylesPath());
+        addRoot(this.getRetainedWebviewsPath());
 
         return roots;
     }
@@ -182,7 +155,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             return null;
         }
 
-        const stylesheetPath = path.join(__dirname, 'styles', 'enhanced-preview-webview.css');
+        const stylesheetPath = getExtensionAssetPath('styles', 'enhanced-preview-webview.css');
         if (!fs.existsSync(stylesheetPath)) {
             return null;
         }
@@ -195,7 +168,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             return null;
         }
 
-        const scriptPath = path.join(__dirname, 'webviews', 'enhanced-preview-webview.js');
+        const scriptPath = getExtensionAssetPath('webviews', 'enhanced-preview-webview.js');
         if (!fs.existsSync(scriptPath)) {
             return null;
         }
@@ -271,8 +244,8 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
                 }
             );            // Set the icon for the tab with both light and dark variants for better visibility
             this.panel.iconPath = {
-                light: vscode.Uri.file(path.join(__dirname, 'icon.png')),
-                dark: vscode.Uri.file(path.join(__dirname, 'icon.png'))
+                light: vscode.Uri.file(getExtensionAssetPath('icon.png')),
+                dark: vscode.Uri.file(getExtensionAssetPath('icon.png'))
             };
             this.addDebugInfo(`Set colored icon with light/dark variants for enhanced preview tab`);
 
@@ -366,18 +339,12 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
                     const newTitle = this.generateTabTitle(markdownText, this.currentUri);
                     this.panel.title = newTitle;
                     this.addDebugInfo(`Updated panel title to: ${newTitle}`);
-                }// Pre-process CFML code blocks BEFORE markdown conversion
-                this.addDebugInfo('Pre-processing CFML code blocks...');
-                markdownText = this.preprocessCfmlCodeBlocks(markdownText);
+                }
 
                 // Convert markdown to HTML using marked
                 this.addDebugInfo('Converting markdown to HTML with marked library');
                 let htmlContent = await marked(markdownText);
                 this.addDebugInfo(`Generated HTML content length: ${htmlContent.length} characters`);
-
-                // Post-process CFML code blocks AFTER markdown conversion
-                this.addDebugInfo('Post-processing CFML syntax highlighting...');
-                htmlContent = this.postProcessCfmlSyntaxHighlighting(htmlContent);
 
                 // Sanitize rendered markup before it reaches the script-enabled webview.
                 this.addDebugInfo('Sanitizing rendered HTML output...');
@@ -417,163 +384,6 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
         }
     }
 
-    preprocessCfmlCodeBlocks(markdownText) {
-        this.addDebugInfo('Pre-processing CFML code blocks (identification only)');
-
-        try {
-            // Find CFML code blocks and just count them - no HTML injection at this stage
-            const cfmlCodeBlockPattern = /```cfml\n([\s\S]*?)\n```/g;
-
-            // Count matches for debugging
-            const matches = [...markdownText.matchAll(cfmlCodeBlockPattern)];
-            this.addDebugInfo(`Found ${matches.length} CFML code blocks for later post-processing`);
-
-            // Return unchanged markdown text - post-processing will handle syntax highlighting
-            this.addDebugInfo('Pre-processing completed - passing through unchanged for marked conversion');
-            return markdownText;
-
-        } catch (error) {
-            this.addDebugInfo(`ERROR in CFML preprocessing: ${error.message}`);
-            return markdownText; // Return original on error
-        }
-    }
-
-    applyCfmlSyntaxHighlighting(codeContent) {
-        this.addDebugInfo('Applying CFML-specific syntax highlighting to raw text');
-
-        try {
-            let highlighted = codeContent;
-
-            // Enhanced CFML-specific highlighting patterns for raw text
-            // Order matters - more specific patterns first to avoid conflicts
-            const cfmlPatterns = [
-                // Multi-line comments
-                {
-                    pattern: /\/\*[\s\S]*?\*\//g,
-                    replacement: '<span class="cfml-comment">$&</span>',
-                    name: 'multi-line comments'
-                },
-                // Single-line comments
-                {
-                    pattern: /\/\/.*$/gm,
-                    replacement: '<span class="cfml-comment">$&</span>',
-                    name: 'single-line comments'
-                },
-                // String literals (double quotes)
-                {
-                    pattern: /"(?:[^"\\]|\\.)*"/g,
-                    replacement: '<span class="cfml-string">$&</span>',
-                    name: 'double-quoted strings'
-                },
-                // String literals (single quotes)
-                {
-                    pattern: /'(?:[^'\\]|\\.)*'/g,
-                    replacement: '<span class="cfml-string">$&</span>',
-                    name: 'single-quoted strings'
-                },
-                // CFML Tags (opening and closing)
-                {
-                    pattern: /<\/?(cf\w+)(?:\s[^>]*)?\/?>/g,
-                    replacement: '<span class="cfml-tag">$&</span>',
-                    name: 'CFML tags'
-                },
-                // Component/function attributes
-                {
-                    pattern: /\b(access|returntype|type|required|hint|displayname|extends|implements|inject)\s*=\s*"[^"]*"/g,
-                    replacement: '<span class="cfml-attribute">$&</span>',
-                    name: 'CFML attributes'
-                },
-                // Access modifiers
-                {
-                    pattern: /\b(public|private|package|remote)\b/g,
-                    replacement: '<span class="cfml-access">$1</span>',
-                    name: 'access modifiers'
-                },
-                // Data types
-                {
-                    pattern: /\b(any|string|numeric|boolean|array|struct|query|void|component|date|binary)\b/g,
-                    replacement: '<span class="cfml-type">$1</span>',
-                    name: 'data types'
-                },
-                // CFML/CFScript keywords and functions
-                {
-                    pattern: /\b(function|var|arguments|required|len|queryExecute|cfquery|cfoutput|cfset|cfreturn|cfif|cfelse|cfelseif|cfloop|cfswitch|cfcase|cfdefaultcase|cftry|cfcatch|cffinally|cfthrow|component|property|extends|implements|transaction|throw|writeLog|structKeyExists|isValid|isNull|isNumeric|deserializeJSON|serializeJSON|arrayEach|structEach|queryNew|if|else|for|while|do|switch|case|default|try|catch|finally|return|break|continue|this|super|variables|application|session|request|form|url|cgi|server|cookie)\b/g,
-                    replacement: '<span class="cfml-keyword">$1</span>',
-                    name: 'CFML keywords'
-                },
-                // Boolean values
-                {
-                    pattern: /\b(true|false|yes|no)\b/gi,
-                    replacement: '<span class="cfml-boolean">$1</span>',
-                    name: 'boolean values'
-                },
-                // Numbers
-                {
-                    pattern: /\b\d+(?:\.\d+)?\b/g,
-                    replacement: '<span class="cfml-number">$&</span>',
-                    name: 'numbers'
-                },
-                // Operators
-                {
-                    pattern: /\b(AND|OR|NOT|EQ|NEQ|LT|GT|LTE|GTE|CONTAINS|LIKE|IS|MOD)\b/gi,
-                    replacement: '<span class="cfml-operator">$1</span>',
-                    name: 'CFML operators'
-                }
-            ];
-
-            cfmlPatterns.forEach(pattern => {
-                const beforeCount = (highlighted.match(pattern.pattern) || []).length;
-                highlighted = highlighted.replace(pattern.pattern, pattern.replacement);
-                this.addDebugInfo(`Applied ${pattern.name}: ${beforeCount} matches processed`);
-            });
-
-            this.addDebugInfo('CFML syntax highlighting completed');
-            return highlighted;
-
-        } catch (error) {
-            this.addDebugInfo(`ERROR in CFML highlighting: ${error.message}`);
-            return codeContent; // Return original on error
-        }
-    }
-
-    postProcessCfmlSyntaxHighlighting(htmlContent) {
-        this.addDebugInfo('Post-processing CFML syntax highlighting in HTML content');
-
-        try {
-            // Find CFML code blocks in the HTML output from marked
-            const cfmlCodeBlockPattern = /<pre><code class="language-cfml">([\s\S]*?)<\/code><\/pre>/g;
-
-            // Count matches before processing
-            const matches = [...htmlContent.matchAll(cfmlCodeBlockPattern)];
-            this.addDebugInfo(`Found ${matches.length} CFML code blocks in HTML to process`);
-
-            const processed = htmlContent.replace(cfmlCodeBlockPattern, (match, codeContent) => {
-                this.addDebugInfo(`Post-processing CFML code block with ${codeContent.length} characters`);
-
-                // Decode HTML entities first
-                const decodedContent = codeContent
-                    .replace(/&lt;/g, '<')
-                    .replace(/&gt;/g, '>')
-                    .replace(/&amp;/g, '&')
-                    .replace(/&quot;/g, '"')
-                    .replace(/&#39;/g, "'");
-
-                this.addDebugInfo(`After HTML decoding: ${decodedContent.length} characters`);
-
-                const highlightedCode = this.applyCfmlSyntaxHighlighting(decodedContent.trim());
-
-                this.addDebugInfo(`After highlighting: ${highlightedCode.length} characters`);
-
-                return `<pre><code class="language-cfml cfml-enhanced">${highlightedCode}</code></pre>`;
-            });            this.addDebugInfo('CFML post-processing completed');
-            return processed;
-
-        } catch (error) {
-            this.addDebugInfo(`ERROR in CFML post-processing: ${error.message}`);
-            return htmlContent; // Return original on error
-        }
-    }
-
     sanitizeRenderedHtml(htmlContent) {
         this.addDebugInfo('Applying rendered HTML sanitization');
 
@@ -610,30 +420,6 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             this.addDebugInfo(`ERROR in rendered HTML sanitization: ${error.message}`);
             return htmlContent;
         }
-    }
-
-    /**
-     * Get the current theme configuration
-     */
-    getCurrentTheme() {
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
-        return config.get('previewTheme', 'default');
-    }
-
-    /**
-     * Get custom CSS path from configuration
-     */
-    getCustomCssPath() {
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
-        return config.get('customCssPath', '');
-    }
-
-    /**
-     * Check if CFML highlighting is enabled
-     */
-    isCfmlHighlightingEnabled() {
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
-        return config.get('enableCfmlSyntaxHighlighting', false);
     }
 
     /**
@@ -695,59 +481,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
 
             if (baseStylesheetUri) {
                 cssFiles.push(`<link rel="stylesheet" href="${baseStylesheetUri}">`);
-            }
-
-            const currentTheme = this.getCurrentTheme();
-            const resolvedCustomCssPath = this.getResolvedCustomCssPath();
-
-            if (resolvedCustomCssPath) {
-                const cssUri = this.panel.webview.asWebviewUri(vscode.Uri.file(resolvedCustomCssPath));
-                cssFiles.push(`<link rel="stylesheet" href="${cssUri}">`);
-                this.addDebugInfo(`Added custom CSS: ${resolvedCustomCssPath}`);
-            } else {
-                const workspaceStylesDir = this.getWorkspaceStylesDirectory();
-                let themeFound = false;
-
-                if (workspaceStylesDir) {
-                    const workspaceThemePath = path.join(workspaceStylesDir, `${currentTheme}.css`);
-
-                    if (fs.existsSync(workspaceThemePath)) {
-                        const cssUri = this.panel.webview.asWebviewUri(vscode.Uri.file(workspaceThemePath));
-                        cssFiles.push(`<link rel="stylesheet" href="${cssUri}">`);
-                        this.addDebugInfo(`Added workspace theme CSS: ${currentTheme}.css`);
-                        themeFound = true;
-
-                        if (this.isCfmlHighlightingEnabled()) {
-                            const workspaceCfmlPath = path.join(workspaceStylesDir, 'cfml-enhanced.css');
-                            if (fs.existsSync(workspaceCfmlPath)) {
-                                const cfmlUri = this.panel.webview.asWebviewUri(vscode.Uri.file(workspaceCfmlPath));
-                                cssFiles.push(`<link rel="stylesheet" href="${cfmlUri}">`);
-                                this.addDebugInfo('Added workspace CFML CSS: cfml-enhanced.css');
-                            }
-                        }
-                    }
-                }
-
-                if (!themeFound) {
-                    const extensionThemePath = path.join(__dirname, 'styles', `${currentTheme}.css`);
-                    const defaultCssPath = path.join(__dirname, 'styles', 'default.css');
-                    const themeCssPath = fs.existsSync(extensionThemePath) ? extensionThemePath : defaultCssPath;
-
-                    if (fs.existsSync(themeCssPath)) {
-                        const cssUri = this.panel.webview.asWebviewUri(vscode.Uri.file(themeCssPath));
-                        cssFiles.push(`<link rel="stylesheet" href="${cssUri}">`);
-                        this.addDebugInfo(`Added extension theme CSS: ${path.basename(themeCssPath)}`);
-                    }
-
-                    if (this.isCfmlHighlightingEnabled()) {
-                        const cfmlCssPath = path.join(__dirname, 'styles', 'cfml-syntax.css');
-                        if (fs.existsSync(cfmlCssPath)) {
-                            const cssUri = this.panel.webview.asWebviewUri(vscode.Uri.file(cfmlCssPath));
-                            cssFiles.push(`<link rel="stylesheet" href="${cssUri}">`);
-                            this.addDebugInfo('Added extension CFML CSS: cfml-syntax.css');
-                        }
-                    }
-                }
+                this.addDebugInfo('Added VS Code-native preview base stylesheet');
             }
 
             this.addDebugInfo(`Generated ${cssFiles.length} CSS links`);
@@ -830,80 +564,17 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
-    }    dispose() {
+    }
+
+    dispose() {
         this.addDebugInfo('Enhanced Preview provider disposing');
         if (this.panel) {
             this.panel.dispose();
         }
-        if (this.styleWatcher) {
-            this.styleWatcher.dispose();
-            this.styleWatcher = null;
-        }
         this.isDisposed = true;
-    }    setupStyleWatcher(context) {
-        try {
-            // Watch for changes to CSS files in the extension's styles directory
-            const extensionStylesPath = path.join(__dirname, 'styles');
-            const extensionPattern = new vscode.RelativePattern(extensionStylesPath, '*.css');
-
-            this.styleWatcher = vscode.workspace.createFileSystemWatcher(extensionPattern);
-
-            // Also watch for changes in workspace-specific styles directories
-            const workspaceFolders = vscode.workspace.workspaceFolders;
-            if (workspaceFolders && workspaceFolders.length > 0) {
-                const workspaceStylesPath = path.join(workspaceFolders[0].uri.fsPath, '.vscode', 'md-navigator-styles');
-                const workspacePattern = new vscode.RelativePattern(workspaceStylesPath, '*.css');
-
-                const workspaceWatcher = vscode.workspace.createFileSystemWatcher(workspacePattern);
-
-                workspaceWatcher.onDidChange(uri => {
-                    this.addDebugInfo(`Workspace style file changed: ${uri.fsPath}`);
-                    this.refreshEnhancedPreview();
-                });
-
-                workspaceWatcher.onDidCreate(uri => {
-                    this.addDebugInfo(`Workspace style file created: ${uri.fsPath}`);
-                    this.refreshEnhancedPreview();
-                });
-
-                workspaceWatcher.onDidDelete(uri => {
-                    this.addDebugInfo(`Workspace style file deleted: ${uri.fsPath}`);
-                    this.refreshEnhancedPreview();
-                });
-
-                context.subscriptions.push(workspaceWatcher);
-            }
-
-            // Handle extension style file changes
-            this.styleWatcher.onDidChange(uri => {
-                this.addDebugInfo(`Extension style file changed: ${uri.fsPath}`);
-                this.refreshEnhancedPreview();
-            });
-
-            this.styleWatcher.onDidCreate(uri => {
-                this.addDebugInfo(`Extension style file created: ${uri.fsPath}`);
-                this.refreshEnhancedPreview();
-            });
-
-            this.styleWatcher.onDidDelete(uri => {
-                this.addDebugInfo(`Extension style file deleted: ${uri.fsPath}`);
-                this.refreshEnhancedPreview();
-            });
-
-            context.subscriptions.push(this.styleWatcher);
-            this.addDebugInfo('Style file watchers set up successfully');
-
-        } catch (error) {
-            this.addDebugInfo(`Error setting up style watcher: ${error.message}`);
-        }
     }
 
-    refreshEnhancedPreview() {
-        if (this.panel && !this.isDisposed && this.currentUri) {
-            this.addDebugInfo('Refreshing enhanced preview due to style changes');
-            this.updateContent();
-        }
-    }    async toggleDebugMode() {
+    async toggleDebugMode() {
         try {
             // Toggle the debug mode
             this.showDebugInfo = !this.showDebugInfo;
@@ -933,26 +604,6 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             console.error(`[Enhanced Preview] Error toggling debug mode: ${error.message}`);
         }
     }
-
-    generateDebugInfoPanel() {
-        if (!this.showDebugInfo || this.debugInfo.length === 0) {
-            return '';
-        }
-
-        // Limit debug info display to last N entries
-        const debugLimit = 50;
-        const displayedDebugInfo = this.debugInfo.slice(-debugLimit);
-
-        // Generate HTML for debug info panel
-        let debugHtml = `<div style="background:#f1f1f1; padding:10px; border-radius:5px; margin-top:10px;">`;
-        debugHtml += `<strong>Debug Information</strong><br/>`;
-        displayedDebugInfo.forEach((info, index) => {
-            debugHtml += `${index + 1}. ${info}<br/>`;
-        });
-        debugHtml += `</div>`;
-
-        return debugHtml;
-    }
 }
 
-module.exports = EnhancedPreviewProvider;
+export default EnhancedPreviewProvider;

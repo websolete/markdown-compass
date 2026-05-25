@@ -34,7 +34,7 @@
     ],
     "license": "MIT",
     "activationEvents": [],
-    "main": "./extension.js",
+    "main": "./dist/extension.js",
     "contributes": {
         "viewsContainers": {
             "activitybar": [
@@ -142,11 +142,6 @@
                     "command": "markdown-navigator.showWorkspaceStats",
                     "when": "view == markdownNavigator",
                     "group": "navigation@4"
-                },
-                {
-                    "command": "markdown-navigator.selectPreviewTheme",
-                    "when": "view == markdownNavigator",
-                    "group": "navigation@5"
                 }
             ]
         },
@@ -236,16 +231,6 @@
                 "icon": "$(bookmark-remove)"
             },
             {
-                "command": "markdown-navigator.selectPreviewTheme",
-                "title": "Select Preview Theme",
-                "icon": "$(symbol-color)"
-            },
-            {
-                "command": "markdown-navigator.resetStyles",
-                "title": "Reset Markdown Styles",
-                "icon": "$(trash)"
-            },
-            {
                 "command": "markdown-navigator.openEnhancedPreview",
                 "title": "Open Enhanced Preview",
                 "icon": "$(preview)"
@@ -259,74 +244,43 @@
         "configuration": {
             "title": "Markdown Navigator",
             "properties": {
-                "markdownNavigator.previewTheme": {
+                "markdownNavigator.previewMode": {
                     "type": "string",
                     "enum": [
-                        "academic",
-                        "dark-elegant",
-                        "dark-enhanced",
-                        "dark-technical",
-                        "dark-vibrant",
-                        "default",
-                        "github",
-                        "light-modern",
-                        "light-sepia",
-                        "light-technical",
-                        "minimal"
+                        "enhanced",
+                        "native"
                     ],
-                    "enumDescriptions": [
-                        "Academic paper style with serif fonts and proper spacing",
-                        "Elegant dark theme with muted colors and refined typography",
-                        "Enhanced dark mode with better contrast and readability",
-                        "Technical documentation dark theme optimized for code blocks",
-                        "Vibrant dark theme with colorful accents",
-                        "VS Code default markdown preview styling",
-                        "GitHub-style markdown with clean typography",
-                        "Modern light theme with clean layout and subtle accents",
-                        "Light sepia-toned theme for comfortable reading",
-                        "Technical documentation light theme with code-friendly styling",
-                        "Minimal style with focus on content"
-                    ],
-                    "default": "default",
-                    "description": "Choose the visual theme for markdown previews"
-                },
-                "markdownNavigator.customCssPath": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Path to custom CSS file for markdown preview (optional, overrides theme selection)"
-                },
-                "markdownNavigator.useRelativePaths": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Use file URIs instead of absolute paths for theme CSS files (recommended for better compatibility)"
-                },
-                "markdownNavigator.enableCfmlHighlighting": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable enhanced CFML/ColdFusion code block highlighting with language badges and styling"
+                    "default": "enhanced",
+                    "markdownDescription": "Choose which preview implementation the shared preview-opening path uses. `enhanced` keeps the current webview fallback, while `native` routes through VS Code's built-in markdown preview commands."
                 },
                 "markdownNavigator.enhancedPreview.debugMode": {
                     "type": "boolean",
                     "default": false,
                     "description": "Enable debug mode for enhanced preview to display diagnostic information"
-                },
-                "markdownNavigator.disableCodeBlockHover": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Disable hover effects on code blocks in markdown preview for cleaner appearance"
                 }
             }
         }
     },
     "scripts": {
+        "check-types": "tsc --noEmit",
+        "compile": "npm run check-types && npm run build:dev",
+        "build:dev": "node esbuild.js",
+        "watch": "node esbuild.js --watch",
+        "build:prod": "node esbuild.js --production",
+        "package": "npm run check-types && npm run lint && npm run build:prod",
+        "vscode:prepublish": "npm run package",
+        "pack": "npx @vscode/vsce package",
+        "package:vsix": "npm run pack",
+        "build:pack": "npm run package && npm run pack",
+        "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
         "lint": "eslint .",
         "pretest": "npm run lint",
         "test": "vscode-test"
     },
     "dependencies": {
-        "highlight.js": "^11.11.1",
         "ignore": "^5.3.0",
-        "marked": "^15.0.12"
+        "marked": "^15.0.12",
+        "sanitize-html": "^2.17.4"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
@@ -334,6 +288,9 @@
         "@types/vscode": "^1.100.0",
         "@vscode/test-cli": "^0.0.10",
         "@vscode/test-electron": "^2.5.2",
-        "eslint": "^9.25.1"
+        "@vscode/vsce": "^3.6.0",
+        "esbuild": "^0.25.8",
+        "eslint": "^9.25.1",
+        "typescript": "^5.9.2"
     }
 }
