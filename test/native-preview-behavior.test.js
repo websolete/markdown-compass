@@ -4,9 +4,11 @@ const os = require('os');
 const path = require('path');
 const vscode = require('vscode');
 
+const packageJson = require('../package.json');
+
 const EXTENSION_LOOKUP_IDS = [
-    'Websolete.markdown-navigator',
-    'websolete.markdown-navigator'
+    `${packageJson.publisher}.${packageJson.name}`,
+    `${String(packageJson.publisher).toLowerCase()}.${packageJson.name}`
 ];
 
 function getExtension() {
@@ -391,7 +393,7 @@ describe('Native Preview Behavior Validation', function() {
                     },
                     { description: 'target preview state sync' }
                 );
-            } catch (error) {
+            } catch {
                 throw new Error(`Timed out waiting for target preview state sync. Last state: ${JSON.stringify(lastObservedSyncState)}`);
             }
 

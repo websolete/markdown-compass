@@ -8,6 +8,7 @@ const MarkdownItModule = require('markdown-it');
 const MarkdownIt = MarkdownItModule.default ?? MarkdownItModule;
 const SafePreviewPluginModule = require('../dist/markdown-safe-preview-plugin');
 const LinkValidatorModule = require('../dist/markdown-preview-link-validator');
+const packageJson = require('../package.json');
 
 const extendMarkdownItWithSafeLinkSuppression =
     SafePreviewPluginModule.extendMarkdownItWithSafeLinkSuppression
@@ -24,8 +25,8 @@ const clearMarkdownPreviewLinkValidatorCache =
     ?? (() => {});
 
 const EXTENSION_LOOKUP_IDS = [
-    'Websolete.markdown-navigator',
-    'websolete.markdown-navigator'
+    `${packageJson.publisher}.${packageJson.name}`,
+    `${String(packageJson.publisher).toLowerCase()}.${packageJson.name}`
 ];
 
 function getExtension() {

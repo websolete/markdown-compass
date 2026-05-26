@@ -271,8 +271,8 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
                 }
             );            // Set the icon for the tab with both light and dark variants for better visibility
             this.panel.iconPath = {
-                light: vscode.Uri.file(path.join(__dirname, 'icon.png')),
-                dark: vscode.Uri.file(path.join(__dirname, 'icon.png'))
+                light: vscode.Uri.file(path.join(__dirname, 'images', 'icon.png')),
+                dark: vscode.Uri.file(path.join(__dirname, 'images', 'icon.png'))
             };
             this.addDebugInfo(`Set colored icon with light/dark variants for enhanced preview tab`);
 

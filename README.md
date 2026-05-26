@@ -1,24 +1,38 @@
 # Markdown Navigator
 
-Markdown Navigator turns all the Markdown files in your workspace into a unified documentation hub.
+Turn your codebase into a focused documentation hub by surfacing only its Markdown documents in a dedicated, navigable sidebar.
 
-## Purpose
+When your workspace is full of Markdown files — whether that's code-adjacent `README.md` and `SPEC.md` files scattered across your project, or a growing library of documentation artifacts from AI-assisted workflows — finding and reading the right file gets tedious fast. Markdown Navigator solves that by turning every `.md` file in your workspace into a structured, navigable sidebar so you spend less time hunting and more time reading.
 
-Provide an easy to use and intuitive way to navigate and preview all the Markdown (.md) files in the current workspace.  If you prefer to document your code via Markdown, and especially if you have these files peppered throughout your codebase, this is a valuable tool.
+![Markdown Navigator preview](images/preview.png)
+
+## Who is this for?
+
+#### **Developers who document in code**
+If you keep `README.md`, `ARCHITECTURE.md`, or other notes alongside your source files, Markdown Navigator surfaces all of them in a single focused tree that mirrors your project structure — without cluttering your file explorer with non-documentation noise.
+
+#### **Documentation artifacts from AI-assisted workflows**
+Modern AI collaborations produce a lot of Markdown: planning docs, session summaries, work orders, research artifacts. Markdown Navigator makes that output useful instead of overwhelming — you can browse, search, and preview all of it from the sidebar without opening a file just to check what it covers.
+
+#### **Anyone who treats Markdown as a first-class project resource**
+If you reach for `.md` files as your primary documentation format, this extension gives them the same respect your source code gets.
 
 ## Features
 
-- **Focused Documentation View**: Shows only markdown files and directories containing markdown files
-- **Preview on Click**: Single-click on any markdown file to open VS Code's native markdown preview by default
+- **Focused Documentation View**: Shows only markdown files and directories containing markdown files, with animated progress messaging during the initial workspace scan
+- **H1 Label Display**: Files with a top-level heading (`#`) display that heading as the tree label, with the filename as the description
+- **Preview on Click**: Single-click on any markdown file to open VS Code's native markdown preview
+- **Open Preview in New Tab**: Right-click any file in the Markdown Files or Favorites tree to open a second locked preview panel without replacing the current one
 - **Document Headers View**: Displays header hierarchy of the currently previewed markdown file
 - **Navigate Headers**: Click on headers to scroll the markdown preview to the selected section
 - **Copy Header Links**: Easily copy markdown links to headers for cross-referencing
+- **Favorites**: Pin frequently used markdown files to a persistent Favorites panel for fast access
 - **Context Menu Options**: Right-click to open files in source/edit mode or preview mode
 - **Hierarchical Display**: Matches the directory structure of your workspace (displays only those folders containing Markdown files)
 - **Collapsible Sections**: Ability to collapse directories for better organization
 - **Toggle .gitignore Filtering**: Enable or disable .gitignore filtering with one click
-- **Search and Filter**: Fuzzy-match markdown folder names, file names, and markdown headers using the built-in tree filter
-- **File Statistics**: View comprehensive statistics about your markdown documentation
+- **Search and Filter**: Fuzzy-match markdown folder names, file names, and markdown headers using the built-in tree filter (both `Search Markdown Files` and `Filter in Sidebar` toolbar commands expose this same filter)
+- **File Statistics**: View comprehensive statistics including file count, total reading time, and file-size summary about your markdown documentation
 
 ## Usage
 
@@ -28,10 +42,12 @@ Provide an easy to use and intuitive way to navigate and preview all the Markdow
 4. The "Current Document" panel will automatically display the header structure of the previewed file
 5. Click on any header in the headers view to target that section in the markdown preview
 6. Right-click on any header to copy a markdown link to it for cross-referencing
-7. Use the search button to filter the tree by folder name, markdown file name, or markdown header
-8. Use the refresh button to update the view if files are added or changed
-9. Click on the filter icon to toggle .gitignore filtering on/off
-10. Use the statistics button to view comprehensive information about your markdown files
+7. Right-click any file in the Markdown Files or Favorites tree and choose **Open Preview in New Tab** to open an additional locked preview alongside the current one
+8. Use the **Search** or **Filter in Sidebar** toolbar buttons to filter the tree by folder name, markdown file name, or markdown header text — both buttons expose the same fuzzy filter
+9. Use the refresh button to update the view if files are added or changed
+10. Click on the filter icon to toggle .gitignore filtering on/off
+11. Use the statistics button to view comprehensive information about your markdown files
+12. Right-click any file and choose **Add to Favorites** to pin it in the Favorites panel; use **Remove from Favorites** to unpin it
 
 ## Search Scope
 
@@ -57,7 +73,7 @@ If automatic scrolling fails, the extension will provide the heading text and se
 
 ## Requirements
 
-No special requirements or dependencies.
+No special requirements or dependencies. Markdown Navigator uses VS Code's built-in Markdown preview — no external tools or preview engines to configure.
 
 ## Extension Settings
 
@@ -67,20 +83,9 @@ Markdown Navigator contributes one native-preview safety setting:
 
 Anchor-only links, valid local links, external URLs, and local non-Markdown fragments that cannot be validated are left unchanged.
 
-## Preview Styling
+## Almost-native Preview Styling
 
 Markdown Navigator relies on VS Code's built-in markdown preview for rendering and styling.
 
-- Preview colors, typography, and code-block backgrounds come from VS Code's native markdown preview.
 - The extension adds a small native preview stylesheet so suppressed broken local links render as neutral inert text instead of clickable anchors.
 - The safe-link behavior applies to all native Markdown previews while Markdown Navigator is active.
-- Extension-owned CFML syntax coloring has been removed from this extension.
-- For CFML fenced code blocks in markdown, use the dedicated `markdown-cfml-syntax` extension.
-
-## Known Issues
-
-- Header navigation may not work perfectly in all cases due to VS Code's preview implementation
-- Some markdown files with complex formatting may not display all headers correctly
-- Search functionality requires files to be accessible and only indexes the Markdown tree surface described above (respects .gitignore when enabled)
-
----

@@ -43,5 +43,6 @@ styles/**
 # Make sure these are NOT ignored
 !dist/**
 !icons/**
+!images/**
 !styles/enhanced-preview-webview.css
 !styles/markdown-safe-links.css

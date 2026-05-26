@@ -1,9 +1,11 @@
 const assert = require('assert');
 const vscode = require('vscode');
 
+const packageJson = require('../package.json');
+
 const EXTENSION_LOOKUP_IDS = [
-    'Websolete.markdown-navigator',
-    'websolete.markdown-navigator'
+    `${packageJson.publisher}.${packageJson.name}`,
+    `${String(packageJson.publisher).toLowerCase()}.${packageJson.name}`
 ];
 const releaseGateCommands = [
     'markdown-navigator.refresh',

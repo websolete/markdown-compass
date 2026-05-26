@@ -23,8 +23,8 @@ function activate(context) {
 
         // Using both light and dark variants for the icon
         panel.iconPath = {
-            light: vscode.Uri.file(path.join(__dirname, 'icon.png')),
-            dark: vscode.Uri.file(path.join(__dirname, 'icon.png'))
+            light: vscode.Uri.file(path.join(__dirname, '..', '..', 'images', 'icon.png')),
+            dark: vscode.Uri.file(path.join(__dirname, '..', '..', 'images', 'icon.png'))
         };
 
         console.log('Panel created with light/dark variant icons');

@@ -7,8 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-05-25
+
 ### Changed
-- **Native Preview Only**: Retired the legacy enhanced preview runtime, commands, settings, dependencies, and asset chain so preview opens now route only through VS Code's built-in markdown preview.
+- **README**: Rewrote introduction and purpose section to lead with the problems the extension solves, added persona-oriented "Who is this for?" section covering code-adjacent documentation and AI-assisted workflow use cases.
+
+## [1.6.31] - 2026-05-25
+
+### Added
+- **Open Preview in New Tab**: Right-click any item in the Markdown Files or Favorites tree to open an additional locked native preview panel without replacing the current one.
+- **Tree Scan Loading Animation**: The Markdown Files pane now displays an animated dot-cycling message ("Scanning workspace...") while the initial workspace scan is in progress.
+
+### Changed
+- **Native Preview Only**: Retired the legacy enhanced preview runtime, commands, settings, dependencies, and asset chain so all preview opens now route exclusively through VS Code's built-in markdown preview.
+- **Marketplace Metadata Alignment**: Updated the manifest publisher identity and shared marketplace metadata to match the other published VS Code extensions in this workspace.
+- **Search Scope Clarity**: Search toolbar input prompts now explicitly describe the filter scope — folder names, markdown file names, and markdown headers (H1–H6). Both `Search Markdown Files` and `Filter in Sidebar` commands expose the same fuzzy tree filter.
 - **Documentation and Smoke Coverage**: Updated active docs and preview-routing smoke coverage to match the native-preview-only architecture.
 - **CFML Highlighting Ownership**: CFML fenced code-block highlighting remains delegated to the dedicated `markdown-cfml-syntax` extension.
 

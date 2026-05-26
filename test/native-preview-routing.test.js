@@ -3,9 +3,11 @@ const os = require('os');
 const path = require('path');
 const vscode = require('vscode');
 
+const packageJson = require('../package.json');
+
 const EXTENSION_LOOKUP_IDS = [
-    'Websolete.markdown-navigator',
-    'websolete.markdown-navigator'
+    `${packageJson.publisher}.${packageJson.name}`,
+    `${String(packageJson.publisher).toLowerCase()}.${packageJson.name}`
 ];
 
 function getExtension() {

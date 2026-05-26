@@ -49,7 +49,7 @@ function createSnapshot() {
             'CHANGELOG.md',
             'README.md',
             'LICENSE.md',
-            'icon.png',
+            'images/icon.png',
             'icon.svg',
             'jsconfig.json',
             'eslint.config.mjs',

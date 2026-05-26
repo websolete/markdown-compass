@@ -1,14 +1,13 @@
 {
     "name": "markdown-navigator",
     "displayName": "Markdown Navigator",
-    "description": "Navigate and preview all Markdown files in your workspace",
-    "version": "1.6.31",
-    "publisher": "Websolete",
+    "description": "Navigate, preview, and organize all Markdown files in your workspace from a structured sidebar with header navigation, favorites, and safe-link suppression",
+    "version": "1.7.0",
+    "publisher": "EdgeInformation",
     "author": {
-        "name": "Kevin J. Miller",
-        "email": "websolete@gmail.com"
+        "name": "Kevin Miller"
     },
-    "icon": "icon.png",
+    "icon": "images/icon.png",
     "repository": {
         "type": "git",
         "url": "https://github.com/websolete/markdown-navigator.git"
@@ -21,18 +20,31 @@
         "markdown",
         "navigation",
         "document",
+        "documentation",
         "outline",
         "preview",
         "tree view",
+        "sidebar",
+        "workspace",
         "headers"
     ],
     "engines": {
         "vscode": "^1.100.0"
     },
     "categories": [
+        "Visualization",
         "Other"
     ],
+    "galleryBanner": {
+        "color": "#17324d",
+        "theme": "dark"
+    },
     "license": "MIT",
+    "markdown": "github",
+    "pricing": "Free",
+    "extensionKind": [
+        "ui"
+    ],
     "activationEvents": [],
     "main": "./dist/extension.js",
     "contributes": {
