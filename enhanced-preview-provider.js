@@ -22,17 +22,17 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
         this.trackingState = trackingState; // Object with { getLastPreviewedFile, setLastPreviewedFile }
 
         // Initialize debug mode from configuration
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
+        const config = vscode.workspace.getConfiguration('markdownCompass');
         this.showDebugInfo = config.get('enhancedPreview.debugMode', false);
     }static register(context, headerProvider = null, trackingState = null) {
         const provider = new EnhancedPreviewProvider(headerProvider, trackingState);
 
         // Register the command
-        const disposable = vscode.commands.registerCommand('markdown-navigator.openEnhancedPreview', (node) => {
+        const disposable = vscode.commands.registerCommand('markdown-compass.openEnhancedPreview', (node) => {
             provider.openEnhancedPreview(node);
         });
           // Register command to open preview at specific header
-        const headerPreview = vscode.commands.registerCommand('markdown-navigator.openEnhancedPreviewAtHeader', (fileUri, lineNumber, headerText) => {
+        const headerPreview = vscode.commands.registerCommand('markdown-compass.openEnhancedPreviewAtHeader', (fileUri, lineNumber, headerText) => {
             provider.openEnhancedPreview(fileUri);
             // Store both line number and header text for precise header matching
             provider.targetLineNumber = lineNumber;
@@ -40,7 +40,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
         });
 
         // Register debug toggle command
-        const debugToggle = vscode.commands.registerCommand('markdown-navigator.toggleEnhancedPreviewDebug', () => {
+        const debugToggle = vscode.commands.registerCommand('markdown-compass.toggleEnhancedPreviewDebug', () => {
             provider.toggleDebugMode();
         });
           // Set up style file watcher
@@ -120,7 +120,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             return null;
         }
 
-        const workspaceStylesDir = path.join(workspaceFolders[0].uri.fsPath, '.vscode', 'md-navigator-styles');
+        const workspaceStylesDir = path.join(workspaceFolders[0].uri.fsPath, '.vscode', 'md-compass-styles');
         return fs.existsSync(workspaceStylesDir) ? workspaceStylesDir : null;
     }
 
@@ -333,7 +333,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
                 }
 
                 // Set VS Code context to show that we have an active markdown document
-                vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+                vscode.commands.executeCommand('setContext', 'markdownCompassActiveDocument', true);
 
                 this.addDebugInfo('Header tracking updated successfully');
             } else {
@@ -616,7 +616,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
      * Get the current theme configuration
      */
     getCurrentTheme() {
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
+        const config = vscode.workspace.getConfiguration('markdownCompass');
         return config.get('previewTheme', 'default');
     }
 
@@ -624,7 +624,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
      * Get custom CSS path from configuration
      */
     getCustomCssPath() {
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
+        const config = vscode.workspace.getConfiguration('markdownCompass');
         return config.get('customCssPath', '');
     }
 
@@ -632,7 +632,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
      * Check if CFML highlighting is enabled
      */
     isCfmlHighlightingEnabled() {
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
+        const config = vscode.workspace.getConfiguration('markdownCompass');
         return config.get('enableCfmlSyntaxHighlighting', false);
     }
 
@@ -851,7 +851,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             // Also watch for changes in workspace-specific styles directories
             const workspaceFolders = vscode.workspace.workspaceFolders;
             if (workspaceFolders && workspaceFolders.length > 0) {
-                const workspaceStylesPath = path.join(workspaceFolders[0].uri.fsPath, '.vscode', 'md-navigator-styles');
+                const workspaceStylesPath = path.join(workspaceFolders[0].uri.fsPath, '.vscode', 'md-compass-styles');
                 const workspacePattern = new vscode.RelativePattern(workspaceStylesPath, '*.css');
 
                 const workspaceWatcher = vscode.workspace.createFileSystemWatcher(workspacePattern);
@@ -909,7 +909,7 @@ class EnhancedPreviewProvider {    constructor(headerProvider = null, trackingSt
             this.showDebugInfo = !this.showDebugInfo;
 
             // Update configuration
-            const config = vscode.workspace.getConfiguration('markdownNavigator');
+            const config = vscode.workspace.getConfiguration('markdownCompass');
             await config.update('enhancedPreview.debugMode', this.showDebugInfo, vscode.ConfigurationTarget.Global);
 
             this.addDebugInfo(`Debug mode ${this.showDebugInfo ? 'enabled' : 'disabled'}`);

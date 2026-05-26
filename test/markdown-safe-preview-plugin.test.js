@@ -59,7 +59,7 @@ async function waitFor(resolveValue, options = {}) {
 }
 
 async function createFixtureSet() {
-    const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'markdown-navigator-safe-links-'));
+    const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'markdown-compass-safe-links-'));
     const sourcePath = path.join(fixtureRoot, 'source.md');
     const targetPath = path.join(fixtureRoot, 'target.md');
     const binaryPlaceholderPath = path.join(fixtureRoot, 'diagram.png');
@@ -101,7 +101,7 @@ async function createFixtureSet() {
 }
 
 async function createNestedRelativeResolutionFixtureSet() {
-    const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'markdown-navigator-relative-base-'));
+    const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'markdown-compass-relative-base-'));
     const planningDirectory = path.join(fixtureRoot, '.copirate', 'working', 'planning');
     const researchDirectory = path.join(fixtureRoot, '.copirate', 'working', 'research');
     const commandsDirectory = path.join(fixtureRoot, 'src', 'commands');
@@ -202,7 +202,7 @@ describe('Markdown Safe Preview Plugin', function() {
             'package.json should contribute the safe-link preview stylesheet'
         );
         assert.strictEqual(
-            configuration['markdownNavigator.safeLinkSuppression.enabled']?.default,
+            configuration['markdownCompass.safeLinkSuppression.enabled']?.default,
             true,
             'package.json should default safe link suppression to enabled'
         );
@@ -305,8 +305,8 @@ describe('Markdown Safe Preview Plugin', function() {
             assert.match(html, /<a[^>]+href="\.\/target\.md"[^>]*>Good file<\/a>/);
             assert.match(html, /<a[^>]+href="\.\/target\.md#purpose"[^>]*>Good fragment<\/a>/);
             assert.match(html, /<a[^>]+href="#local-anchor"[^>]*>Same-file fragment<\/a>/);
-            assert.match(html, /<span[^>]+class="[^"]*markdown-navigator-broken-link[^"]*"[^>]*>Broken file<\/span>/);
-            assert.match(html, /<span[^>]+data-markdown-navigator-safe-link="broken-markdown-fragment-link"[^>]*>Broken fragment<\/span>/);
+            assert.match(html, /<span[^>]+class="[^"]*markdown-compass-broken-link[^"]*"[^>]*>Broken file<\/span>/);
+            assert.match(html, /<span[^>]+data-markdown-compass-safe-link="broken-markdown-fragment-link"[^>]*>Broken fragment<\/span>/);
             assert.ok(!html.includes('href="./missing.md"'), 'Broken file link should not render as a clickable anchor');
             assert.ok(!html.includes('href="./target.md#missing-heading"'), 'Broken fragment link should not render as a clickable anchor');
         } finally {
@@ -320,7 +320,7 @@ describe('Markdown Safe Preview Plugin', function() {
         try {
             const html = renderMarkdown('[Broken file](./missing.md)', fixtures.sourceUri.toJSON());
 
-            assert.match(html, /<span[^>]+class="[^"]*markdown-navigator-broken-link[^"]*"[^>]*>Broken file<\/span>/);
+            assert.match(html, /<span[^>]+class="[^"]*markdown-compass-broken-link[^"]*"[^>]*>Broken file<\/span>/);
             assert.ok(!html.includes('href="./missing.md"'), 'Broken file link should not remain clickable when currentDocument is serialized Uri components');
         } finally {
             await disposeFixtureSet(fixtures);
@@ -373,7 +373,7 @@ describe('Markdown Safe Preview Plugin', function() {
 
         try {
             await withConfigurationValues({
-                'markdownNavigator.safeLinkSuppression.enabled': false
+                'markdownCompass.safeLinkSuppression.enabled': false
             }, async () => {
                 const disabledHtml = renderMarkdown('[Broken file](./missing.md)', fixtures.sourceUri);
                 assert.match(disabledHtml, /<a[^>]+href="\.\/missing\.md"[^>]*>Broken file<\/a>/);

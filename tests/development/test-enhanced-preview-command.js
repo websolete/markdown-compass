@@ -10,14 +10,14 @@ async function testEnhancedPreview() {
     try {
         // Check if the command is registered
         const commands = await vscode.commands.getCommands();
-        const enhancedPreviewCommand = commands.find(cmd => cmd === 'markdown-navigator.openEnhancedPreview');
+        const enhancedPreviewCommand = commands.find(cmd => cmd === 'markdown-compass.openEnhancedPreview');
         
         if (enhancedPreviewCommand) {
             console.log('✅ Enhanced preview command is registered:', enhancedPreviewCommand);
         } else {
             console.log('❌ Enhanced preview command NOT found in registered commands');
-            console.log('Available markdown-navigator commands:', 
-                commands.filter(cmd => cmd.startsWith('markdown-navigator.')));
+            console.log('Available markdown-compass commands:', 
+                commands.filter(cmd => cmd.startsWith('markdown-compass.')));
             return;
         }
         
@@ -27,7 +27,7 @@ async function testEnhancedPreview() {
         
         console.log('🧪 Attempting to execute enhanced preview command with:', testUri.toString());
         
-        await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview', {
+        await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview', {
             uri: testUri
         });
         

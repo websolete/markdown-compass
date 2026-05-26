@@ -37,7 +37,7 @@ This is the last section of the test document.
 ## Testing Instructions
 
 1. Open this document in VS Code
-2. Open the Markdown Navigator sidebar
+2. Open the Markdown Compass sidebar
 3. Try clicking on headers in the navigator when Enhanced Preview is NOT open
 4. Open Enhanced Preview for this document
 5. Try clicking on headers in the navigator when Enhanced Preview IS open

@@ -22,9 +22,9 @@ This guide helps verify that the Enhanced Preview header navigation fix is worki
 ## Manual Testing Steps
 
 ### Setup
-1. Install the fixed extension (markdown-navigator-1.6.30.vsix)
+1. Install the fixed extension (markdown-compass-1.6.30.vsix)
 2. Open the test file: `test-header-navigation-fix.md`
-3. Open the Markdown Navigator sidebar (Activity Bar → Markdown Navigator icon)
+3. Open the Markdown Compass sidebar (Activity Bar → Markdown Compass icon)
 
 ### Test 1: Basic Header Navigation
 1. **Navigate to each header** by clicking them in the "Current Document" section
@@ -107,7 +107,7 @@ This guide helps verify that the Enhanced Preview header navigation fix is worki
 ### Debug Commands:
 ```javascript
 // In VS Code console (F1 → Developer: Reload Window to reset)
-vscode.commands.executeCommand('markdown-navigator.toggleEnhancedPreviewDebug');
+vscode.commands.executeCommand('markdown-compass.toggleEnhancedPreviewDebug');
 ```
 
 ## Success Criteria

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Quick Test Validation Script for Markdown Navigator Extension
+ * Quick Test Validation Script for Markdown Compass Extension
  */
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Markdown Navigator Extension Quick Validation...\n');
+console.log('🚀 Markdown Compass Extension Quick Validation...\n');
 
 class QuickValidator {
     constructor() {

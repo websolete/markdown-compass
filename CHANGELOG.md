@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-05-26
+
 ### Changed
-- **Marketplace-facing Name**: Rebranded the visible extension name, activity bar title, and shipped documentation from `Markdown Navigator` to `Markdown Compass` to avoid Marketplace name-confusion rejection while keeping internal command and setting identifiers stable.
+- **Rebranding QA Closeout**: Finalized the marketplace-facing rename from Markdown Navigator to Markdown Compass across the shipped extension surfaces while leaving historical internal work artifacts untouched.
+- **Preview Asset Polish**: Added transparent padding to the preview image for cleaner marketplace presentation.
+
+### Fixed
+- **Release Metadata Alignment**: Synced the root package-lock version with the extension manifest so the packaged release metadata matches `package.json`.
 
 ## [1.7.0] - 2026-05-25
 
@@ -99,7 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Header View Display**: Fixed critical issue where "Current Document" panel (header view) was not displaying
-- **Context Variable**: Added missing `markdownNavigatorActiveDocument` context variable that controls header view visibility
+- **Context Variable**: Added missing `markdownCompassActiveDocument` context variable that controls header view visibility
 - **Active File Tracking**: Extension now properly tracks when markdown files are opened, closed, or become active
 - **Preview Integration**: Header view now correctly appears when using "Preview Markdown File" command
 
@@ -172,7 +178,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - **Doc Central Webview**: Completely removed the non-functioning Doc Central webview functionality
-- **Webview Commands**: Removed `markdown-navigator.openPanel` command and associated menu items
+- **Webview Commands**: Removed `markdown-compass.openPanel` command and associated menu items
 - **Webview Configuration**: Removed all webview-related configuration properties from settings
 
 ### Changed
@@ -272,11 +278,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - **Expand All Functionality**: Removed problematic "Expand All" buttons from both Markdown Documents and Current Document views due to reliability issues
-- **Expand All Commands**: Removed `markdown-navigator.expandAll` and `markdown-navigator.expandAllHeaders` commands
+- **Expand All Commands**: Removed `markdown-compass.expandAll` and `markdown-compass.expandAllHeaders` commands
 
 ### Added
 - **Individual Folder Controls**: Added right-click context menu options to expand or collapse individual folders
-- **Enhanced Folder Management**: New `markdown-navigator.expandFolder` and `markdown-navigator.collapseFolder` commands for precise folder control
+- **Enhanced Folder Management**: New `markdown-compass.expandFolder` and `markdown-compass.collapseFolder` commands for precise folder control
 
 ### Enhanced
 - **Improved Reliability**: Replaced unreliable expand all functionality with more stable individual folder controls

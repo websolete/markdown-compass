@@ -11,7 +11,7 @@ try {
     const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
     const commands = packageJson.contributes?.commands || [];
     
-    const enhancedPreviewCmd = commands.find(cmd => cmd.command === 'markdown-navigator.openEnhancedPreview');
+    const enhancedPreviewCmd = commands.find(cmd => cmd.command === 'markdown-compass.openEnhancedPreview');
     if (enhancedPreviewCmd) {
         console.log(`✅ Enhanced preview command defined in package.json: ${enhancedPreviewCmd.title}`);
     } else {
@@ -21,7 +21,7 @@ try {
     // Check if command is in editor title menu
     const menus = packageJson.contributes?.menus?.['editor/title'] || [];
     const enhancedPreviewMenu = menus.find(menu => 
-        menu.command === 'markdown-navigator.openEnhancedPreview'
+        menu.command === 'markdown-compass.openEnhancedPreview'
     );
     
     if (enhancedPreviewMenu) {
@@ -44,14 +44,14 @@ try {
         console.log('❌ Enhanced Preview Provider registration NOT found in extension.js');
     }
     
-    if (extensionJs.includes("command: 'markdown-navigator.openEnhancedPreview'")) {
+    if (extensionJs.includes("command: 'markdown-compass.openEnhancedPreview'")) {
         console.log('✅ Tree item command correctly set to enhanced preview');
     } else {
         console.log('❌ Tree item command NOT set to enhanced preview');
     }
     
     // Check for duplicate registrations (should be removed)
-    const duplicateRegex = /vscode\.commands\.registerCommand\(['"]markdown-navigator\.openEnhancedPreview['"]/g;
+    const duplicateRegex = /vscode\.commands\.registerCommand\(['"]markdown-compass\.openEnhancedPreview['"]/g;
     const matches = extensionJs.match(duplicateRegex);
     
     if (!matches || matches.length === 0) {
@@ -90,7 +90,7 @@ try {
         }
         
         // Check for command registration
-        if (providerContent.includes("'markdown-navigator.openEnhancedPreview'")) {
+        if (providerContent.includes("'markdown-compass.openEnhancedPreview'")) {
             console.log('✅ Enhanced preview command registration found in provider');
         } else {
             console.log('❌ Enhanced preview command registration NOT found in provider');

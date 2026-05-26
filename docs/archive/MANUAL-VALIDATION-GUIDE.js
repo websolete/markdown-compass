@@ -19,10 +19,10 @@ console.log(`
 
 1. SETUP TESTING ENVIRONMENT
    ----------------------------
-   a) Open VS Code with the Markdown Navigator extension in development mode
+   a) Open VS Code with the Markdown Compass extension in development mode
    b) Ensure you have markdown files in your workspace
    c) Enable debug logging (optional):
-      - Command Palette → "Markdown Navigator: Toggle Enhanced Preview Debug"
+      - Command Palette → "Markdown Compass: Toggle Enhanced Preview Debug"
 
 2. CRITICAL TEST SCENARIO (The Original Bug)
    ------------------------------------------
@@ -51,7 +51,7 @@ console.log(`
 5. DEBUG INFORMATION (Optional)
    ----------------------------
    If you enabled debug mode, check the Output panel:
-   - View → Output → Select "Markdown Navigator"
+   - View → Output → Select "Markdown Compass"
    - Look for messages like:
      * "=== Enhanced Preview Opening ==="
      * "Current state: panel=false, isDisposed=true"

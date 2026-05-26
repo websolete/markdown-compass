@@ -10,7 +10,7 @@ async function debugPanelLifecycle() {
 
     try {
         // Enable debug mode for enhanced preview
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
+        const config = vscode.workspace.getConfiguration('markdownCompass');
         await config.update('enhancedPreview.debugMode', true, vscode.ConfigurationTarget.Global);
         console.log('✓ Enabled debug mode for enhanced preview');
 
@@ -52,7 +52,7 @@ If you can see this content, the enhanced preview is working correctly.
 
         // Step 1: Open enhanced preview first time
         console.log('\n--- Step 1: Opening Enhanced Preview (first time) ---');
-        await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview', testFilePath);
+        await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview', testFilePath);
         console.log('✓ Enhanced Preview opened');
 
         // Wait for user to close the panel
@@ -65,7 +65,7 @@ If you can see this content, the enhanced preview is working correctly.
 
         // Step 2: Open enhanced preview second time (this is where the bug occurs)
         console.log('\n--- Step 2: Opening Enhanced Preview (after closure) ---');
-        await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview', testFilePath);
+        await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview', testFilePath);
         console.log('✓ Enhanced Preview opened again');
 
         // Check result

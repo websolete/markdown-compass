@@ -1,6 +1,6 @@
 # Enhanced Preview Test
 
-This is a test file to verify the enhanced preview functionality of the markdown-navigator extension.
+This is a test file to verify the enhanced preview functionality of the markdown-compass extension.
 
 ## Regular Markdown Features
 

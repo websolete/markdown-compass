@@ -1,7 +1,7 @@
-# Markdown Navigator Resuscitation Project
+# Markdown Compass Resuscitation Project
 
 ## Project Overview
-This document serves as a living guide for the resuscitation of the Markdown Navigator VS Code extension. It will track progress, document decisions, and maintain context across working sessions.
+This document serves as a living guide for the resuscitation of the Markdown Compass VS Code extension. It will track progress, document decisions, and maintain context across working sessions.
 
 ## Session Context
 - **Current Date**: September 6, 2025
@@ -18,7 +18,7 @@ This document serves as a living guide for the resuscitation of the Markdown Nav
   - Since the parent folder is gitignored, the details of the Copirate repo won't appear in git
 - Created symbolic link from `.references/markdown-cfml-syntax` to `D:\Inetpub\vscode_extensions\markdown-cfml-syntax`
   - This was a successful spinoff project that accomplished CFML syntax highlighting for markdown previews
-  - The functionality should be integrated back into markdown navigator to improve the experience for ColdFusion developers
+  - The functionality should be integrated back into markdown compass to improve the experience for ColdFusion developers
 
 ### Current Progress
 1. ✅ Created `.references/` directory
@@ -27,7 +27,7 @@ This document serves as a living guide for the resuscitation of the Markdown Nav
 4. ✅ Created symbolic link to markdown-cfml-syntax extension
 
 ### Next Steps
-1. Explore the current state of the Markdown Navigator extension
+1. Explore the current state of the Markdown Compass extension
 2. Review existing documentation
 3. Analyze the code structure and architecture
 4. Compare with the patterns and approaches used in the Copirate extension

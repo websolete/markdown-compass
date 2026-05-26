@@ -16,7 +16,7 @@ describe('Enhanced Preview Tests', function() {
     let testMarkdownFile;
 
     before(async function() {
-        testTempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'markdown-navigator-'));
+        testTempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'markdown-compass-'));
 
         // Create a test markdown file with H1 header
         const testContent = [
@@ -61,7 +61,7 @@ describe('Enhanced Preview Tests', function() {
     });
 
     it('Extension should be present and activated', async function() {
-        const extension = vscode.extensions.getExtension('websolete.markdown-navigator');
+        const extension = vscode.extensions.getExtension('websolete.markdown-compass');
         assert.ok(extension, 'Extension should be installed');
 
         if (!extension.isActive) {
@@ -73,10 +73,10 @@ describe('Enhanced Preview Tests', function() {
     it('Enhanced preview commands should be registered', async function() {
         const commands = await vscode.commands.getCommands(true);
 
-        const hasEnhancedPreview = commands.includes('markdown-navigator.openEnhancedPreview');
+        const hasEnhancedPreview = commands.includes('markdown-compass.openEnhancedPreview');
         assert.ok(hasEnhancedPreview, 'Enhanced preview command should be registered');
 
-        const hasDebugToggle = commands.includes('markdown-navigator.toggleEnhancedPreviewDebug');
+        const hasDebugToggle = commands.includes('markdown-compass.toggleEnhancedPreviewDebug');
         assert.ok(hasDebugToggle, 'Enhanced preview debug toggle command should be registered');
     });
 
@@ -85,7 +85,7 @@ describe('Enhanced Preview Tests', function() {
             const document = await vscode.workspace.openTextDocument(testMarkdownFile);
             await vscode.window.showTextDocument(document);
 
-            await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview', testMarkdownFile);
+            await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview', testMarkdownFile);
 
             await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -98,10 +98,10 @@ describe('Enhanced Preview Tests', function() {
 
     it('Debug toggle should work without errors', async function() {
         try {
-            await vscode.commands.executeCommand('markdown-navigator.toggleEnhancedPreviewDebug');
+            await vscode.commands.executeCommand('markdown-compass.toggleEnhancedPreviewDebug');
             await new Promise(resolve => setTimeout(resolve, 500));
 
-            await vscode.commands.executeCommand('markdown-navigator.toggleEnhancedPreviewDebug');
+            await vscode.commands.executeCommand('markdown-compass.toggleEnhancedPreviewDebug');
             await new Promise(resolve => setTimeout(resolve, 500));
 
             assert.ok(true, 'Debug toggle worked successfully');
@@ -112,7 +112,7 @@ describe('Enhanced Preview Tests', function() {
     });
 
     it('Configuration should only keep active enhanced preview settings', function() {
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
+        const config = vscode.workspace.getConfiguration('markdownCompass');
 
         const debugModeInspection = config.inspect('enhancedPreview.debugMode');
         assert.ok(debugModeInspection, 'Enhanced preview debug mode configuration should exist');
@@ -126,7 +126,7 @@ describe('Enhanced Preview Tests', function() {
 
     it('Enhanced preview provider should be accessible', function() {
         try {
-            const extension = vscode.extensions.getExtension('websolete.markdown-navigator');
+            const extension = vscode.extensions.getExtension('websolete.markdown-compass');
             assert.ok(extension, 'Extension should be available');
             assert.ok(extension.isActive, 'Extension should be active');
 
@@ -137,7 +137,7 @@ describe('Enhanced Preview Tests', function() {
 
     it('Retired theme selection command should be absent', async function() {
         const commands = await vscode.commands.getCommands(true);
-        const hasThemeCommand = commands.includes('markdown-navigator.selectPreviewTheme');
+        const hasThemeCommand = commands.includes('markdown-compass.selectPreviewTheme');
         assert.ok(!hasThemeCommand, 'Theme selection command should be retired');
     });
 });

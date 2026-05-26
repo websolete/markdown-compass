@@ -25,7 +25,7 @@ async function testEnhancedPreview() {
         console.log('Executing enhanced preview command...');
         
         try {
-            await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview', testUri);
+            await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview', testUri);
             console.log('✓ Enhanced preview command executed successfully');
             
             // Wait a moment for the preview to load
@@ -33,7 +33,7 @@ async function testEnhancedPreview() {
             
             // Test debug mode toggle
             console.log('Testing debug mode toggle...');
-            await vscode.commands.executeCommand('markdown-navigator.toggleEnhancedPreviewDebug');
+            await vscode.commands.executeCommand('markdown-compass.toggleEnhancedPreviewDebug');
             console.log('✓ Debug mode toggle executed successfully');
             
             return true;

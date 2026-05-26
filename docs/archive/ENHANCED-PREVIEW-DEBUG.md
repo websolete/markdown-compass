@@ -3,7 +3,7 @@
 ## Using Debug Mode
 
 ### Toggling Debug Mode
-- Use the command `markdown-navigator.toggleEnhancedPreviewDebug` to toggle debug mode
+- Use the command `markdown-compass.toggleEnhancedPreviewDebug` to toggle debug mode
 - When enabled, a debug panel will appear at the bottom-right of the Enhanced Preview showing diagnostic information
 - Toggle again to hide the debug panel
 - You can also bind a keyboard shortcut (recommended: Ctrl+Shift+Alt+D) to this command

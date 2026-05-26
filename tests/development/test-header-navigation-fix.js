@@ -64,7 +64,7 @@ Last section content.`;
                 
                 // Test 1: Open Enhanced Preview at specific header
                 await vscode.commands.executeCommand(
-                    'markdown-navigator.openEnhancedPreviewAtHeader',
+                    'markdown-compass.openEnhancedPreviewAtHeader',
                     testFileUri,
                     testCase.line,
                     testCase.headerText
@@ -77,7 +77,7 @@ Last section content.`;
                 
                 // Test 2: Navigate to header using goToHeader command
                 await vscode.commands.executeCommand(
-                    'markdown-navigator.goToHeader',
+                    'markdown-compass.goToHeader',
                     testCase.line
                 );
                 
@@ -101,7 +101,7 @@ Last section content.`;
                 console.log(`\nRepeat test ${i}: Navigating to "${repeatTestHeader.headerText}"`);
                 
                 await vscode.commands.executeCommand(
-                    'markdown-navigator.openEnhancedPreviewAtHeader',
+                    'markdown-compass.openEnhancedPreviewAtHeader',
                     testFileUri,
                     repeatTestHeader.line,
                     repeatTestHeader.headerText
@@ -128,7 +128,7 @@ Last section content.`;
                 console.log(`\nTesting ${testCase.description}: "${testCase.headerText}"`);
                 
                 await vscode.commands.executeCommand(
-                    'markdown-navigator.openEnhancedPreviewAtHeader',
+                    'markdown-compass.openEnhancedPreviewAtHeader',
                     testFileUri,
                     testCase.line,
                     testCase.headerText
@@ -149,7 +149,7 @@ Last section content.`;
             console.log('\nTesting fallback with line number only...');
             
             await vscode.commands.executeCommand(
-                'markdown-navigator.openEnhancedPreviewAtHeader',
+                'markdown-compass.openEnhancedPreviewAtHeader',
                 testFileUri,
                 5,
                 null

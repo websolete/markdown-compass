@@ -1011,7 +1011,7 @@ class MarkdownTreeDataProvider {
         treeItem.tooltip = tooltip;        if (element.type === 'file' && element.isMarkdownFile) {
             // Route left-click preview opens through the shared preview command.
             treeItem.command = {
-                command: 'markdown-navigator.previewMarkdownFile',
+                command: 'markdown-compass.previewMarkdownFile',
                 title: 'Preview Markdown File',
                 arguments: [element]
             };
@@ -1230,7 +1230,7 @@ class MarkdownTreeDataProvider {
             if (shouldFocusView && !treeView.visible) {
                 console.warn('Tree view is not visible - attempting to make it visible');
                 try {
-                    await vscode.commands.executeCommand('markdownNavigator.focus');
+                    await vscode.commands.executeCommand('markdownCompass.focus');
                 } catch (focusError) {
                     console.log('Could not focus tree view:', focusError.message);
                 }
@@ -1730,7 +1730,7 @@ class MarkdownHeaderViewProvider {
 
         // Command to navigate to header
         treeItem.command = {
-            command: 'markdown-navigator.goToHeader',
+            command: 'markdown-compass.goToHeader',
             title: 'Go to Header',
             arguments: [element.line]
         };
@@ -1821,11 +1821,11 @@ function activate(context) {
     const favoritesProvider = new FavoritesTreeDataProvider(
         context,
         treeDataProvider,
-        'markdown-navigator.previewMarkdownFile'
+        'markdown-compass.previewMarkdownFile'
     );
 
     // Register the tree view
-    const treeView = vscode.window.createTreeView('markdownNavigator', {
+    const treeView = vscode.window.createTreeView('markdownCompass', {
         treeDataProvider: treeDataProvider,
         showCollapseAll: true
     });    // Register the header view
@@ -1935,7 +1935,7 @@ function activate(context) {
 
         lastPreviewedMarkdownFile = normalizedUri;
 
-        await vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+        await vscode.commands.executeCommand('setContext', 'markdownCompassActiveDocument', true);
         await headerProvider.updateHeaders(normalizedUri);
         previewSyncDebugState.lastMainTreeSyncTargetUri = normalizedUri.toString();
         previewSyncDebugState.lastFavoriteSyncTargetUri = normalizedUri.toString();
@@ -1982,7 +1982,7 @@ function activate(context) {
         const isMarkdownFile = editor && editor.document && editor.document.languageId === 'markdown';
 
         // ALWAYS keep the Current Document view visible
-        vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+        vscode.commands.executeCommand('setContext', 'markdownCompassActiveDocument', true);
 
         if (isMarkdownFile) {
             // Update header view with the active markdown file
@@ -2035,7 +2035,7 @@ function activate(context) {
     );
 
     // Set initial context - ALWAYS show the Current Document view
-    vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+    vscode.commands.executeCommand('setContext', 'markdownCompassActiveDocument', true);
     updateMarkdownContext(vscode.window.activeTextEditor);    // Initialize search context
     void syncPreviewStateFromActiveTab();
     const previewStatePollHandle = setInterval(() => {
@@ -2046,32 +2046,32 @@ function activate(context) {
             clearInterval(previewStatePollHandle);
         }
     });
-    vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);
+    vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', false);
 
     // Register commands - THIS SECTION IS CRITICAL
     // Make sure every command registered here matches what's defined in package.json
     context.subscriptions.push(
         // Refresh command - Fix the command ID to match package.json
-        vscode.commands.registerCommand('markdown-navigator.refresh', () => {
+        vscode.commands.registerCommand('markdown-compass.refresh', () => {
             treeDataProvider.refresh();
         }),
 
         // Add to favorites
-        vscode.commands.registerCommand('markdown-navigator.addToFavorites', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.addToFavorites', async (node) => {
             if (node && node.uri) {
                 await favoritesProvider.addToFavorites(node);
             }
         }),
 
         // Remove from favorites
-        vscode.commands.registerCommand('markdown-navigator.removeFromFavorites', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.removeFromFavorites', async (node) => {
             if (node && node.uri) {
                 await favoritesProvider.removeFromFavorites(node);
             }
         }),
 
         // Search command - Fix the command ID to match package.json
-        vscode.commands.registerCommand('markdown-navigator.searchMarkdownFiles', async () => {
+        vscode.commands.registerCommand('markdown-compass.searchMarkdownFiles', async () => {
             const query = await vscode.window.showInputBox({
                 placeHolder: 'Search markdown folders, files, and headers...',
                 prompt: 'Enter terms to match directory names, markdown file names, and markdown headers',
@@ -2080,11 +2080,11 @@ function activate(context) {
 
             if (query !== undefined) {
                 treeDataProvider.setSearchQuery(query);
-                vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', !!query);
+                vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', !!query);
             }
         }),
 
-        vscode.commands.registerCommand('markdown-navigator.__test.describePreviewRoute', (request = {}) => {
+        vscode.commands.registerCommand('markdown-compass.__test.describePreviewRoute', (request = {}) => {
             const uri = request.uri ? vscode.Uri.parse(request.uri) : undefined;
 
             if (!uri) {
@@ -2121,7 +2121,7 @@ function activate(context) {
             };
         }),
 
-        vscode.commands.registerCommand('markdown-navigator.__test.getPreviewTrackingState', () => ({
+        vscode.commands.registerCommand('markdown-compass.__test.getPreviewTrackingState', () => ({
             lastPreviewedMarkdownFile: lastPreviewedMarkdownFile?.toString() ?? null,
             currentHeaderFile: headerProvider._currentFile?.toString() ?? null,
             mainTreeSelection: treeView.selection
@@ -2139,7 +2139,7 @@ function activate(context) {
         })),
 
         // Search in sidebar command
-        vscode.commands.registerCommand('markdown-navigator.searchInSidebar', async () => {
+        vscode.commands.registerCommand('markdown-compass.searchInSidebar', async () => {
             const query = await vscode.window.showInputBox({
                 placeHolder: 'Filter the markdown tree by folders, files, and headers...',
                 prompt: 'Enter terms to filter the tree by directory names, markdown file names, and markdown headers',
@@ -2148,23 +2148,23 @@ function activate(context) {
 
             if (query !== undefined) {
                 treeDataProvider.setSearchQuery(query);
-                vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', !!query);
+                vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', !!query);
             }
         }),
 
         // Clear search command - Single registration only
-        vscode.commands.registerCommand('markdown-navigator.clearSearch', () => {
+        vscode.commands.registerCommand('markdown-compass.clearSearch', () => {
             treeDataProvider.clearSearch();
-            vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);
+            vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', false);
         }),
 
         // Toggle gitignore
-        vscode.commands.registerCommand('markdownNavigator.toggleGitIgnore', () => {
+        vscode.commands.registerCommand('markdownCompass.toggleGitIgnore', () => {
             treeDataProvider.toggleGitIgnoreFiltering();
         }),
 
         // Preview markdown file
-        vscode.commands.registerCommand('markdown-navigator.previewMarkdownFile', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.previewMarkdownFile', async (node) => {
             if (node && node.uri) {
                 try {
                     await previewNode(node);
@@ -2175,7 +2175,7 @@ function activate(context) {
             }
         }),
 
-        vscode.commands.registerCommand('markdown-navigator.previewMarkdownFileInNewTab', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.previewMarkdownFileInNewTab', async (node) => {
             if (node && node.uri) {
                 try {
                     await previewNode(node, { locked: true });
@@ -2187,7 +2187,7 @@ function activate(context) {
         }),
 
         // Go to header
-        vscode.commands.registerCommand('markdown-navigator.goToHeader', async (lineNumber) => {
+        vscode.commands.registerCommand('markdown-compass.goToHeader', async (lineNumber) => {
             try {
                 if (!headerProvider._currentFile || !lineNumber) {
                     console.warn('No current file or line number for header navigation');
@@ -2300,12 +2300,12 @@ function activate(context) {
         }),
 
         // Refresh headers command
-        vscode.commands.registerCommand('markdown-navigator.refreshHeaders', () => {
+        vscode.commands.registerCommand('markdown-compass.refreshHeaders', () => {
             headerProvider.refresh();
         }),
 
         // Copy header link command
-        vscode.commands.registerCommand('markdown-navigator.copyHeaderLink', async (element) => {
+        vscode.commands.registerCommand('markdown-compass.copyHeaderLink', async (element) => {
             if (element && element.text && element.line) {
                 const headerAnchor = generateVSCodeHeaderAnchor(element.text);
                 const link = `#${headerAnchor}`;
@@ -2315,7 +2315,7 @@ function activate(context) {
         }),
 
         // Show workspace stats command
-        vscode.commands.registerCommand('markdown-navigator.showWorkspaceStats', async () => {
+        vscode.commands.registerCommand('markdown-compass.showWorkspaceStats', async () => {
             const stats = await treeDataProvider.getWorkspaceStatistics();
 
             const message = `Markdown Workspace Statistics:
@@ -2331,21 +2331,21 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
         }),
 
         // Open file command
-        vscode.commands.registerCommand('markdown-navigator.openFile', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.openFile', async (node) => {
             if (node && node.uri) {
                 await vscode.window.showTextDocument(node.uri);
             }
         }),
 
         // Open in editor command
-        vscode.commands.registerCommand('markdown-navigator.openInEditor', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.openInEditor', async (node) => {
             if (node && node.uri) {
                 await vscode.window.showTextDocument(node.uri, { preview: false });
             }
         }),
 
         // Copy path command
-        vscode.commands.registerCommand('markdown-navigator.copyPath', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.copyPath', async (node) => {
             if (node && node.uri) {
                 await vscode.env.clipboard.writeText(node.uri.fsPath);
                 vscode.window.showInformationMessage('Path copied to clipboard');

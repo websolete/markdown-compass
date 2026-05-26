@@ -71,7 +71,7 @@ if (headerTextContent === trimmedTargetText) {
 
 ## 🚀 Extension Package
 - **Version**: 1.6.30 (incremented from 1.6.29)
-- **Package**: `dist/markdown-navigator-1.6.30.vsix` (2367 KB)
+- **Package**: `dist/markdown-compass-1.6.30.vsix` (2367 KB)
 - **Status**: Successfully packaged and installed
 - **Compatibility**: Maintains backward compatibility with existing features
 

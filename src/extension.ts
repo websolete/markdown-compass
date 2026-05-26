@@ -8,7 +8,7 @@ import {
 } from './services/markdown-safe-preview-plugin';
 import { validateMarkdownPreviewLink } from './services/markdown-preview-link-validator';
 
-export interface MarkdownNavigatorExports {
+export interface MarkdownCompassExports {
   extendMarkdownIt: (markdownIt: MarkdownItLike) => MarkdownItLike;
   __test: {
     extendMarkdownItWithSafeLinkSuppression: typeof extendMarkdownItWithSafeLinkSuppression;
@@ -21,7 +21,7 @@ export interface MarkdownNavigatorExports {
 /**
  * Activate the extension through the TypeScript runtime entry.
  */
-export function activate(context: vscode.ExtensionContext): MarkdownNavigatorExports {
+export function activate(context: vscode.ExtensionContext): MarkdownCompassExports {
   activateRuntime(context);
 
   return {

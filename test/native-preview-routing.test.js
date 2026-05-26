@@ -26,7 +26,7 @@ function createTestUri(fileName) {
 }
 
 async function describePreviewRoute(request) {
-    return vscode.commands.executeCommand('markdown-navigator.__test.describePreviewRoute', request);
+    return vscode.commands.executeCommand('markdown-compass.__test.describePreviewRoute', request);
 }
 
 describe('Native Preview Routing Smoke Tests', function() {
@@ -45,8 +45,8 @@ describe('Native Preview Routing Smoke Tests', function() {
 
         assert.ok(extension.isActive, 'Extension should be active before routing smoke checks');
         const commands = await vscode.commands.getCommands(true);
-        assert.ok(commands.includes('markdown-navigator.__test.describePreviewRoute'), 'Native preview route test helper command should be registered');
-        assert.ok(commands.includes('markdown-navigator.__test.getPreviewTrackingState'), 'Preview tracking test helper command should be registered');
+        assert.ok(commands.includes('markdown-compass.__test.describePreviewRoute'), 'Native preview route test helper command should be registered');
+        assert.ok(commands.includes('markdown-compass.__test.getPreviewTrackingState'), 'Preview tracking test helper command should be registered');
     });
 
     it('removes the legacy enhanced preview commands and settings surface', async function() {
@@ -55,13 +55,13 @@ describe('Native Preview Routing Smoke Tests', function() {
         const configurationProperties = extension.packageJSON.contributes.configuration?.properties ?? {};
         const commands = await vscode.commands.getCommands(true);
 
-        assert.ok(!declaredCommands.includes('markdown-navigator.openEnhancedPreview'), 'Legacy enhanced preview open command should not be declared');
-        assert.ok(!declaredCommands.includes('markdown-navigator.toggleEnhancedPreviewDebug'), 'Legacy enhanced preview debug command should not be declared');
-        assert.ok(!commands.includes('markdown-navigator.openEnhancedPreview'), 'Legacy enhanced preview open command should not be registered');
-        assert.ok(!commands.includes('markdown-navigator.openEnhancedPreviewAtHeader'), 'Legacy enhanced preview header command should not be registered');
-        assert.ok(!commands.includes('markdown-navigator.toggleEnhancedPreviewDebug'), 'Legacy enhanced preview debug command should not be registered');
-        assert.ok(!configurationProperties['markdownNavigator.previewMode'], 'Legacy previewMode setting should be removed');
-        assert.ok(!configurationProperties['markdownNavigator.enhancedPreview.debugMode'], 'Legacy enhanced preview debug setting should be removed');
+        assert.ok(!declaredCommands.includes('markdown-compass.openEnhancedPreview'), 'Legacy enhanced preview open command should not be declared');
+        assert.ok(!declaredCommands.includes('markdown-compass.toggleEnhancedPreviewDebug'), 'Legacy enhanced preview debug command should not be declared');
+        assert.ok(!commands.includes('markdown-compass.openEnhancedPreview'), 'Legacy enhanced preview open command should not be registered');
+        assert.ok(!commands.includes('markdown-compass.openEnhancedPreviewAtHeader'), 'Legacy enhanced preview header command should not be registered');
+        assert.ok(!commands.includes('markdown-compass.toggleEnhancedPreviewDebug'), 'Legacy enhanced preview debug command should not be registered');
+        assert.ok(!configurationProperties['markdownCompass.previewMode'], 'Legacy previewMode setting should be removed');
+        assert.ok(!configurationProperties['markdownCompass.enhancedPreview.debugMode'], 'Legacy enhanced preview debug setting should be removed');
     });
 
     it('routes native generic preview opens through VS Code markdown preview commands', async function() {

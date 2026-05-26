@@ -54,8 +54,8 @@ The panel should render this content correctly even after multiple open/close cy
 ### Basic Settings
 ```json
 {
-  "markdownNavigator.enableEnhancedPreview": true,
-  "markdownNavigator.autoOpenPreview": false
+  "markdownCompass.enableEnhancedPreview": true,
+  "markdownCompass.autoOpenPreview": false
 }
 ```
 
@@ -96,7 +96,7 @@ More configuration options here...
 
 ## Debug Information
 
-If issues persist, check the Output panel (View → Output → Markdown Navigator) for debug logs showing:
+If issues persist, check the Output panel (View → Output → Markdown Compass) for debug logs showing:
 - Panel state tracking
 - Disposal events
 - Error handling activation

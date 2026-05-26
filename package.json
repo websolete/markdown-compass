@@ -1,8 +1,8 @@
 {
     "name": "markdown-compass",
     "displayName": "Markdown Compass",
-    "description": "Navigate, preview, and organize all Markdown files in your workspace from a structured sidebar with header navigation, favorites, and safe-link suppression",
-    "version": "1.7.0",
+    "description": "Navigate and preview all Markdown files in your workspace from a structured sidebar with header navigation, favorites, and broken-link suppression",
+    "version": "1.7.1",
     "publisher": "EdgeInformation",
     "author": {
         "name": "Kevin Miller"
@@ -10,12 +10,12 @@
     "icon": "images/icon.png",
     "repository": {
         "type": "git",
-        "url": "https://github.com/websolete/markdown-navigator.git"
+        "url": "https://github.com/websolete/markdown-compass.git"
     },
     "bugs": {
-        "url": "https://github.com/websolete/markdown-navigator/issues"
+        "url": "https://github.com/websolete/markdown-compass/issues"
     },
-    "homepage": "https://github.com/websolete/markdown-navigator#readme",
+    "homepage": "https://github.com/websolete/markdown-compass#readme",
     "keywords": [
         "markdown",
         "navigation",
@@ -51,21 +51,21 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "markdown-navigator",
+                    "id": "markdown-compass",
                     "title": "Markdown Compass",
                     "icon": "./icons/m-compass-clean.svg"
                 }
             ]
         },
         "views": {
-            "markdown-navigator": [
+            "markdown-compass": [
                 {
                     "id": "markdownFavorites",
                     "name": "Favorites",
                     "icon": "./icons/bullets/search-highlight.svg"
                 },
                 {
-                    "id": "markdownNavigator",
+                    "id": "markdownCompass",
                     "name": "Markdown Files",
                     "icon": "./icons/markdown.svg"
                 },
@@ -79,145 +79,145 @@
         "menus": {
             "view/item/context": [
                 {
-                    "command": "markdown-navigator.previewMarkdownFile",
-                    "when": "view == markdownNavigator && viewItem == markdownFile",
+                    "command": "markdown-compass.previewMarkdownFile",
+                    "when": "view == markdownCompass && viewItem == markdownFile",
                     "group": "navigation"
                 },
                 {
-                    "command": "markdown-navigator.previewMarkdownFileInNewTab",
-                    "when": "view == markdownNavigator && viewItem == markdownFile",
+                    "command": "markdown-compass.previewMarkdownFileInNewTab",
+                    "when": "view == markdownCompass && viewItem == markdownFile",
                     "group": "navigation@1"
                 },
                 {
-                    "command": "markdown-navigator.previewMarkdownFileInNewTab",
+                    "command": "markdown-compass.previewMarkdownFileInNewTab",
                     "when": "view == markdownFavorites && viewItem == markdownFile",
                     "group": "navigation"
                 },
                 {
-                    "command": "markdown-navigator.copyHeaderLink",
+                    "command": "markdown-compass.copyHeaderLink",
                     "when": "view == markdownHeaders && viewItem == markdownHeader",
                     "group": "navigation"
                 },
                 {
-                    "command": "markdown-navigator.addToFavorites",
-                    "when": "view == markdownNavigator && viewItem == markdownFile",
+                    "command": "markdown-compass.addToFavorites",
+                    "when": "view == markdownCompass && viewItem == markdownFile",
                     "group": "favorites"
                 },
                 {
-                    "command": "markdown-navigator.removeFromFavorites",
+                    "command": "markdown-compass.removeFromFavorites",
                     "when": "view == markdownFavorites && viewItem == markdownFile",
                     "group": "favorites"
                 }
             ],
             "view/title": [
                 {
-                    "command": "markdown-navigator.refresh",
-                    "when": "view == markdownNavigator",
+                    "command": "markdown-compass.refresh",
+                    "when": "view == markdownCompass",
                     "group": "navigation"
                 },
                 {
-                    "command": "markdownNavigator.toggleGitIgnore",
-                    "when": "view == markdownNavigator",
+                    "command": "markdownCompass.toggleGitIgnore",
+                    "when": "view == markdownCompass",
                     "group": "navigation"
                 },
                 {
-                    "command": "markdown-navigator.searchInSidebar",
-                    "when": "view == markdownNavigator",
+                    "command": "markdown-compass.searchInSidebar",
+                    "when": "view == markdownCompass",
                     "group": "navigation@1"
                 },
                 {
-                    "command": "markdown-navigator.clearSearch",
-                    "when": "view == markdownNavigator && markdown-navigator:isSearchActive",
+                    "command": "markdown-compass.clearSearch",
+                    "when": "view == markdownCompass && markdown-compass:isSearchActive",
                     "group": "navigation@2"
                 },
                 {
-                    "command": "markdown-navigator.searchMarkdownFiles",
-                    "when": "view == markdownNavigator",
+                    "command": "markdown-compass.searchMarkdownFiles",
+                    "when": "view == markdownCompass",
                     "group": "navigation@3"
                 },
                 {
-                    "command": "markdown-navigator.refreshHeaders",
+                    "command": "markdown-compass.refreshHeaders",
                     "when": "view == markdownHeaders",
                     "group": "navigation"
                 },
                 {
-                    "command": "markdown-navigator.showWorkspaceStats",
-                    "when": "view == markdownNavigator",
+                    "command": "markdown-compass.showWorkspaceStats",
+                    "when": "view == markdownCompass",
                     "group": "navigation@4"
                 }
             ]
         },
         "commands": [
             {
-                "command": "markdown-navigator.refresh",
+                "command": "markdown-compass.refresh",
                 "title": "Refresh",
                 "icon": "$(refresh)"
             },
             {
-                "command": "markdownNavigator.toggleGitIgnore",
+                "command": "markdownCompass.toggleGitIgnore",
                 "title": "Toggle .gitignore Filtering",
                 "icon": "$(source-control)"
             },
             {
-                "command": "markdown-navigator.previewMarkdownFile",
+                "command": "markdown-compass.previewMarkdownFile",
                 "title": "Preview Markdown File"
             },
             {
-                "command": "markdown-navigator.previewMarkdownFileInNewTab",
+                "command": "markdown-compass.previewMarkdownFileInNewTab",
                 "title": "Open Preview in New Tab"
             },
             {
-                "command": "markdown-navigator.refreshHeaders",
+                "command": "markdown-compass.refreshHeaders",
                 "title": "Refresh Headers",
                 "icon": "$(refresh)"
             },
             {
-                "command": "markdown-navigator.copyHeaderLink",
+                "command": "markdown-compass.copyHeaderLink",
                 "title": "Copy Header Link"
             },
             {
-                "command": "markdown-navigator.goToHeader",
+                "command": "markdown-compass.goToHeader",
                 "title": "Go to Header in Preview"
             },
             {
-                "command": "markdown-navigator.searchMarkdownFiles",
+                "command": "markdown-compass.searchMarkdownFiles",
                 "title": "Search Markdown Files",
                 "icon": "$(search)"
             },
             {
-                "command": "markdown-navigator.searchInSidebar",
+                "command": "markdown-compass.searchInSidebar",
                 "title": "Filter in Sidebar",
                 "icon": "$(filter)"
             },
             {
-                "command": "markdown-navigator.clearSearch",
+                "command": "markdown-compass.clearSearch",
                 "title": "Clear Search Filter",
                 "icon": "$(clear-all)"
             },
             {
-                "command": "markdown-navigator.showWorkspaceStats",
+                "command": "markdown-compass.showWorkspaceStats",
                 "title": "Show Workspace Statistics",
                 "icon": "$(graph)"
             },
             {
-                "command": "markdown-navigator.openFile",
+                "command": "markdown-compass.openFile",
                 "title": "Open Markdown File"
             },
             {
-                "command": "markdown-navigator.openInEditor",
+                "command": "markdown-compass.openInEditor",
                 "title": "Open in Editor"
             },
             {
-                "command": "markdown-navigator.copyPath",
+                "command": "markdown-compass.copyPath",
                 "title": "Copy Path"
             },
             {
-                "command": "markdown-navigator.addToFavorites",
+                "command": "markdown-compass.addToFavorites",
                 "title": "Add to Favorites",
                 "icon": "$(bookmark)"
             },
             {
-                "command": "markdown-navigator.removeFromFavorites",
+                "command": "markdown-compass.removeFromFavorites",
                 "title": "Remove from Favorites",
                 "icon": "$(bookmark-remove)"
             }
@@ -225,7 +225,7 @@
         "configuration": {
             "title": "Markdown Compass",
             "properties": {
-                "markdownNavigator.safeLinkSuppression.enabled": {
+                "markdownCompass.safeLinkSuppression.enabled": {
                     "type": "boolean",
                     "default": true,
                     "scope": "resource",

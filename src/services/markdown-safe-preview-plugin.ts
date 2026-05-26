@@ -49,7 +49,7 @@ export interface SafePreviewRenderDebugState {
 
 interface MarkdownPreviewRenderEnv {
     currentDocument?: unknown;
-    __markdownNavigatorSafeLinkStack?: boolean[];
+    __markdownCompassSafeLinkStack?: boolean[];
 }
 
 const safePreviewRenderDebugState: SafePreviewRenderDebugState = {
@@ -223,11 +223,11 @@ function getSuppressionStack(env: unknown): boolean[] | undefined {
     }
 
     const renderEnv = env as MarkdownPreviewRenderEnv;
-    if (!Array.isArray(renderEnv.__markdownNavigatorSafeLinkStack)) {
-        renderEnv.__markdownNavigatorSafeLinkStack = [];
+    if (!Array.isArray(renderEnv.__markdownCompassSafeLinkStack)) {
+        renderEnv.__markdownCompassSafeLinkStack = [];
     }
 
-    return renderEnv.__markdownNavigatorSafeLinkStack;
+    return renderEnv.__markdownCompassSafeLinkStack;
 }
 
 function normalizeUri(value: unknown): vscode.Uri | undefined {
@@ -300,7 +300,7 @@ function safeCreateUriFromComponents(components: {
 function isSafeLinkSuppressionEnabled(currentDocument?: vscode.Uri): boolean {
     // This hook applies to all native markdown previews while the extension is active.
     return vscode.workspace
-        .getConfiguration('markdownNavigator', currentDocument ?? null)
+        .getConfiguration('markdownCompass', currentDocument ?? null)
         .get<boolean>('safeLinkSuppression.enabled', true);
 }
 
@@ -308,14 +308,14 @@ function suppressLinkOpenToken(token: MarkdownItToken, validation: MarkdownPrevi
     token.tag = 'span';
     token.meta = {
         ...token.meta,
-        markdownNavigatorSafeLink: validation
+        markdownCompassSafeLink: validation
     };
 
     stripInteractiveLinkAttributes(token);
-    token.attrJoin('class', 'markdown-navigator-broken-link');
+    token.attrJoin('class', 'markdown-compass-broken-link');
     token.attrSet('title', buildSuppressionTitle(validation));
     token.attrSet('aria-disabled', 'true');
-    token.attrSet('data-markdown-navigator-safe-link', validation.classification);
+    token.attrSet('data-markdown-compass-safe-link', validation.classification);
 }
 
 function stripInteractiveLinkAttributes(token: MarkdownItToken): void {

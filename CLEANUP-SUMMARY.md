@@ -1,4 +1,4 @@
-# Markdown Navigator Cleanup Summary
+# Markdown Compass Cleanup Summary
 
 ## Completed Cleanup Actions - June 17, 2025
 
@@ -42,7 +42,7 @@
 - **Test data optimized**: Removed old test session data
 
 ## 📋 **Current Clean State**
-The markdown-navigator extension is now in a clean, organized state with:
+The markdown-compass extension is now in a clean, organized state with:
 - Proper file organization
 - Minimal snapshot retention (last 2-3 versions)
 - Clean working directories

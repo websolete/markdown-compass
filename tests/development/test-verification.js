@@ -10,7 +10,7 @@ async function testEnhancedPreviewCommand() {
         const commands = await vscode.commands.getCommands();
         
         // Check if our command is registered
-        const hasEnhancedPreview = commands.includes('markdown-navigator.openEnhancedPreview');
+        const hasEnhancedPreview = commands.includes('markdown-compass.openEnhancedPreview');
         
         console.log('=== Enhanced Preview Command Registration Test ===');
         console.log('Enhanced Preview command registered:', hasEnhancedPreview);
@@ -22,7 +22,7 @@ async function testEnhancedPreviewCommand() {
         }
         
         // Also check for the debug toggle command
-        const hasDebugToggle = commands.includes('markdown-navigator.toggleEnhancedPreviewDebug');
+        const hasDebugToggle = commands.includes('markdown-compass.toggleEnhancedPreviewDebug');
         console.log('Debug toggle command registered:', hasDebugToggle);
         
         return hasEnhancedPreview;

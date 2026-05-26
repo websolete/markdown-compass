@@ -7,20 +7,20 @@ This document contains step-by-step instructions to test the Enhanced Preview na
 ## Test Setup
 
 1. **Open the test file**: Open `test-header-navigation.md` in the development VS Code instance
-2. **Open Enhanced Preview**: Use the command palette (Ctrl+Shift+P) and run "Markdown Navigator: Open Enhanced Preview"
+2. **Open Enhanced Preview**: Use the command palette (Ctrl+Shift+P) and run "Markdown Compass: Open Enhanced Preview"
 3. **Position windows**: Arrange VS Code so you can see both the markdown file and the Enhanced Preview side by side
 
 ## Test Scenarios
 
 ### Scenario 1: Enhanced Preview Active Navigation
 1. **Verify Enhanced Preview is open** - You should see the Enhanced Preview panel with rendered markdown
-2. **Click on a header in the outline** - Use the Markdown Navigator outline to click on "Second Header"
+2. **Click on a header in the outline** - Use the Markdown Compass outline to click on "Second Header"
 3. **Expected Result**: The Enhanced Preview should scroll to the "Second Header" section
 4. **Check console**: Open Developer Tools (Help > Toggle Developer Tools) and check for the console message: "Enhanced Preview is active - using Enhanced Preview navigation"
 
 ### Scenario 2: Fallback Navigation (Enhanced Preview Closed)
 1. **Close Enhanced Preview** - Close the Enhanced Preview panel
-2. **Click on a header in the outline** - Use the Markdown Navigator outline to click on "Third Header"
+2. **Click on a header in the outline** - Use the Markdown Compass outline to click on "Third Header"
 3. **Expected Result**: VS Code should open the standard markdown preview and navigate to "Third Header"
 4. **Check console**: Should see fallback navigation messages in the console
 

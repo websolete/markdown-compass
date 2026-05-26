@@ -87,7 +87,7 @@ Added try-catch around `panel.reveal()` to handle cases where the panel appears 
 1. **Enable Debug Mode**:
    ```javascript
    // In VS Code Developer Console
-   const config = vscode.workspace.getConfiguration('markdownNavigator');
+   const config = vscode.workspace.getConfiguration('markdownCompass');
    await config.update('enhancedPreview.debugMode', true);
    ```
 
@@ -111,7 +111,7 @@ Added try-catch around `panel.reveal()` to handle cases where the panel appears 
 
 To monitor the fix working:
 
-1. **Enable Debug Mode**: Use the `markdown-navigator.toggleEnhancedPreviewDebug` command
+1. **Enable Debug Mode**: Use the `markdown-compass.toggleEnhancedPreviewDebug` command
 2. **Check Developer Console**: Help > Toggle Developer Tools > Console tab
 3. **Look for Debug Messages**: Search for `[Enhanced Preview]` messages
 

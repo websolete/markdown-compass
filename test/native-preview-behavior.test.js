@@ -23,11 +23,11 @@ function getExtension() {
 }
 
 async function describePreviewRoute(request) {
-    return vscode.commands.executeCommand('markdown-navigator.__test.describePreviewRoute', request);
+    return vscode.commands.executeCommand('markdown-compass.__test.describePreviewRoute', request);
 }
 
 async function getPreviewTrackingState() {
-    return vscode.commands.executeCommand('markdown-navigator.__test.getPreviewTrackingState');
+    return vscode.commands.executeCommand('markdown-compass.__test.getPreviewTrackingState');
 }
 
 async function waitFor(resolveValue, options = {}) {
@@ -49,7 +49,7 @@ async function waitFor(resolveValue, options = {}) {
 }
 
 async function createFixtureSet() {
-    const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'markdown-navigator-native-preview-'));
+    const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'markdown-compass-native-preview-'));
     const sourcePath = path.join(fixtureRoot, 'native-preview-source.md');
     const targetPath = path.join(fixtureRoot, 'native-preview-target.md');
 
@@ -203,7 +203,7 @@ describe('Native Preview Behavior Validation', function() {
 
         try {
             await closeAllEditors();
-            await vscode.commands.executeCommand('markdown-navigator.previewMarkdownFile', { uri: fixtures.sourceUri });
+            await vscode.commands.executeCommand('markdown-compass.previewMarkdownFile', { uri: fixtures.sourceUri });
 
             const activePreviewTab = await waitFor(
                 () => getActivePreviewTab(),
@@ -225,7 +225,7 @@ describe('Native Preview Behavior Validation', function() {
         try {
             await closeAllEditors();
 
-            await vscode.commands.executeCommand('markdown-navigator.previewMarkdownFile', { uri: fixtures.sourceUri });
+            await vscode.commands.executeCommand('markdown-compass.previewMarkdownFile', { uri: fixtures.sourceUri });
             await waitFor(
                 () => {
                     const tab = getActivePreviewTab();
@@ -234,7 +234,7 @@ describe('Native Preview Behavior Validation', function() {
                 { description: 'initial source preview tab before opening a new preview tab' }
             );
 
-            await vscode.commands.executeCommand('markdown-navigator.previewMarkdownFileInNewTab', { uri: fixtures.targetUri });
+            await vscode.commands.executeCommand('markdown-compass.previewMarkdownFileInNewTab', { uri: fixtures.targetUri });
 
             const previewTabs = await waitFor(
                 () => {
@@ -322,7 +322,7 @@ describe('Native Preview Behavior Validation', function() {
         try {
             await closeAllEditors();
 
-            await vscode.commands.executeCommand('markdown-navigator.previewMarkdownFile', { uri: fixtures.sourceUri });
+            await vscode.commands.executeCommand('markdown-compass.previewMarkdownFile', { uri: fixtures.sourceUri });
             await waitFor(
                 () => {
                     const tab = getActivePreviewTab();
@@ -331,7 +331,7 @@ describe('Native Preview Behavior Validation', function() {
                 { description: 'initial source preview tab before tree switch' }
             );
 
-            await vscode.commands.executeCommand('markdown-navigator.previewMarkdownFile', { uri: fixtures.targetUri });
+            await vscode.commands.executeCommand('markdown-compass.previewMarkdownFile', { uri: fixtures.targetUri });
             await waitFor(
                 () => {
                     const tab = getActivePreviewTab();
@@ -362,8 +362,8 @@ describe('Native Preview Behavior Validation', function() {
 
         try {
             await closeAllEditors();
-            await vscode.commands.executeCommand('markdown-navigator.refresh');
-            await vscode.commands.executeCommand('markdown-navigator.addToFavorites', favoriteNode);
+            await vscode.commands.executeCommand('markdown-compass.refresh');
+            await vscode.commands.executeCommand('markdown-compass.addToFavorites', favoriteNode);
 
             await vscode.commands.executeCommand('markdown.showPreview', fixtures.sourceUri);
             await waitFor(
@@ -400,7 +400,7 @@ describe('Native Preview Behavior Validation', function() {
             assert.strictEqual(syncedState.activePreviewUri, fixtures.targetUri.toString(), 'Active preview tracking should follow the linked markdown target');
             assert.strictEqual(syncedState.lastFavoriteSyncTargetUri, fixtures.targetUri.toString(), 'Favorites sync should target the linked markdown document');
         } finally {
-            await vscode.commands.executeCommand('markdown-navigator.removeFromFavorites', favoriteNode);
+            await vscode.commands.executeCommand('markdown-compass.removeFromFavorites', favoriteNode);
             await disposeFixtureSet(fixtures);
         }
     });
@@ -461,7 +461,7 @@ describe('Native Preview Behavior Validation', function() {
                 'Native header routing should target the expected fragment URI before goToHeader executes'
             );
 
-            await vscode.commands.executeCommand('markdown-navigator.previewMarkdownFile', { uri: fixtures.sourceUri });
+            await vscode.commands.executeCommand('markdown-compass.previewMarkdownFile', { uri: fixtures.sourceUri });
 
             await waitFor(
                 () => {
@@ -471,7 +471,7 @@ describe('Native Preview Behavior Validation', function() {
                 { description: 'native preview tab before goToHeader' }
             );
 
-            await vscode.commands.executeCommand('markdown-navigator.goToHeader', 9);
+            await vscode.commands.executeCommand('markdown-compass.goToHeader', 9);
 
             const activePreviewTab = await waitFor(
                 () => {

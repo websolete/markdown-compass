@@ -1,10 +1,10 @@
-.markdown-navigator-broken-link {
+.markdown-compass-broken-link {
     color: var(--vscode-descriptionForeground);
     cursor: default;
     text-decoration: underline dotted;
     text-decoration-color: var(--vscode-editorWarning-foreground);
 }
 
-.markdown-navigator-broken-link code {
+.markdown-compass-broken-link code {
     color: inherit;
 }

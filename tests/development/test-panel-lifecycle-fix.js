@@ -57,7 +57,7 @@ Different content structure.`;
 
         // Step 1: Open first enhanced preview
         console.log('\n1. Opening first enhanced preview...');
-        await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview', testFile1Uri);
+        await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview', testFile1Uri);
         console.log('✓ First enhanced preview opened');
 
         // Wait for user to manually close the panel
@@ -74,7 +74,7 @@ Different content structure.`;
 
         // Step 3: Try to open second enhanced preview (this should work now with the fix)
         console.log('\n3. Opening second enhanced preview (testing fix)...');
-        await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview', testFile2Uri);
+        await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview', testFile2Uri);
         console.log('✓ Second enhanced preview command executed');
 
         // Step 4: Verify content renders
@@ -98,7 +98,7 @@ Different content structure.`;
         for (let i = 1; i <= 3; i++) {
             console.log(`\n   Cycle ${i}: Opening enhanced preview...`);
 
-            await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview',
+            await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview',
                 i % 2 === 1 ? testFile1Uri : testFile2Uri);
 
             const cycleResult = await vscode.window.showInformationMessage(

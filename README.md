@@ -79,7 +79,7 @@ No special requirements or dependencies. Markdown Compass uses VS Code's built-i
 
 Markdown Compass contributes one native-preview safety setting:
 
-- `markdownNavigator.safeLinkSuppression.enabled` (default: `true`) renders definitively broken local Markdown file links and broken cross-file Markdown heading fragments as inert styled text in VS Code's native Markdown preview.
+- `markdownCompass.safeLinkSuppression.enabled` (default: `true`) renders definitively broken local Markdown file links and broken cross-file Markdown heading fragments as inert styled text in VS Code's native Markdown preview.
 
 Anchor-only links, valid local links, external URLs, and local non-Markdown fragments that cannot be validated are left unchanged.
 

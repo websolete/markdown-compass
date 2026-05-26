@@ -25,7 +25,7 @@ describe('Favorites Provider Smoke Tests', function() {
     this.timeout(30000);
 
     it('adds, persists, reloads, and removes favorites without errors', async function() {
-        const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'markdown-navigator-favorites-'));
+        const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'markdown-compass-favorites-'));
         const markdownPath = path.join(tempDirectory, 'favorite.md');
         const storage = new Map();
         const node = {
@@ -51,7 +51,7 @@ describe('Favorites Provider Smoke Tests', function() {
                 'Favorite Title',
                 'Favorite should capture the first-level header from the markdown file'
             );
-            assert.strictEqual(storage.get('markdownNavigator.favorites').length, 1, 'Favorite should persist to global state');
+            assert.strictEqual(storage.get('markdownCompass.favorites').length, 1, 'Favorite should persist to global state');
 
             const reloadedProvider = new FavoritesTreeDataProvider(createContext(storage), {});
             assert.strictEqual(reloadedProvider._favorites.length, 1, 'Persisted favorites should reload into a new provider');
@@ -63,7 +63,7 @@ describe('Favorites Provider Smoke Tests', function() {
 
             await reloadedProvider.removeFromFavorites(node);
             assert.strictEqual(reloadedProvider._favorites.length, 0, 'Favorite should be removed from the provider');
-            assert.strictEqual(storage.get('markdownNavigator.favorites').length, 0, 'Favorite removal should persist to global state');
+            assert.strictEqual(storage.get('markdownCompass.favorites').length, 0, 'Favorite removal should persist to global state');
         } finally {
             vscode.window.showInformationMessage = originalShowInformationMessage;
             vscode.window.showWarningMessage = originalShowWarningMessage;

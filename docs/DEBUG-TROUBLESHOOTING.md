@@ -25,7 +25,7 @@ The extension includes static validation scripts that can be run to verify the i
 Run the static command validation script:
 
 ```bash
-cd /path/to/markdown-navigator
+cd /path/to/markdown-compass
 node tests/development/static-command-validation.js
 ```
 

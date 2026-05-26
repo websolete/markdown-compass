@@ -369,7 +369,7 @@ class MarkdownNode {
 }
 
 /**
- * TreeDataProvider for the Markdown Navigator sidebar
+ * TreeDataProvider for the Markdown Compass sidebar
  * Provides a hierarchical view of directories and Markdown files
  */
 class MarkdownTreeDataProvider {
@@ -933,7 +933,7 @@ class MarkdownTreeDataProvider {
         treeItem.tooltip = tooltip;        if (element.type === 'file' && element.isMarkdownFile) {
             // Using enhanced preview as the default left-click behavior
             treeItem.command = {
-                command: 'markdown-navigator.openEnhancedPreview',
+                command: 'markdown-compass.openEnhancedPreview',
                 title: 'Open Enhanced Preview',
                 arguments: [element]
             };
@@ -1158,7 +1158,7 @@ class MarkdownTreeDataProvider {
             if (!treeView.visible) {
                 console.warn('Tree view is not visible - attempting to make it visible');
                 try {
-                    await vscode.commands.executeCommand('markdownNavigator.focus');
+                    await vscode.commands.executeCommand('markdownCompass.focus');
                 } catch (focusError) {
                     console.log('Could not focus tree view:', focusError.message);
                 }
@@ -1676,7 +1676,7 @@ class MarkdownHeaderViewProvider {
 
         // Command to navigate to header
         treeItem.command = {
-            command: 'markdown-navigator.goToHeader',
+            command: 'markdown-compass.goToHeader',
             title: 'Go to Header',
             arguments: [element.line]
         };
@@ -1756,7 +1756,7 @@ class MarkdownHeaderViewProvider {
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-    console.log('Markdown Navigator extension is being activated');
+    console.log('Markdown Compass extension is being activated');
 
     // Track the last previewed markdown file
     let lastPreviewedMarkdownFile = null;
@@ -1767,7 +1767,7 @@ function activate(context) {
     const favoritesProvider = new FavoritesTreeDataProvider(context, treeDataProvider);
 
     // Register the tree view
-    const treeView = vscode.window.createTreeView('markdownNavigator', {
+    const treeView = vscode.window.createTreeView('markdownCompass', {
         treeDataProvider: treeDataProvider,
         showCollapseAll: true
     });    // Register the header view
@@ -1793,7 +1793,7 @@ function activate(context) {
         const isMarkdownFile = editor && editor.document && editor.document.languageId === 'markdown';
 
         // ALWAYS keep the Current Document view visible
-        vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+        vscode.commands.executeCommand('setContext', 'markdownCompassActiveDocument', true);
 
         if (isMarkdownFile) {
             // Update header view with the active markdown file
@@ -1841,9 +1841,9 @@ function activate(context) {
     );
 
     // Set initial context - ALWAYS show the Current Document view
-    vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+    vscode.commands.executeCommand('setContext', 'markdownCompassActiveDocument', true);
     updateMarkdownContext(vscode.window.activeTextEditor);    // Initialize search context
-    vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);
+    vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', false);
 
     // Create tracking state object for Enhanced Preview Provider
     const trackingState = {
@@ -1858,26 +1858,26 @@ function activate(context) {
     // Make sure every command registered here matches what's defined in package.json
     context.subscriptions.push(
         // Refresh command - Fix the command ID to match package.json
-        vscode.commands.registerCommand('markdown-navigator.refresh', () => {
+        vscode.commands.registerCommand('markdown-compass.refresh', () => {
             treeDataProvider.refresh();
         }),
 
         // Add to favorites
-        vscode.commands.registerCommand('markdown-navigator.addToFavorites', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.addToFavorites', async (node) => {
             if (node && node.uri) {
                 await favoritesProvider.addToFavorites(node);
             }
         }),
 
         // Remove from favorites
-        vscode.commands.registerCommand('markdown-navigator.removeFromFavorites', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.removeFromFavorites', async (node) => {
             if (node && node.uri) {
                 await favoritesProvider.removeFromFavorites(node);
             }
         }),
 
         // Search command - Fix the command ID to match package.json
-        vscode.commands.registerCommand('markdown-navigator.searchMarkdownFiles', async () => {
+        vscode.commands.registerCommand('markdown-compass.searchMarkdownFiles', async () => {
             const query = await vscode.window.showInputBox({
                 placeHolder: 'Search markdown files...',
                 prompt: 'Enter search terms (use spaces to search multiple terms)',
@@ -1886,12 +1886,12 @@ function activate(context) {
 
             if (query !== undefined) {
                 treeDataProvider.setSearchQuery(query);
-                vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', !!query);
+                vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', !!query);
             }
         }),
 
         // Search in sidebar command
-        vscode.commands.registerCommand('markdown-navigator.searchInSidebar', async () => {
+        vscode.commands.registerCommand('markdown-compass.searchInSidebar', async () => {
             const query = await vscode.window.showInputBox({
                 placeHolder: 'Filter files in sidebar...',
                 prompt: 'Enter terms to filter files in sidebar',
@@ -1900,23 +1900,23 @@ function activate(context) {
 
             if (query !== undefined) {
                 treeDataProvider.setSearchQuery(query);
-                vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', !!query);
+                vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', !!query);
             }
         }),
 
         // Clear search command - Single registration only
-        vscode.commands.registerCommand('markdown-navigator.clearSearch', () => {
+        vscode.commands.registerCommand('markdown-compass.clearSearch', () => {
             treeDataProvider.clearSearch();
-            vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);
+            vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', false);
         }),
 
         // Toggle gitignore
-        vscode.commands.registerCommand('markdownNavigator.toggleGitIgnore', () => {
+        vscode.commands.registerCommand('markdownCompass.toggleGitIgnore', () => {
             treeDataProvider.toggleGitIgnoreFiltering();
         }),
 
         // Preview markdown file
-        vscode.commands.registerCommand('markdown-navigator.previewMarkdownFile', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.previewMarkdownFile', async (node) => {
             if (node && node.uri) {
                 try {
                     // Open the markdown file in preview mode
@@ -1926,7 +1926,7 @@ function activate(context) {
                     lastPreviewedMarkdownFile = node.uri;
 
                     // Set context for header view visibility
-                    await vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+                    await vscode.commands.executeCommand('setContext', 'markdownCompassActiveDocument', true);
 
                     // Update header view with the file's headers
                     await headerProvider.updateHeaders(node.uri);
@@ -1941,7 +1941,7 @@ function activate(context) {
                 }
             }
         }),        // Go to header
-        vscode.commands.registerCommand('markdown-navigator.goToHeader', async (lineNumber) => {
+        vscode.commands.registerCommand('markdown-compass.goToHeader', async (lineNumber) => {
             try {
                 if (!headerProvider._currentFile || !lineNumber) {
                     console.warn('No current file or line number for header navigation');
@@ -1967,7 +1967,7 @@ function activate(context) {
                 if (enhancedPreviewProvider && enhancedPreviewProvider.panel && !enhancedPreviewProvider.isDisposed) {
                     console.log('Enhanced Preview is active - using Enhanced Preview navigation');
                     try {
-                        await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreviewAtHeader', headerProvider._currentFile, lineNumber, headerText);
+                        await vscode.commands.executeCommand('markdown-compass.openEnhancedPreviewAtHeader', headerProvider._currentFile, lineNumber, headerText);
                         console.log(`✓ Successfully navigated to header using Enhanced Preview: ${headerText}`);
                         return;
                     } catch (enhancedError) {
@@ -2108,12 +2108,12 @@ function activate(context) {
         }),
 
         // Refresh headers command
-        vscode.commands.registerCommand('markdown-navigator.refreshHeaders', () => {
+        vscode.commands.registerCommand('markdown-compass.refreshHeaders', () => {
             headerProvider.refresh();
         }),
 
         // Copy header link command
-        vscode.commands.registerCommand('markdown-navigator.copyHeaderLink', async (element) => {
+        vscode.commands.registerCommand('markdown-compass.copyHeaderLink', async (element) => {
             if (element && element.text && element.line) {
                 const headerAnchor = generateVSCodeHeaderAnchor(element.text);
                 const link = `#${headerAnchor}`;
@@ -2123,7 +2123,7 @@ function activate(context) {
         }),
 
         // Mark as read command
-        vscode.commands.registerCommand('markdown-navigator.markAsRead', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.markAsRead', async (node) => {
             if (node && node.uri) {
                 node.setReadingStatus(100, true, false);
                 treeDataProvider._saveReadingStatus(node.uri.fsPath, {
@@ -2136,7 +2136,7 @@ function activate(context) {
         }),
 
         // Mark as unread command
-        vscode.commands.registerCommand('markdown-navigator.markAsUnread', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.markAsUnread', async (node) => {
             if (node && node.uri) {
                 node.setReadingStatus(0, false, false);
                 treeDataProvider._saveReadingStatus(node.uri.fsPath, {
@@ -2149,7 +2149,7 @@ function activate(context) {
         }),
 
         // Mark as partial command
-        vscode.commands.registerCommand('markdown-navigator.markAsPartial', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.markAsPartial', async (node) => {
             if (node && node.uri) {
                 node.setReadingStatus(50, false, false);
                 treeDataProvider._saveReadingStatus(node.uri.fsPath, {
@@ -2162,7 +2162,7 @@ function activate(context) {
         }),
 
         // Show workspace stats command
-        vscode.commands.registerCommand('markdown-navigator.showWorkspaceStats', async () => {
+        vscode.commands.registerCommand('markdown-compass.showWorkspaceStats', async () => {
             const stats = await treeDataProvider.getWorkspaceStatistics();
 
             const message = `Markdown Workspace Statistics:
@@ -2183,21 +2183,21 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
         }),
 
         // Open file command
-        vscode.commands.registerCommand('markdown-navigator.openFile', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.openFile', async (node) => {
             if (node && node.uri) {
                 await vscode.window.showTextDocument(node.uri);
             }
         }),
 
         // Open in editor command
-        vscode.commands.registerCommand('markdown-navigator.openInEditor', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.openInEditor', async (node) => {
             if (node && node.uri) {
                 await vscode.window.showTextDocument(node.uri, { preview: false });
             }
         }),
 
         // Copy path command
-        vscode.commands.registerCommand('markdown-navigator.copyPath', async (node) => {
+        vscode.commands.registerCommand('markdown-compass.copyPath', async (node) => {
             if (node && node.uri) {
                 await vscode.env.clipboard.writeText(node.uri.fsPath);
                 vscode.window.showInformationMessage('Path copied to clipboard');
@@ -2205,9 +2205,9 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
         }),
 
         // Select preview theme command
-        vscode.commands.registerCommand('markdown-navigator.selectPreviewTheme', async () => {
+        vscode.commands.registerCommand('markdown-compass.selectPreviewTheme', async () => {
             try {
-                const config = vscode.workspace.getConfiguration('markdownNavigator');
+                const config = vscode.workspace.getConfiguration('markdownCompass');
                 const currentTheme = config.get('previewTheme', 'default');
                 const themeOptions = [
                     { label: 'Academic', description: 'Academic paper style with serif fonts', value: 'academic' },
@@ -2237,7 +2237,7 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
                         if (selectedTheme !== currentTheme) {
                             // Update theme setting
                             await config.update('previewTheme', selectedTheme, vscode.ConfigurationTarget.Global);
-                            console.log(`[Markdown Navigator] Theme changed from ${currentTheme} to ${selectedTheme}`);
+                            console.log(`[Markdown Compass] Theme changed from ${currentTheme} to ${selectedTheme}`);
 
                             // Apply the theme - pass context to applyMarkdownTheme
                             const success = await applyMarkdownTheme(context, selectedTheme);
@@ -2247,7 +2247,7 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
                                 vscode.window.showErrorMessage(`Failed to apply theme: ${selectedItem.label}`);
                             }
                         } else {
-                            console.log(`[Markdown Navigator] Theme selection unchanged: ${currentTheme}`);
+                            console.log(`[Markdown Compass] Theme selection unchanged: ${currentTheme}`);
                         }
                     }
                 });
@@ -2262,7 +2262,7 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
         }),
 
         // Reset markdown styles command (for debugging)
-        vscode.commands.registerCommand('markdown-navigator.resetStyles', async () => {
+        vscode.commands.registerCommand('markdown-compass.resetStyles', async () => {
             try {
                 // Completely reset markdown styles to empty array
                 await vscode.workspace.getConfiguration('markdown').update('styles', [], vscode.ConfigurationTarget.Workspace);
@@ -2276,7 +2276,7 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
                 }
                 
                 vscode.window.showInformationMessage('Markdown styles reset. Select a theme to reapply styling.');
-                console.log('[Markdown Navigator] Styles completely reset');
+                console.log('[Markdown Compass] Styles completely reset');
             } catch (error) {
                 console.error('Error resetting styles:', error);
                 vscode.window.showErrorMessage(`Error resetting styles: ${error.message}`);
@@ -2285,13 +2285,13 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
     );
 
     // Apply theme on activation
-    const config = vscode.workspace.getConfiguration('markdownNavigator');
+    const config = vscode.workspace.getConfiguration('markdownCompass');
     const currentTheme = config.get('previewTheme', 'default');
     if (currentTheme !== 'default') {
         applyMarkdownTheme(context, currentTheme);
     }
 
-    console.log('Markdown Navigator extension activated successfully');
+    console.log('Markdown Compass extension activated successfully');
 }
 
 /**
@@ -2302,16 +2302,16 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
  */
 async function applyMarkdownTheme(context, themeName = null) {
     try {
-        const config = vscode.workspace.getConfiguration('markdownNavigator');
+        const config = vscode.workspace.getConfiguration('markdownCompass');
         const currentTheme = themeName || config.get('previewTheme', 'default');
         const customCssPath = String(config.get('customCssPath', '') || '');
         const enableCfmlHighlighting = config.get('enableCfmlHighlighting', true);
 
-        console.log(`[Markdown Navigator] Applying theme: ${currentTheme}`);
-        console.log(`[Markdown Navigator] Extension path: ${context.extensionPath}`);
+        console.log(`[Markdown Compass] Applying theme: ${currentTheme}`);
+        console.log(`[Markdown Compass] Extension path: ${context.extensionPath}`);
         
         if (customCssPath) {
-            console.log(`[Markdown Navigator] Custom CSS path configured: ${customCssPath}`);
+            console.log(`[Markdown Compass] Custom CSS path configured: ${customCssPath}`);
         }
 
         const fs = require('fs');
@@ -2324,7 +2324,7 @@ async function applyMarkdownTheme(context, themeName = null) {
             if (typeof style === 'string') {
                 // Remove paths that reference our extension or theme files
                 const lowerStyle = style.toLowerCase();
-                return !lowerStyle.includes('markdown-navigator') &&
+                return !lowerStyle.includes('markdown-compass') &&
                     !lowerStyle.includes('cfml-syntax.css') &&
                     !lowerStyle.includes('cfml-enhanced.css') &&
                     !lowerStyle.includes('cfml-enhanced-with-js.css') &&
@@ -2340,12 +2340,12 @@ async function applyMarkdownTheme(context, themeName = null) {
                     !lowerStyle.includes('light-technical.css') &&
                     !lowerStyle.includes('minimal.css') &&
                     !lowerStyle.includes('default.css') &&
-                    !lowerStyle.includes('md-navigator-styles');
+                    !lowerStyle.includes('md-compass-styles');
             }
             return true;
         });
 
-        console.log(`[Markdown Navigator] Removed ${currentStyles.length - filteredStyles.length} previous styles`);
+        console.log(`[Markdown Compass] Removed ${currentStyles.length - filteredStyles.length} previous styles`);
 
         // Start with clean filtered styles
         let styles = [...filteredStyles];
@@ -2358,18 +2358,18 @@ async function applyMarkdownTheme(context, themeName = null) {
             
             if (workspaceFolders && workspaceFolders.length > 0) {
                 // Use the first workspace folder
-                stylesDir = path.join(workspaceFolders[0].uri.fsPath, '.vscode', 'md-navigator-styles');
+                stylesDir = path.join(workspaceFolders[0].uri.fsPath, '.vscode', 'md-compass-styles');
             } else {
                 // Fallback to global storage path (safer than extension path)
                 stylesDir = path.join(context.globalStorageUri.fsPath, 'styles');
             }
             
-            console.log(`[Markdown Navigator] Using styles directory: ${stylesDir}`);
+            console.log(`[Markdown Compass] Using styles directory: ${stylesDir}`);
             
             // Create the directory if it doesn't exist
             if (!fs.existsSync(stylesDir)) {
                 fs.mkdirSync(stylesDir, { recursive: true });
-                console.log(`[Markdown Navigator] Created styles directory: ${stylesDir}`);
+                console.log(`[Markdown Compass] Created styles directory: ${stylesDir}`);
             }
             
             // Copy theme CSS file to the temp directory
@@ -2379,11 +2379,11 @@ async function applyMarkdownTheme(context, themeName = null) {
                 
                 // Construct the source path more safely
                 const extensionStylesDir = path.join(context.extensionPath, 'styles');
-                console.log(`[Markdown Navigator] Extension styles directory: ${extensionStylesDir}`);
+                console.log(`[Markdown Compass] Extension styles directory: ${extensionStylesDir}`);
                 
                 // Verify the styles directory exists
                 if (!fs.existsSync(extensionStylesDir)) {
-                    console.error(`[Markdown Navigator] Extension styles directory not found: ${extensionStylesDir}`);
+                    console.error(`[Markdown Compass] Extension styles directory not found: ${extensionStylesDir}`);
                     throw new Error(`Extension styles directory not found: ${extensionStylesDir}`);
                 }
                 
@@ -2396,19 +2396,19 @@ async function applyMarkdownTheme(context, themeName = null) {
                     
                     // If the theme file doesn't exist, fall back to default.css
                     if (!fs.existsSync(sourceThemePath)) {
-                        console.warn(`[Markdown Navigator] Theme CSS file not found: ${sourceThemePath}, falling back to default.css`);
+                        console.warn(`[Markdown Compass] Theme CSS file not found: ${sourceThemePath}, falling back to default.css`);
                         sourceThemePath = path.join(extensionStylesDir, 'default.css');
                         destThemePath = path.join(stylesDir, 'default.css');
                     }
                 }
                 
-                console.log(`[Markdown Navigator] Copying from: ${sourceThemePath}`);
-                console.log(`[Markdown Navigator] Copying to: ${destThemePath}`);
+                console.log(`[Markdown Compass] Copying from: ${sourceThemePath}`);
+                console.log(`[Markdown Compass] Copying to: ${destThemePath}`);
                 
                 // Copy the theme file
                 if (fs.existsSync(sourceThemePath)) {
                     fs.copyFileSync(sourceThemePath, destThemePath);
-                    console.log(`[Markdown Navigator] Successfully copied theme file`);
+                    console.log(`[Markdown Compass] Successfully copied theme file`);
                     
                     // Add relative path to styles - use relative path to workspace folder
                     if (workspaceFolders && workspaceFolders.length > 0) {
@@ -2416,23 +2416,23 @@ async function applyMarkdownTheme(context, themeName = null) {
                         const relativePath = path.relative(workspaceFolders[0].uri.fsPath, destThemePath);
                         const dotRelativePath = `./${relativePath.replace(/\\/g, '/')}`;
                         styles.push(dotRelativePath);
-                        console.log(`[Markdown Navigator] Added theme CSS with relative path: ${dotRelativePath}`);
+                        console.log(`[Markdown Compass] Added theme CSS with relative path: ${dotRelativePath}`);
                     } else {
                         // Use file URI for better cross-platform compatibility
                         const fileUri = vscode.Uri.file(destThemePath).toString();
                         styles.push(fileUri);
-                        console.log(`[Markdown Navigator] Added theme CSS with file URI: ${fileUri}`);
+                        console.log(`[Markdown Compass] Added theme CSS with file URI: ${fileUri}`);
                     }
                 } else {
-                    console.error(`[Markdown Navigator] Source CSS file not found: ${sourceThemePath}`);
-                    vscode.window.showErrorMessage('Markdown Navigator: Theme CSS files are missing. Please reinstall the extension.');
+                    console.error(`[Markdown Compass] Source CSS file not found: ${sourceThemePath}`);
+                    vscode.window.showErrorMessage('Markdown Compass: Theme CSS files are missing. Please reinstall the extension.');
                     return false;
                 }
             }
 
             // Handle CFML syntax highlighting
             if (enableCfmlHighlighting) {
-                console.log(`[Markdown Navigator] CFML highlighting is enabled`);
+                console.log(`[Markdown Compass] CFML highlighting is enabled`);
                 
                 // Create a comprehensive CSS-only approach that doesn't rely on JavaScript
                 const cfmlCssContent = `
@@ -2712,30 +2712,30 @@ pre > code::before {
                 // Write the enhanced CSS file
                 const cfmlCssPath = path.join(stylesDir, 'cfml-enhanced.css');
                 fs.writeFileSync(cfmlCssPath, cfmlCssContent);
-                console.log(`[Markdown Navigator] Created enhanced code block CSS`);
+                console.log(`[Markdown Compass] Created enhanced code block CSS`);
                 
                 // Add to styles
                 if (workspaceFolders && workspaceFolders.length > 0) {
                     const relativePath = path.relative(workspaceFolders[0].uri.fsPath, cfmlCssPath);
                     const dotRelativePath = `./${relativePath.replace(/\\/g, '/')}`;
                     styles.push(dotRelativePath);
-                    console.log(`[Markdown Navigator] Added CFML enhanced CSS: ${dotRelativePath}`);
+                    console.log(`[Markdown Compass] Added CFML enhanced CSS: ${dotRelativePath}`);
                 } else {
                     const fileUri = vscode.Uri.file(cfmlCssPath).toString();
                     styles.push(fileUri);
-                    console.log(`[Markdown Navigator] Added CFML enhanced CSS: ${fileUri}`);
+                    console.log(`[Markdown Compass] Added CFML enhanced CSS: ${fileUri}`);
                 }
             } else {
-                console.log(`[Markdown Navigator] CFML highlighting is disabled`);
+                console.log(`[Markdown Compass] CFML highlighting is disabled`);
             }
         } catch (copyError) {
-            console.error(`[Markdown Navigator] Error copying CSS files: ${copyError.message}`);
-            console.error(`[Markdown Navigator] Error stack: ${copyError.stack}`);
+            console.error(`[Markdown Compass] Error copying CSS files: ${copyError.message}`);
+            console.error(`[Markdown Compass] Error stack: ${copyError.stack}`);
             vscode.window.showErrorMessage(`Error setting up styles: ${copyError.message}`);
             return false;
         }
 
-        console.log(`[Markdown Navigator] Final styles array has ${styles.length} items:`, styles);
+        console.log(`[Markdown Compass] Final styles array has ${styles.length} items:`, styles);
 
         // Update the styles configuration (use Workspace target for better isolation)
         await vscode.workspace.getConfiguration('markdown').update('styles', styles, vscode.ConfigurationTarget.Workspace);
@@ -2746,21 +2746,21 @@ pre > code::before {
         // Force refresh all markdown previews
         try {
             await vscode.commands.executeCommand('markdown.preview.refresh');
-            console.log(`[Markdown Navigator] Refreshed markdown previews`);
+            console.log(`[Markdown Compass] Refreshed markdown previews`);
         } catch (refreshError) {
-            console.log(`[Markdown Navigator] Preview refresh failed: ${refreshError.message}`);
+            console.log(`[Markdown Compass] Preview refresh failed: ${refreshError.message}`);
             try {
                 await vscode.commands.executeCommand('workbench.action.webview.reloadWebviewAction');
-                console.log(`[Markdown Navigator] Alternative refresh successful`);
+                console.log(`[Markdown Compass] Alternative refresh successful`);
             } catch (altError) {
-                console.log(`[Markdown Navigator] Alternative refresh also failed: ${altError.message}`);
+                console.log(`[Markdown Compass] Alternative refresh also failed: ${altError.message}`);
             }
         }
 
         return true;
     } catch (error) {
-        console.error('[Markdown Navigator] Error applying markdown theme:', error);
-        console.error('[Markdown Navigator] Error stack:', error.stack);
+        console.error('[Markdown Compass] Error applying markdown theme:', error);
+        console.error('[Markdown Compass] Error stack:', error.stack);
         vscode.window.showErrorMessage(`Error applying theme: ${error.message}`);
         return false;
     }

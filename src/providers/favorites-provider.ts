@@ -9,7 +9,7 @@ const vscode = require('vscode');
  * TreeDataProvider for the Favorites view
  */
 class FavoritesTreeDataProvider {
-    constructor(context, mainTreeProvider, previewCommand = 'markdown-navigator.previewMarkdownFile') {
+    constructor(context, mainTreeProvider, previewCommand = 'markdown-compass.previewMarkdownFile') {
         this._context = context;
         this._mainTreeProvider = mainTreeProvider;
         this._previewCommand = previewCommand;
@@ -151,7 +151,7 @@ class FavoritesTreeDataProvider {
      * Load favorites from storage
      */
     _loadFavorites() {
-        const stored = this._context.globalState.get('markdownNavigator.favorites', []);
+        const stored = this._context.globalState.get('markdownCompass.favorites', []);
         return stored.map(item => ({
             label: item.label,
             uri: vscode.Uri.parse(item.uri),
@@ -169,7 +169,7 @@ class FavoritesTreeDataProvider {
             type: item.type,
             firstLevelHeader: item.firstLevelHeader // Include header in storage
         }));
-        this._context.globalState.update('markdownNavigator.favorites', toStore);
+        this._context.globalState.update('markdownCompass.favorites', toStore);
     }
 
     /**

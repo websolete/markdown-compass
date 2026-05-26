@@ -13,7 +13,7 @@ This document tests the Enhanced Preview header integration fix.
 ### Test Steps:
 
 1. **Setup:**
-   - Open VS Code with the Markdown Navigator extension
+   - Open VS Code with the Markdown Compass extension
    - Open a markdown file with multiple headers
    - Ensure the "Current Document" panel is visible in the explorer
 
@@ -60,7 +60,7 @@ Final secondary header for testing.
 
 - `headerProvider.updateHeaders(fileUri)` - Updates header tree view
 - `trackingState.setLastPreviewedFile(fileUri)` - Updates tracking state
-- `vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true)` - Sets VS Code context
+- `vscode.commands.executeCommand('setContext', 'markdownCompassActiveDocument', true)` - Sets VS Code context
 
 ### Verification
 
@@ -72,6 +72,6 @@ Final secondary header for testing.
 - ✅ Header tracking works for both standard and enhanced preview
 
 **Debug Information:**
-- Enhanced Preview debug mode can be enabled via command palette: "Markdown Navigator: Toggle Enhanced Preview Debug"
+- Enhanced Preview debug mode can be enabled via command palette: "Markdown Compass: Toggle Enhanced Preview Debug"
 - Debug output will show header tracking integration status
 - Console logs show header update operations

@@ -1,4 +1,4 @@
-# Markdown Navigator Resuscitation Project
+# Markdown Compass Resuscitation Project
 
 *Last Updated: September 6, 2025*
 
@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-This document serves as a living guide for the resuscitation of the Markdown Navigator VS Code extension. After a hiatus of several months, we're revisiting this project with the knowledge and experience gained from working on the Copirate extension.
+This document serves as a living guide for the resuscitation of the Markdown Compass VS Code extension. After a hiatus of several months, we're revisiting this project with the knowledge and experience gained from working on the Copirate extension.
 
 ## Project Setup
 
@@ -30,7 +30,7 @@ Key documentation in this repository:
 
 ### Extension Purpose
 
-The Markdown Navigator extension provides enhanced functionality for navigating, organizing, and previewing Markdown files in a VS Code workspace. Key features include:
+The Markdown Compass extension provides enhanced functionality for navigating, organizing, and previewing Markdown files in a VS Code workspace. Key features include:
 
 1. **Navigation Tree** - Hierarchical display of markdown files in the workspace
 2. **Document Headers View** - Tree view of headers within the current document
@@ -150,7 +150,7 @@ The active preview path is native-only:
 
 ### Learning from Copirate
 
-After reviewing the Copirate extension and our current Markdown Navigator code, we can leverage several patterns and approaches:
+After reviewing the Copirate extension and our current Markdown Compass code, we can leverage several patterns and approaches:
 
 1. **Modular Architecture**
    - Service-based design with clear separation of concerns
@@ -301,9 +301,9 @@ After reviewing the Copirate extension and our current Markdown Navigator code, 
    - Validate TypeScript configuration
    - Test with different workspace configurations
 
-## Architecture Comparison: Copirate vs. Markdown Navigator
+## Architecture Comparison: Copirate vs. Markdown Compass
 
-Understanding the architectural differences between Copirate and Markdown Navigator helps guide our migration strategy.
+Understanding the architectural differences between Copirate and Markdown Compass helps guide our migration strategy.
 
 ### Copirate Architecture
 
@@ -334,9 +334,9 @@ Copirate uses a modern, modular architecture with:
    - Responsive design patterns
    - Accessibility considerations
 
-### Markdown Navigator Architecture
+### Markdown Compass Architecture
 
-Markdown Navigator currently uses:
+Markdown Compass currently uses:
 
 1. **Monolithic Design**
    - Large files with multiple responsibilities

@@ -11,7 +11,7 @@ async function runPanelLifecycleTest() {
 
     try {
         // Test 1: Get the extension
-        const extension = vscode.extensions.getExtension('your-publisher.markdown-navigator');
+        const extension = vscode.extensions.getExtension('your-publisher.markdown-compass');
         if (!extension) {
             throw new Error('Extension not found - make sure it\'s installed and active');
         }
@@ -50,7 +50,7 @@ async function runPanelLifecycleTest() {
         console.log('🔄 Testing panel lifecycle...');
 
         // First panel open
-        await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview');
+        await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview');
         console.log('✅ First Enhanced Preview command executed');
 
         // Wait a moment for panel to initialize
@@ -75,7 +75,7 @@ async function runPanelLifecycleTest() {
 
             // Try to open again (this is where the bug occurred)
             console.log('🔄 Opening Enhanced Preview again (critical test)...');
-            await vscode.commands.executeCommand('markdown-navigator.openEnhancedPreview');
+            await vscode.commands.executeCommand('markdown-compass.openEnhancedPreview');
 
             // Wait for panel recreation
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -149,7 +149,7 @@ if (typeof module !== 'undefined' && module.exports) {
 /**
  * Manual Testing Instructions:
  *
- * 1. Open VS Code with the Markdown Navigator extension in development mode
+ * 1. Open VS Code with the Markdown Compass extension in development mode
  * 2. Open the Command Palette (Ctrl+Shift+P)
  * 3. Run "Developer: Execute JavaScript in Terminal"
  * 4. Paste and execute this test script

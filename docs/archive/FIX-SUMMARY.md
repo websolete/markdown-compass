@@ -66,7 +66,7 @@ To monitor the fix:
 
 1. **Enable Debug Mode**:
    ```javascript
-   const config = vscode.workspace.getConfiguration('markdownNavigator');
+   const config = vscode.workspace.getConfiguration('markdownCompass');
    await config.update('enhancedPreview.debugMode', true);
    ```
 

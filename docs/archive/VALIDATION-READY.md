@@ -71,8 +71,8 @@ The Enhanced Preview panel lifecycle fix has been successfully implemented and i
 ### 🔍 Debug Monitoring (Optional)
 
 To enable debug mode for detailed logging:
-1. Command Palette → "Markdown Navigator: Toggle Enhanced Preview Debug"
-2. Watch Output panel (View → Output → Markdown Navigator)
+1. Command Palette → "Markdown Compass: Toggle Enhanced Preview Debug"
+2. Watch Output panel (View → Output → Markdown Compass)
 3. Look for state tracking messages during panel operations
 
 ### 📁 Files Modified

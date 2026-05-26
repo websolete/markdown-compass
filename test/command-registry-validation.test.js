@@ -8,12 +8,12 @@ const EXTENSION_LOOKUP_IDS = [
     `${String(packageJson.publisher).toLowerCase()}.${packageJson.name}`
 ];
 const releaseGateCommands = [
-    'markdown-navigator.refresh',
-    'markdown-navigator.refreshHeaders',
-    'markdown-navigator.previewMarkdownFile',
-    'markdown-navigator.previewMarkdownFileInNewTab',
-    'markdown-navigator.addToFavorites',
-    'markdown-navigator.removeFromFavorites'
+    'markdown-compass.refresh',
+    'markdown-compass.refreshHeaders',
+    'markdown-compass.previewMarkdownFile',
+    'markdown-compass.previewMarkdownFileInNewTab',
+    'markdown-compass.addToFavorites',
+    'markdown-compass.removeFromFavorites'
 ];
 
 function getExtension() {
@@ -64,8 +64,8 @@ describe('Command Registry Validation Tests', function() {
 
     it('executes tree-view-critical refresh commands without errors', async function() {
         try {
-            await vscode.commands.executeCommand('markdown-navigator.refresh');
-            await vscode.commands.executeCommand('markdown-navigator.refreshHeaders');
+            await vscode.commands.executeCommand('markdown-compass.refresh');
+            await vscode.commands.executeCommand('markdown-compass.refreshHeaders');
             assert.ok(true, 'Tree-view refresh commands executed successfully');
         } catch (error) {
             assert.fail(`Tree-view refresh commands failed: ${error.message}`);

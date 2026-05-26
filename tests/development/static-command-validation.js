@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 
-console.log('=== Markdown Navigator Command Registry Validation ===');
+console.log('=== Markdown Compass Command Registry Validation ===');
 
 try {
     const extensionDir = path.join(__dirname, '..', '..');
@@ -17,8 +17,8 @@ try {
     const packageJsonPath = path.join(extensionDir, 'package.json');
 
     const requiredCommands = [
-        'markdown-navigator.openEnhancedPreview',
-        'markdown-navigator.toggleEnhancedPreviewDebug'
+        'markdown-compass.openEnhancedPreview',
+        'markdown-compass.toggleEnhancedPreviewDebug'
     ];
 
     let validationResults = {
@@ -68,7 +68,7 @@ try {
         `toggleDebugMode method ${hasToggleMethod ? 'is' : 'is NOT'} implemented in EnhancedPreviewProvider`
     );
 
-    const correctTreeItemPattern = /treeItem\.command\s*=\s*\{\s*command\s*:\s*['"]markdown-navigator\.openEnhancedPreview['"]/;
+    const correctTreeItemPattern = /treeItem\.command\s*=\s*\{\s*command\s*:\s*['"]markdown-compass\.openEnhancedPreview['"]/;
     const hasCorrectTreeItem = correctTreeItemPattern.test(extensionJs);
 
     recordResult(
