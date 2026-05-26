@@ -1,5 +1,5 @@
 {
-    "name": "markdown-navigator",
+    "name": "markdown-navigator-hub",
     "displayName": "Markdown Navigator",
     "description": "Navigate, preview, and organize all Markdown files in your workspace from a structured sidebar with header navigation, favorites, and safe-link suppression",
     "version": "1.7.0",
