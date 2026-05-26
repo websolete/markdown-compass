@@ -1,6 +1,6 @@
 {
-    "name": "markdown-navigator-hub",
-    "displayName": "Markdown Navigator",
+    "name": "markdown-compass",
+    "displayName": "Markdown Compass",
     "description": "Navigate, preview, and organize all Markdown files in your workspace from a structured sidebar with header navigation, favorites, and safe-link suppression",
     "version": "1.7.0",
     "publisher": "EdgeInformation",
@@ -52,7 +52,7 @@
             "activitybar": [
                 {
                     "id": "markdown-navigator",
-                    "title": "Markdown Navigator",
+                    "title": "Markdown Compass",
                     "icon": "./icons/m-compass-clean.svg"
                 }
             ]
@@ -223,13 +223,13 @@
             }
         ],
         "configuration": {
-            "title": "Markdown Navigator",
+            "title": "Markdown Compass",
             "properties": {
                 "markdownNavigator.safeLinkSuppression.enabled": {
                     "type": "boolean",
                     "default": true,
                     "scope": "resource",
-                    "markdownDescription": "Render definitively broken local Markdown file and heading links as inert text in VS Code's native preview. This affects all native Markdown previews while Markdown Navigator is active and does not repair the source document."
+                    "markdownDescription": "Render definitively broken local Markdown file and heading links as inert text in VS Code's native preview. This affects all native Markdown previews while Markdown Compass is active and does not repair the source document."
                 }
             }
         },

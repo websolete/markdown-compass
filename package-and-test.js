@@ -82,7 +82,7 @@ function parseArgs() {
 // Show help message
 function showHelp() {
     console.log(`
-${colors.cyan}Markdown Navigator Extension Package & Test Script${colors.reset}
+${colors.cyan}Markdown Compass Extension Package & Test Script${colors.reset}
 
 ${colors.green}Usage:${colors.reset} node package-and-test.js [OPTIONS]
 
@@ -378,7 +378,7 @@ async function main() {
         return;
     }
     
-    log.header('🚀 Markdown Navigator Extension Builder');
+    log.header('🚀 Markdown Compass Extension Builder');
     log.header('=======================================');
     console.log();
     

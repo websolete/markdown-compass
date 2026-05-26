@@ -1,7 +1,7 @@
 // @ts-nocheck
 export {};
 /**
- * Favorites functionality for Markdown Navigator
+ * Favorites functionality for Markdown Compass
  */
 const vscode = require('vscode');
 

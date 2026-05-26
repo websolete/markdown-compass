@@ -331,7 +331,7 @@ class MarkdownNode {
 }
 
 /**
- * TreeDataProvider for the Markdown Navigator sidebar
+ * TreeDataProvider for the Markdown Compass sidebar
  * Provides a hierarchical view of directories and Markdown files
  */
 class MarkdownTreeDataProvider {
@@ -1810,7 +1810,7 @@ class MarkdownHeaderViewProvider {
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-    console.log('Markdown Navigator extension is being activated');
+    console.log('Markdown Compass extension is being activated');
 
     // Track the last previewed markdown file
     let lastPreviewedMarkdownFile = null;
@@ -2353,7 +2353,7 @@ ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.small
         })
     );
 
-    console.log('Markdown Navigator extension activated successfully');
+    console.log('Markdown Compass extension activated successfully');
 }
 
 /**

@@ -1,18 +1,18 @@
-# Markdown Navigator
+# Markdown Compass
 
 Turn your codebase into a focused documentation hub by surfacing only its Markdown documents in a dedicated, navigable sidebar.
 
-When your workspace is full of Markdown files — whether that's code-adjacent `README.md` and `SPEC.md` files scattered across your project, or a growing library of documentation artifacts from AI-assisted workflows — finding and reading the right file gets tedious fast. Markdown Navigator solves that by turning every `.md` file in your workspace into a structured, navigable sidebar so you spend less time hunting and more time reading.
+When your workspace is full of Markdown files — whether that's code-adjacent `README.md` and `SPEC.md` files scattered across your project, or a growing library of documentation artifacts from AI-assisted workflows — finding and reading the right file gets tedious fast. Markdown Compass solves that by turning every `.md` file in your workspace into a structured, navigable sidebar so you spend less time hunting and more time reading.
 
-![Markdown Navigator preview](images/preview.png)
+![Markdown Compass preview](images/preview.png)
 
 ## Who is this for?
 
 #### **Developers who document in code**
-If you keep `README.md`, `ARCHITECTURE.md`, or other notes alongside your source files, Markdown Navigator surfaces all of them in a single focused tree that mirrors your project structure — without cluttering your file explorer with non-documentation noise.
+If you keep `README.md`, `ARCHITECTURE.md`, or other notes alongside your source files, Markdown Compass surfaces all of them in a single focused tree that mirrors your project structure — without cluttering your file explorer with non-documentation noise.
 
 #### **Documentation artifacts from AI-assisted workflows**
-Modern AI collaborations produce a lot of Markdown: planning docs, session summaries, work orders, research artifacts. Markdown Navigator makes that output useful instead of overwhelming — you can browse, search, and preview all of it from the sidebar without opening a file just to check what it covers.
+Modern AI collaborations produce a lot of Markdown: planning docs, session summaries, work orders, research artifacts. Markdown Compass makes that output useful instead of overwhelming — you can browse, search, and preview all of it from the sidebar without opening a file just to check what it covers.
 
 #### **Anyone who treats Markdown as a first-class project resource**
 If you reach for `.md` files as your primary documentation format, this extension gives them the same respect your source code gets.
@@ -36,7 +36,7 @@ If you reach for `.md` files as your primary documentation format, this extensio
 
 ## Usage
 
-1. Click on the Markdown Navigator icon in the activity bar (sidebar)
+1. Click on the Markdown Compass icon in the activity bar (sidebar)
 2. Browse through the "Markdown Files" tree to find markdown files
 3. Click once on a markdown file to open it in VS Code's native markdown preview
 4. The "Current Document" panel will automatically display the header structure of the previewed file
@@ -73,11 +73,11 @@ If automatic scrolling fails, the extension will provide the heading text and se
 
 ## Requirements
 
-No special requirements or dependencies. Markdown Navigator uses VS Code's built-in Markdown preview — no external tools or preview engines to configure.
+No special requirements or dependencies. Markdown Compass uses VS Code's built-in Markdown preview — no external tools or preview engines to configure.
 
 ## Extension Settings
 
-Markdown Navigator contributes one native-preview safety setting:
+Markdown Compass contributes one native-preview safety setting:
 
 - `markdownNavigator.safeLinkSuppression.enabled` (default: `true`) renders definitively broken local Markdown file links and broken cross-file Markdown heading fragments as inert styled text in VS Code's native Markdown preview.
 
@@ -85,7 +85,7 @@ Anchor-only links, valid local links, external URLs, and local non-Markdown frag
 
 ## Almost-native Preview Styling
 
-Markdown Navigator relies on VS Code's built-in markdown preview for rendering and styling.
+Markdown Compass relies on VS Code's built-in markdown preview for rendering and styling.
 
 - The extension adds a small native preview stylesheet so suppressed broken local links render as neutral inert text instead of clickable anchors.
-- The safe-link behavior applies to all native Markdown previews while Markdown Navigator is active.
+- The safe-link behavior applies to all native Markdown previews while Markdown Compass is active.

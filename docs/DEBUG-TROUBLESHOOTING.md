@@ -1,8 +1,8 @@
-# Markdown Navigator Debugging and Troubleshooting Guide
+# Markdown Compass Debugging and Troubleshooting Guide
 
 ## Preview Model
 
-Markdown Navigator now routes preview opens through VS Code's built-in markdown preview only.
+Markdown Compass now routes preview opens through VS Code's built-in markdown preview only.
 
 - There is no extension-owned enhanced preview or preview-specific debug toggle.
 - Preview rendering, tab behavior, and theme application are controlled by VS Code's native markdown preview.

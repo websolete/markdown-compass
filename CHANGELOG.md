@@ -1,11 +1,14 @@
 # Changelog
 
-All notable changes to the "Markdown Navigator" extension will be documented in this file.
+All notable changes to the "Markdown Compass" extension will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+- **Marketplace-facing Name**: Rebranded the visible extension name, activity bar title, and shipped documentation from `Markdown Navigator` to `Markdown Compass` to avoid Marketplace name-confusion rejection while keeping internal command and setting identifiers stable.
 
 ## [1.7.0] - 2026-05-25
 

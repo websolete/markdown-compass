@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Snapshot Script for Markdown Navigator Extension
+ * Snapshot Script for Markdown Compass Extension
  * 
  * Creates a versioned snapshot of ALL core essential files and directories in the /snapshot directory.
  * This includes all files and directories required for a complete build and deployment of the extension.
