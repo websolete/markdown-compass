@@ -1,6 +1,4 @@
-<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <!-- Orange for license files (prefix match) -->
-  <circle cx="8" cy="8" r="5" fill="#f59e0b" stroke="#f59e0b" stroke-width="0.5" opacity="0.9"/>
-  <!-- Subtle inner highlight for depth -->
-  <circle cx="6.5" cy="6.5" r="1.5" fill="rgba(255,255,255,0.3)"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M8 2.85 12 4.65V7.95C12 10.4 10.45 12.4 8 13.35 5.55 12.4 4 10.4 4 7.95V4.65L8 2.85Z" stroke="#CA5010" stroke-width="1.35" stroke-linejoin="round"/>
+  <path d="M6.2 8.1 7.55 9.45 9.95 7.05" stroke="#CA5010" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

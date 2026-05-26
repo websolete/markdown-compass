@@ -1,6 +1,5 @@
-<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <!-- Purple for history files (prefix match) -->
-  <circle cx="8" cy="8" r="5" fill="#8b5cf6" stroke="#8b5cf6" stroke-width="0.5" opacity="0.9"/>
-  <!-- Subtle inner highlight for depth -->
-  <circle cx="6.5" cy="6.5" r="1.5" fill="rgba(255,255,255,0.3)"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="8" cy="8" r="4.35" stroke="#6B69D6" stroke-width="1.35"/>
+  <path d="M8 5.2V8.15L10.15 9.45" stroke="#6B69D6" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M5.1 4.95 3.75 3.6" stroke="#6B69D6" stroke-width="1.35" stroke-linecap="round"/>
 </svg>

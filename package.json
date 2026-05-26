@@ -54,7 +54,7 @@
                 },
                 {
                     "id": "markdownNavigator",
-                    "name": "Documentation Files",
+                    "name": "Markdown Files",
                     "icon": "./icons/markdown.svg"
                 },
                 {
@@ -72,29 +72,19 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "markdown-navigator.openEnhancedPreview",
+                    "command": "markdown-navigator.previewMarkdownFileInNewTab",
                     "when": "view == markdownNavigator && viewItem == markdownFile",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "markdown-navigator.previewMarkdownFileInNewTab",
+                    "when": "view == markdownFavorites && viewItem == markdownFile",
                     "group": "navigation"
                 },
                 {
                     "command": "markdown-navigator.copyHeaderLink",
                     "when": "view == markdownHeaders && viewItem == markdownHeader",
                     "group": "navigation"
-                },
-                {
-                    "command": "markdown-navigator.markAsRead",
-                    "when": "view == markdownNavigator && viewItem == markdownFile",
-                    "group": "status"
-                },
-                {
-                    "command": "markdown-navigator.markAsUnread",
-                    "when": "view == markdownNavigator && viewItem == markdownFile",
-                    "group": "status"
-                },
-                {
-                    "command": "markdown-navigator.markAsPartial",
-                    "when": "view == markdownNavigator && viewItem == markdownFile",
-                    "group": "status"
                 },
                 {
                     "command": "markdown-navigator.addToFavorites",
@@ -161,6 +151,10 @@
                 "title": "Preview Markdown File"
             },
             {
+                "command": "markdown-navigator.previewMarkdownFileInNewTab",
+                "title": "Open Preview in New Tab"
+            },
+            {
                 "command": "markdown-navigator.refreshHeaders",
                 "title": "Refresh Headers",
                 "icon": "$(refresh)"
@@ -189,21 +183,6 @@
                 "icon": "$(clear-all)"
             },
             {
-                "command": "markdown-navigator.markAsRead",
-                "title": "Mark as Read",
-                "icon": "$(check)"
-            },
-            {
-                "command": "markdown-navigator.markAsUnread",
-                "title": "Mark as Unread",
-                "icon": "$(circle-large-outline)"
-            },
-            {
-                "command": "markdown-navigator.markAsPartial",
-                "title": "Mark as 50% Read",
-                "icon": "$(clock)"
-            },
-            {
                 "command": "markdown-navigator.showWorkspaceStats",
                 "title": "Show Workspace Statistics",
                 "icon": "$(graph)"
@@ -229,37 +208,23 @@
                 "command": "markdown-navigator.removeFromFavorites",
                 "title": "Remove from Favorites",
                 "icon": "$(bookmark-remove)"
-            },
-            {
-                "command": "markdown-navigator.openEnhancedPreview",
-                "title": "Open Enhanced Preview",
-                "icon": "$(preview)"
-            },
-            {
-                "command": "markdown-navigator.toggleEnhancedPreviewDebug",
-                "title": "Toggle Enhanced Preview Debug Mode",
-                "icon": "$(debug)"
             }
         ],
         "configuration": {
             "title": "Markdown Navigator",
             "properties": {
-                "markdownNavigator.previewMode": {
-                    "type": "string",
-                    "enum": [
-                        "enhanced",
-                        "native"
-                    ],
-                    "default": "enhanced",
-                    "markdownDescription": "Choose which preview implementation the shared preview-opening path uses. `enhanced` keeps the current webview fallback, while `native` routes through VS Code's built-in markdown preview commands."
-                },
-                "markdownNavigator.enhancedPreview.debugMode": {
+                "markdownNavigator.safeLinkSuppression.enabled": {
                     "type": "boolean",
-                    "default": false,
-                    "description": "Enable debug mode for enhanced preview to display diagnostic information"
+                    "default": true,
+                    "scope": "resource",
+                    "markdownDescription": "Render definitively broken local Markdown file and heading links as inert text in VS Code's native preview. This affects all native Markdown previews while Markdown Navigator is active and does not repair the source document."
                 }
             }
-        }
+        },
+        "markdown.markdownItPlugins": true,
+        "markdown.previewStyles": [
+            "./styles/markdown-safe-links.css"
+        ]
     },
     "scripts": {
         "check-types": "tsc --noEmit",
@@ -278,9 +243,7 @@
         "test": "vscode-test"
     },
     "dependencies": {
-        "ignore": "^5.3.0",
-        "marked": "^15.0.12",
-        "sanitize-html": "^2.17.4"
+        "ignore": "^5.3.0"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
@@ -291,6 +254,7 @@
         "@vscode/vsce": "^3.6.0",
         "esbuild": "^0.25.8",
         "eslint": "^9.25.1",
+        "markdown-it": "^14.2.0",
         "typescript": "^5.9.2"
     }
 }

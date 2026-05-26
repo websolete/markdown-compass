@@ -1,5 +1,7 @@
 # Header Integration Test
 
+> Historical note: This guide documents header integration behavior for the retired enhanced-preview runtime. It is retained as legacy validation context and does not describe the current shipped extension.
+
 This document tests the Enhanced Preview header integration fix.
 
 ## Test Case: Enhanced Preview Header Tracking

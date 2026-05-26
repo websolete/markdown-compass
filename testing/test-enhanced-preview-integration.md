@@ -1,5 +1,7 @@
 # Enhanced Preview Navigation Test Instructions
 
+> Historical note: This guide documents the retired enhanced-preview runtime. It is kept as legacy validation context and does not describe the current shipped extension, which uses VS Code's native markdown preview as the only active rendered surface.
+
 This document contains step-by-step instructions to test the Enhanced Preview navigation functionality.
 
 ## Test Setup

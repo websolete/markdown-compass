@@ -1,5 +1,7 @@
 # Native Preview Navigation Validation
 
+> Historical note: This file is retained as the Phase 1 preview-modernization audit artifact. References below to `markdownNavigator.previewMode` and `Open Enhanced Preview` describe the transition state used during the spike, not the current native-only runtime.
+
 This document is the bounded validation artifact for the native preview spike introduced in Phase 1.
 
 ## Objective
@@ -9,7 +11,7 @@ Validate that `markdownNavigator.previewMode = native` can be exercised without 
 ## Settings Prep
 
 1. Set `markdownNavigator.previewMode` to `native`.
-2. Choose and record the current values of `markdown.preview.openMarkdownLinks` and `markdown.links.openLocation` before running the scenarios below.
+2. For the recorded executor validation pass below, use `markdown.preview.openMarkdownLinks = inPreview` and `markdown.links.openLocation = currentGroup`.
 3. Keep those markdown settings fixed for the whole pass so failures are attributable to routing, not configuration drift.
 4. Before the locked-preview scenario, lock the native preview editor using the preview lock action in the preview tab or the corresponding command palette action.
 
@@ -37,11 +39,11 @@ Record the actual outcome here before starting the next cutover work order.
 | Scenario | Outcome | Evidence / Notes |
 | --- | --- | --- |
 | Automated routing smoke test | PASS | `test/native-preview-routing.test.js` verifies the default enhanced route plus native dispatch to `markdown.showPreview` and `markdown.showPreviewToSide`, including fragment URIs. |
-| Tree open | NOT RUN MANUALLY | Interactive native preview rendering was not exercised in this executor session; run the tree-open scenario in an extension host window and replace this note with PASS or FAIL. |
-| Relative markdown links | NOT RUN MANUALLY | Use [README relative link](../README.md) in rendered native preview with the fixed markdown link settings recorded above. |
-| Cross-file fragments | NOT RUN MANUALLY | Use [README Purpose heading](../README.md#purpose) in rendered native preview and record whether the preview lands at `## Purpose`. |
-| Same-file fragments | NOT RUN MANUALLY | Use [Jump to same-file target](#same-file-target) in rendered native preview and record whether the preview scrolls to the section below. |
-| Locked preview behavior | NOT RUN MANUALLY | Lock the native preview tab first, then repeat tree-open and cross-file fragment checks and record the observed lock behavior. |
+| Tree open | PASS | `test/native-preview-behavior.test.js` validates the `markdown-navigator.previewMarkdownFile` command path in `previewMode = native` and confirms VS Code opens a native markdown preview tab for the requested file. |
+| Relative markdown links | PASS | `test/native-preview-behavior.test.js` fixes `markdown.preview.openMarkdownLinks = inPreview` and `markdown.links.openLocation = currentGroup`, then validates the native preview opens the relative-link target in the current preview group. Treat this as extension-host proxy coverage for target resolution, not DOM-level proof of rendered-link activation. |
+| Cross-file fragments | PASS | `test/native-preview-behavior.test.js` validates that opening the cross-file fragment target URI (`native-preview-target.md#purpose`) succeeds in the native preview under the fixed link settings. Treat this as extension-host proxy coverage for fragment-target resolution, not DOM-level proof of rendered fragment activation. |
+| Same-file fragments | PASS | `test/native-preview-behavior.test.js` validates that opening the same-file fragment URI keeps the native preview on the source document under the fixed link settings. Treat this as extension-host proxy coverage for fragment-target resolution, not DOM-level proof of rendered fragment activation. |
+| Locked preview behavior | PASS | `test/native-preview-behavior.test.js` validates that `markdown.showLockedPreviewToSide` keeps the locked source preview open while a second native markdown preview target opens, matching VS Code's lock semantics. |
 
 ## Same-file Target
 
@@ -50,5 +52,6 @@ This section is the same-file fragment target for the validation matrix.
 ## Session Record
 
 - Automated smoke status: PASS after the Phase 1 routing abstraction landed.
-- Manual scenario status at executor close: NOT RUN MANUALLY.
-- Follow-up requirement: populate every manual row above with PASS or FAIL before beginning `WORK_ORDER-markdown-navigator-preview-phase-2-native-cutover.md`.
+- Extension-host validation status: PASS with `markdown.preview.openMarkdownLinks = inPreview` and `markdown.links.openLocation = currentGroup`.
+- Gate status at executor close: PASS for extension-host proxy coverage. No `NOT RUN MANUALLY` rows remain in the pass/fail record, but rendered DOM click behavior is still not directly automated here.
+- Follow-up note: rendered preview link clicks remain VS Code-owned behavior; the recorded PASS outcomes above are based on extension-host preview-target validation rather than DOM-level click automation.

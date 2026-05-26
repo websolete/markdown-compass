@@ -59,6 +59,29 @@ class FavoritesTreeDataProvider {
             return this._favorites;        }
         return [];
     }
+
+    async findAndRevealTreeItem(targetUri, treeView) {
+        if (!targetUri || !treeView) {
+            return false;
+        }
+
+        const favoriteItem = this._favorites.find((favorite) => favorite.uri.fsPath === targetUri.fsPath);
+        if (!favoriteItem) {
+            return false;
+        }
+
+        try {
+            await treeView.reveal(favoriteItem, {
+                select: true,
+                focus: false,
+                expand: false
+            });
+            return true;
+        } catch (error) {
+            console.error('Error revealing favorite tree item:', error);
+            return false;
+        }
+    }
     
     /**
      * Add a file to favorites

@@ -1,62 +1,24 @@
 # Markdown Navigator Debugging and Troubleshooting Guide
 
-## Debug Tools and Features
+## Preview Model
 
-### Debug Mode for Enhanced Preview
+Markdown Navigator now routes preview opens through VS Code's built-in markdown preview only.
 
-The Markdown Navigator extension includes a powerful debug mode for the Enhanced Preview feature. This helps troubleshoot issues with markdown rendering, theme application, and CFML syntax highlighting.
+- There is no extension-owned enhanced preview or preview-specific debug toggle.
+- Preview rendering, tab behavior, and theme application are controlled by VS Code's native markdown preview.
+- CFML fenced code-block highlighting is handled by `markdown-cfml-syntax`, not by this extension.
+- If you need historical guidance for older releases that still used the retired enhanced preview, see `docs/archive/ENHANCED-PREVIEW-DEBUG.md`.
 
-#### Enabling Debug Mode
+## Useful Checks
 
-1. **Using Command Palette**
-   - Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
-   - Search for "Markdown Navigator: Toggle Enhanced Preview Debug Mode"
-   - Select the command to toggle debug mode on/off
-
-2. **Via Custom Keyboard Shortcut**
-   - Add a custom keyboard shortcut in your VS Code keybindings.json
-   ```json
-   {
-       "key": "ctrl+shift+alt+d",
-       "command": "markdown-navigator.toggleEnhancedPreviewDebug",
-       "when": "editorLangId == 'markdown'"
-   }
-   ```
-
-#### Debug Panel Features
-
-When debug mode is enabled, a panel appears in the bottom-right corner of the Enhanced Preview showing:
-
-- Timestamps for all operations
-- File loading events
-- Markdown parsing information
-- Theme application details
-- CFML syntax highlighting statistics
-- Error messages and stack traces
-
-#### Using Debug Information
-
-The debug panel is particularly helpful for diagnosing:
-
-1. **Theme Loading Issues**
-   - Check if theme CSS files are being correctly located and loaded
-   - Verify theme CSS application order
-
-2. **CFML Syntax Highlighting Problems**
-   - See which pattern matches are being detected
-   - Check for any syntax highlighting errors
-
-3. **Performance Bottlenecks**
-   - Identify slow operations in the preview generation pipeline
-   - Find potential optimization opportunities
-
-4. **Content Processing Errors**
-   - Track the full markdown-to-HTML conversion process
-   - Identify specific stages where problems occur
+1. Open the target file and run `Markdown: Open Preview` to confirm that VS Code's native preview works outside the tree view.
+2. Use `Developer: Toggle Developer Tools` if preview behavior or console errors need inspection.
+3. Review `markdown.preview.openMarkdownLinks` and `markdown.links.openLocation` when link-opening behavior is the issue.
+4. Reload the VS Code window after installing or updating the extension if tree-view preview routing looks stale.
 
 ## Static Validation Tools
 
-The extension includes static validation scripts that can be run to verify the internal consistency of the extension:
+The extension includes static validation scripts that can be run to verify the internal consistency of the extension.
 
 ### Command Registration Validation
 
@@ -77,53 +39,47 @@ This validates:
 
 ### 1. Preview Not Rendering
 
-**Symptoms:** Blank preview or error message shown
+**Symptoms:** Blank preview, the wrong tab opens, or VS Code shows a native markdown preview error.
 
-**Troubleshooting with Debug Mode:**
-1. Enable debug mode using the toggle command
-2. Check for file reading errors in the debug panel
-3. Look for errors in the HTML generation process
-
-**Potential Solutions:**
-- Verify the markdown file is valid and accessible
-- Check workspace permissions
-- Try restarting VS Code
-
-### 2. Theme Not Applied Correctly 
-
-**Symptoms:** Preview uses default styling or incorrect theme
-
-**Troubleshooting with Debug Mode:**
-1. Enable debug mode
-2. Look for theme CSS loading messages
-3. Check for any errors with CSS file access
+**Checks:**
+1. Confirm the file opens with `Markdown: Open Preview` directly from VS Code.
+2. Check Developer Tools for native markdown preview errors.
+3. Verify the markdown file is accessible inside the current workspace.
 
 **Potential Solutions:**
-- Verify theme name in settings matches available themes
-- Check custom CSS path if configured
-- Try refreshing the preview
+- Restart VS Code or reload the window.
+- Confirm the built-in Markdown extension remains enabled.
+- Re-run the extension compile/test checks if you are debugging a local development build.
+
+### 2. Theme Not Applied Correctly
+
+**Symptoms:** Preview colors or typography do not match the active VS Code theme.
+
+**Checks:**
+1. Switch themes in VS Code and confirm whether the native markdown preview updates.
+2. Inspect custom VS Code markdown preview settings that may override defaults.
+
+**Potential Solutions:**
+- Reset conflicting `markdown.preview.*` settings.
+- Test with the default VS Code theme to separate native-preview issues from theme-customization issues.
 
 ### 3. CFML Syntax Highlighting Issues
 
-**Symptoms:** CFML code not highlighted or incorrectly highlighted
+**Symptoms:** CFML fenced code blocks are not highlighted as expected in markdown previews.
 
-**Troubleshooting with Debug Mode:**
-1. Enable debug mode
-2. Look for CFML pattern matching counts
-3. Check for errors in syntax highlighting process
+**Checks:**
+1. Verify the fenced block language is declared correctly, for example `cfml`.
+2. Confirm the `markdown-cfml-syntax` extension is installed and enabled.
 
 **Potential Solutions:**
-- Ensure CFML syntax highlighting is enabled in settings
-- Use proper CFML code fence format (```cfml)
-- Check for conflicting formatting in code blocks
+- Install or re-enable `markdown-cfml-syntax`.
+- Reduce the repro to a minimal fenced block to confirm whether the issue belongs to VS Code preview rendering or the CFML syntax extension.
 
 ## Reporting Issues
 
-When reporting issues, please include:
+When reporting preview problems, include the following so native-preview issues can be reproduced quickly:
 
-1. Debug information from the Enhanced Preview debug panel
-2. Your VS Code version and extension version
-3. Steps to reproduce the issue
-4. Sample markdown file (if possible)
-
-Submit issues to the extension repository on GitHub: [Markdown Navigator Issues](https://github.com/yourusername/markdown-navigator/issues)
+- A minimal markdown sample or repro file
+- The VS Code version in use
+- Relevant `markdown.preview.*` or markdown-link settings
+- Any console errors from `Developer: Toggle Developer Tools`

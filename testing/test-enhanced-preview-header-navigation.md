@@ -1,5 +1,7 @@
 # Enhanced Preview Header Navigation Fix - Testing Guide
 
+> Historical note: This guide documents the retired enhanced-preview runtime. It is kept as legacy validation context and does not describe the current shipped extension, which uses VS Code's native markdown preview as the only active rendered surface.
+
 ## Overview
 This guide helps verify that the Enhanced Preview header navigation fix is working correctly. The fix addresses issues where clicking headers in the sidebar either scrolled to wrong locations, failed to work on subsequent clicks, or didn't open Enhanced Preview properly.
 

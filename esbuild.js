@@ -1,3 +1,4 @@
+const fs = require('fs');
 const esbuild = require('esbuild');
 
 const production = process.argv.includes('--production');
@@ -24,11 +25,14 @@ const problemMatcherPlugin = {
 };
 
 async function main() {
+  fs.rmSync('dist', { recursive: true, force: true });
+
   const context = await esbuild.context({
     entryPoints: {
       extension: 'src/extension.ts',
-      'providers/enhanced-preview-provider': 'src/providers/enhanced-preview-provider.ts',
       'providers/favorites-provider': 'src/providers/favorites-provider.ts',
+      'services/markdown-preview-link-validator': 'src/services/markdown-preview-link-validator.ts',
+      'services/markdown-safe-preview-plugin': 'src/services/markdown-safe-preview-plugin.ts',
     },
     bundle: true,
     format: 'cjs',

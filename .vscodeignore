@@ -44,3 +44,4 @@ styles/**
 !dist/**
 !icons/**
 !styles/enhanced-preview-webview.css
+!styles/markdown-safe-links.css

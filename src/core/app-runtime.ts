@@ -7,9 +7,8 @@ const path = require('path');
 const ignore = require('ignore');
 const FavoritesTreeDataProviderModule = require('../providers/favorites-provider');
 const FavoritesTreeDataProvider = FavoritesTreeDataProviderModule.default || FavoritesTreeDataProviderModule;
-const EnhancedPreviewProviderModule = require('../providers/enhanced-preview-provider');
-const EnhancedPreviewProvider = EnhancedPreviewProviderModule.default || EnhancedPreviewProviderModule;
 const previewRouting = require('../services/preview-routing');
+const { getSafePreviewRenderDebugState } = require('../services/markdown-safe-preview-plugin');
 const { getExtensionAssetPath } = require('../utils/extension-assets');
 
 function serializePreviewRouteArg(arg) {
@@ -187,11 +186,6 @@ class MarkdownNode {
         this.searchScore = 0;
         this.searchHighlights = [];
         this.headerMatches = []; // For header content matches
-
-        // Reading progress and status
-        this.isModified = false;
-        this.readingProgress = 0; // 0-100 percentage
-        this.hasBeenRead = false;
     }
     /**
    * Detect the type of markdown file based on filename patterns
@@ -277,12 +271,6 @@ class MarkdownNode {
             if (this.lastModified) {
                 tooltip += `\nLast modified: ${this.lastModified.toLocaleDateString()}`;
             }
-
-            // Add reading status information
-            const statusDesc = this.getReadingStatusDescription();
-            if (statusDesc !== 'Unread') {
-                tooltip += `\nStatus: ${statusDesc}`;
-            }
         }
 
         return tooltip;
@@ -306,53 +294,6 @@ class MarkdownNode {
         this.fileSize = metadata.size;
         this.lastModified = metadata.lastModified;
         this.readingTime = metadata.readingTime;
-    }
-
-    /**
-     * Set reading progress and status
-     * @param {number} progress Reading progress (0-100)
-     * @param {boolean} hasBeenRead Whether file has been read
-     * @param {boolean} isModified Whether file has been modified
-     */
-    setReadingStatus(progress = 0, hasBeenRead = false, isModified = false) {
-        this.readingProgress = Math.max(0, Math.min(100, progress));
-        this.hasBeenRead = hasBeenRead;
-        this.isModified = isModified;
-    }
-
-    /**
-     * Get reading status description
-     * @returns {string} Status description for tooltip
-     */
-    getReadingStatusDescription() {
-        if (this.hasBeenRead && this.readingProgress >= 100) {
-            return 'Completed';
-        } else if (this.readingProgress > 0) {
-            return `${this.readingProgress}% read`;
-        } else if (this.isModified) {
-            return 'Modified recently';
-        }
-        return 'Unread';
-    }    /**
-     * Get appropriate status icon based on file state
-     * @returns {object|null} Icon configuration or null for default
-     */    getStatusIcon() {
-        console.log(`DEBUG: getStatusIcon for ${this.label} - readingProgress: ${this.readingProgress}, hasBeenRead: ${this.hasBeenRead}, isModified: ${this.isModified}`);
-
-        if (this.hasBeenRead && this.readingProgress >= 100) {
-            console.log(`DEBUG: Using progress icon for ${this.label} (completed)`);
-            return vscode.Uri.file(getExtensionAssetPath('icons', 'bullets', 'progress.svg'));
-        } else if (this.readingProgress > 0 && this.readingProgress < 100) {
-            // Use a different icon for partially read files (using file-status as indicator)
-            console.log(`DEBUG: Using file-status icon for ${this.label} (${this.readingProgress}% read)`);
-            return vscode.Uri.file(getExtensionAssetPath('icons', 'bullets', 'file-status.svg'));
-        } else if (this.isModified) {
-            console.log(`DEBUG: Using file-status icon for ${this.label} (modified)`);
-            return vscode.Uri.file(getExtensionAssetPath('icons', 'bullets', 'file-status.svg'));
-        }
-
-        console.log(`DEBUG: Using default icon for ${this.label}`);
-        return null; // Use default file type icon
     }
     /**
    * Set search result data for this node
@@ -394,7 +335,7 @@ class MarkdownNode {
  * Provides a hierarchical view of directories and Markdown files
  */
 class MarkdownTreeDataProvider {
-    constructor(context) {
+    constructor() {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         // Enable gitignore filtering by default
@@ -415,50 +356,143 @@ class MarkdownTreeDataProvider {
         this._isInitialLoad = true;
         this._autoExpandedPaths = new Set(); // Track which paths were auto-expanded
         this._firstMarkdownDepth = new Map(); // Cache depth of first markdown file per directory
-
-        // Reading status persistence
-        this._context = context;
-        this._readingStatusStorage = context.globalState;
-    }    /**
-     * Save reading status for a file
-     * @param {string} filePath File path
-     * @param {object} status Reading status object
-     */
-    _saveReadingStatus(filePath, status) {
-        const key = `readingStatus:${filePath}`;
-        this._readingStatusStorage.update(key, status);
-        console.log(`DEBUG: Saved reading status for ${filePath}:`, status);
+        this._treeView = null;
+        this._rootItemsCache = null;
+        this._rootScanPromise = null;
+        this._initialExpandedRootDirectories = new Set();
+        this._rootScanLoadingFrames = ['.', '..', '...'];
+        this._rootScanLoadingFrameIndex = 0;
+        this._rootScanLoadingInterval = null;
+        this._activeRootScanToken = 0;
     }
 
-    /**
-     * Load reading status for a file
-     * @param {string} filePath File path
-     * @returns {object|null} Reading status object or null
-     */
-    _loadReadingStatus(filePath) {
-        const key = `readingStatus:${filePath}`;
-        const status = this._readingStatusStorage.get(key);
-        console.log(`DEBUG: Loaded reading status for ${filePath}:`, status);
-        return status;
+    attachTreeView(treeView) {
+        this._treeView = treeView;
+
+        if (this._rootScanPromise) {
+            this._ensureRootScanLoadingVisible();
+        }
     }
 
-    /**
-     * Clear all saved reading status
-     */
-    _clearReadingStatus() {
-        // Get all keys and remove reading status entries
-        const keys = this._context.globalState.keys();
-        keys.forEach(key => {
-            if (key.startsWith('readingStatus:')) {
-                this._readingStatusStorage.update(key, undefined);
+    _setTreeViewMessage(message) {
+        if (!this._treeView) {
+            return;
+        }
+
+        this._treeView.message = message || undefined;
+    }
+
+    _renderRootScanLoadingMessage() {
+        const suffix = this._rootScanLoadingFrames[this._rootScanLoadingFrameIndex];
+        this._setTreeViewMessage(`Scanning workspace for Markdown documents${suffix}`);
+    }
+
+    _ensureRootScanLoadingVisible() {
+        if (!this._treeView || !this._activeRootScanToken) {
+            return;
+        }
+
+        this._renderRootScanLoadingMessage();
+
+        if (this._rootScanLoadingInterval) {
+            return;
+        }
+
+        // Animate the scan status so long scans do not look stalled.
+        this._rootScanLoadingInterval = setInterval(() => {
+            if (!this._activeRootScanToken) {
+                return;
             }
-        });
+
+            this._rootScanLoadingFrameIndex =
+                (this._rootScanLoadingFrameIndex + 1) % this._rootScanLoadingFrames.length;
+            this._renderRootScanLoadingMessage();
+        }, 400);
+    }
+
+    _beginRootScanLoading() {
+        this._activeRootScanToken += 1;
+        this._rootScanLoadingFrameIndex = 0;
+
+        if (this._rootScanLoadingInterval) {
+            clearInterval(this._rootScanLoadingInterval);
+            this._rootScanLoadingInterval = null;
+        }
+
+        this._ensureRootScanLoadingVisible();
+        return this._activeRootScanToken;
+    }
+
+    _endRootScanLoading(scanToken) {
+        if (scanToken !== this._activeRootScanToken) {
+            return;
+        }
+
+        this._activeRootScanToken = 0;
+        this._rootScanLoadingFrameIndex = 0;
+
+        if (this._rootScanLoadingInterval) {
+            clearInterval(this._rootScanLoadingInterval);
+            this._rootScanLoadingInterval = null;
+        }
+
+        this._setTreeViewMessage(undefined);
+    }
+
+    async _loadRootItems() {
+        if (this._rootScanPromise) {
+            return this._rootScanPromise;
+        }
+
+        const scanToken = this._beginRootScanLoading();
+
+        this._rootScanPromise = (async () => {
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+
+            if (!workspaceFolders || workspaceFolders.length === 0) {
+                this._rootItemsCache = [];
+                this._isInitialLoad = false;
+                return;
+            }
+
+            const rootItems = [];
+            for (const folder of workspaceFolders) {
+                if (await this._containsMarkdownFiles(folder.uri)) {
+                    const folderNode = new MarkdownNode(folder.name, folder.uri, 'directory');
+
+                    const shouldAutoExpand = await this._shouldAutoExpand(folder.uri);
+                    folderNode.collapsibleState = shouldAutoExpand
+                        ? vscode.TreeItemCollapsibleState.Expanded
+                        : vscode.TreeItemCollapsibleState.Collapsed;
+
+                    rootItems.push(folderNode);
+                }
+            }
+
+            if (!this._searchQuery && rootItems.length > 0) {
+                rootItems[0].collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+            }
+
+            this._rootItemsCache = rootItems;
+            this._isInitialLoad = false;
+        })();
+
+        try {
+            await this._rootScanPromise;
+        } finally {
+            this._rootScanPromise = null;
+            this._endRootScanLoading(scanToken);
+            this._onDidChangeTreeData.fire();
+        }
     }
 
     /**
      * Refresh the tree view and clear caches
      */
-    refresh() {
+    refresh(options = {}) {
+        const resetInitialLoad = options.resetInitialLoad !== false;
+        const clearRootCache = options.clearRootCache !== false;
+
         console.log('DEBUG: TreeDataProvider.refresh() called');
         // Clear gitignore cache
         this._gitIgnoreCache.clear();
@@ -466,10 +500,23 @@ class MarkdownTreeDataProvider {
         this._headerCache.clear();
         // Clear search results cache
         this._searchResults.clear();
-        // Reset auto-expansion state on manual refresh
-        this._isInitialLoad = true;
-        this._autoExpandedPaths.clear();
-        this._firstMarkdownDepth.clear();
+
+        if (clearRootCache) {
+            this._rootItemsCache = null;
+            this._rootScanPromise = null;
+
+            if (!this._activeRootScanToken) {
+                this._setTreeViewMessage(undefined);
+            }
+        }
+
+        if (resetInitialLoad) {
+            this._isInitialLoad = true;
+            this._autoExpandedPaths.clear();
+            this._firstMarkdownDepth.clear();
+            this._initialExpandedRootDirectories.clear();
+        }
+
         // Fire event to refresh tree
         this._onDidChangeTreeData.fire();
     }
@@ -491,7 +538,10 @@ class MarkdownTreeDataProvider {
         }
 
         this._searchQuery = query || '';
-        this.refresh();
+        this.refresh({
+            resetInitialLoad: false,
+            clearRootCache: false
+        });
     }
 
     /**
@@ -501,7 +551,10 @@ class MarkdownTreeDataProvider {
         this._searchQuery = '';
         this._expandedPaths.clear();
         this._searchResults.clear();
-        this.refresh();
+        this.refresh({
+            resetInitialLoad: false,
+            clearRootCache: false
+        });
     }
 
     /**
@@ -884,8 +937,7 @@ class MarkdownTreeDataProvider {
         }
 
         // For root workspace folders, always check for auto-expansion
-        const workspaceFolders = vscode.workspace.workspaceFolders || [];
-        const isWorkspaceRoot = workspaceFolders.some(folder => folder.uri.toString() === dirUri.toString());
+        const isWorkspaceRoot = this._isWorkspaceRoot(dirUri);
 
         if (isWorkspaceRoot) {
             // Find the path to the first markdown file
@@ -915,6 +967,11 @@ class MarkdownTreeDataProvider {
         }
 
         return false;
+    }
+
+    _isWorkspaceRoot(dirUri) {
+        const workspaceFolders = vscode.workspace.workspaceFolders || [];
+        return workspaceFolders.some(folder => folder.uri.toString() === dirUri.toString());
     }
 
     /**
@@ -958,13 +1015,12 @@ class MarkdownTreeDataProvider {
                 title: 'Preview Markdown File',
                 arguments: [element]
             };
-            treeItem.contextValue = 'markdownFile';// Use status icon if available, otherwise use file type icon
-            const statusIcon = element.getStatusIcon();
+            treeItem.contextValue = 'markdownFile';
             const fileIcon = element.getFileIcon();
 
-            console.log(`DEBUG: getTreeItem for ${element.label} - statusIcon: ${statusIcon ? 'YES' : 'NO'}, fileIcon: ${fileIcon ? 'YES' : 'NO'}`);
+            console.log(`DEBUG: getTreeItem for ${element.label} - fileIcon: ${fileIcon ? 'YES' : 'NO'}`);
 
-            treeItem.iconPath = statusIcon || fileIcon;
+            treeItem.iconPath = fileIcon;
             treeItem.resourceUri = element.uri; // Add resourceUri for file icons
 
             // Enhanced descriptions for different states
@@ -980,21 +1036,11 @@ class MarkdownTreeDataProvider {
                 } else {
                     description = `Score: ${Math.round(element.searchScore)}`;
                 }
-                // Only use search highlight icon if there's no status icon (preserve read/unread indicators)
-                if (element.searchScore > 75 && !statusIcon) {
+                if (element.searchScore > 75) {
                     treeItem.iconPath = vscode.Uri.file(getExtensionAssetPath('icons', 'bullets', 'search-highlight.svg'));
                 }
             } else if (element.readingTime && element.fileSize) {
-                // Show reading time and status for normal display
-                const statusDesc = element.getReadingStatusDescription();
-                if (statusDesc !== 'Unread') {
-                    description = `${element.readingTime}min • ${statusDesc}`;
-                } else {
-                    description = `${element.readingTime}min read`;
-                }
-            } else if (element.getReadingStatusDescription() !== 'Unread') {
-                // Show status even without reading time metadata
-                description = element.getReadingStatusDescription();
+                description = `${element.readingTime}min read`;
             }
 
             treeItem.description = description;
@@ -1162,7 +1208,7 @@ class MarkdownTreeDataProvider {
      * @param {vscode.TreeView} treeView
      * @returns {Promise<boolean>}
      */
-    async findAndRevealTreeItem(targetUri, treeView) {
+    async findAndRevealTreeItem(targetUri, treeView, options = {}) {
         if (!targetUri || !treeView) {
             console.warn('findAndRevealTreeItem: Missing parameters', {
                 hasTargetUri: !!targetUri,
@@ -1178,8 +1224,10 @@ class MarkdownTreeDataProvider {
             console.log(`Tree view title: ${treeView.title || 'unknown'}`);
             console.log(`Tree view visible: ${treeView.visible}`);
 
-            // Ensure the tree view is ready
-            if (!treeView.visible) {
+            const shouldFocusView = options.focusView === true;
+
+            // Ensure the tree view is ready only when the caller explicitly wants focus.
+            if (shouldFocusView && !treeView.visible) {
                 console.warn('Tree view is not visible - attempting to make it visible');
                 try {
                     await vscode.commands.executeCommand('markdownNavigator.focus');
@@ -1321,25 +1369,12 @@ class MarkdownTreeDataProvider {
                 return [];
             }
 
-            const rootItems = [];
-            for (const folder of workspaceFolders) {
-                // Check if this workspace folder contains markdown files
-                if (await this._containsMarkdownFiles(folder.uri)) {
-                    const folderNode = new MarkdownNode(folder.name, folder.uri, 'directory');
-
-                    // Set collapsible state based on whether it should auto-expand
-                    const shouldAutoExpand = await this._shouldAutoExpand(folder.uri);
-                    folderNode.collapsibleState = shouldAutoExpand
-                        ? vscode.TreeItemCollapsibleState.Expanded
-                        : vscode.TreeItemCollapsibleState.Collapsed;
-
-                    rootItems.push(folderNode);
-                }
+            if (!this._rootItemsCache) {
+                void this._loadRootItems();
+                return [];
             }
 
-            // After first load, disable auto-expansion
-            this._isInitialLoad = false;
-            return rootItems;
+            return this._rootItemsCache;
         }
 
         // For directory elements, return their contents
@@ -1392,12 +1427,6 @@ class MarkdownTreeDataProvider {
                             lastModified: new Date(stats.mtime),
                             readingTime: readingTime
                         });
-
-                        // Restore reading status from storage
-                        const savedStatus = this._loadReadingStatus(childUri.fsPath);
-                        if (savedStatus) {
-                            fileNode.setReadingStatus(savedStatus.progress, savedStatus.hasBeenRead, savedStatus.isModified);
-                        }
                     } catch (error) {
                         // If we can't read the file, just continue without the header and metadata
                         console.warn(`Could not read file ${childUri.fsPath} for header extraction:`, error);
@@ -1433,6 +1462,17 @@ class MarkdownTreeDataProvider {
                 }
                 return a.label.localeCompare(b.label);
             });
+
+            if (this._isWorkspaceRoot(dirUri) && !this._searchQuery) {
+                const rootKey = dirUri.toString();
+                if (!this._initialExpandedRootDirectories.has(rootKey)) {
+                    const firstDirectory = items.find(item => item.type === 'directory');
+                    if (firstDirectory) {
+                        firstDirectory.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+                        this._initialExpandedRootDirectories.add(rootKey);
+                    }
+                }
+            }
 
             return items;
         } catch (error) {
@@ -1495,11 +1535,6 @@ class MarkdownTreeDataProvider {
             totalFiles: 0,
             totalReadingTime: 0,
             fileTypes: {},
-            readStatus: {
-                read: 0,
-                partial: 0,
-                unread: 0
-            },
             averageFileSize: 0,
             totalSize: 0,
             largestFile: null,
@@ -1575,18 +1610,13 @@ class MarkdownTreeDataProvider {
                         console.warn(`Could not get size for ${name}:`, sizeError);
                     }
 
-                    // Calculate reading time and status
-                    if (fileNode.readingTime) {
-                        stats.totalReadingTime += fileNode.readingTime;
-                    }
-
-                    const readingStatus = fileNode.getReadingStatusDescription();
-                    if (readingStatus === 'Read') {
-                        stats.readStatus.read++;
-                    } else if (readingStatus === 'Partially Read') {
-                        stats.readStatus.partial++;
-                    } else {
-                        stats.readStatus.unread++;
+                    try {
+                        const content = await vscode.workspace.fs.readFile(childUri);
+                        const text = Buffer.from(content).toString('utf8');
+                        const wordCount = text.split(/\s+/).filter(Boolean).length;
+                        stats.totalReadingTime += Math.max(1, Math.ceil(wordCount / 200));
+                    } catch (contentError) {
+                        console.warn(`Could not estimate reading time for ${name}:`, contentError);
                     }
                 } else if (type === vscode.FileType.Directory) {
                     // Recursively process subdirectories
@@ -1785,8 +1815,8 @@ function activate(context) {
     // Track the last previewed markdown file
     let lastPreviewedMarkdownFile = null;
 
-    // Create the tree data provider with context for persistence
-    const treeDataProvider = new MarkdownTreeDataProvider(context);
+    // Create the tree data provider
+    const treeDataProvider = new MarkdownTreeDataProvider();
     const headerProvider = new MarkdownHeaderViewProvider();
     const favoritesProvider = new FavoritesTreeDataProvider(
         context,
@@ -1799,12 +1829,143 @@ function activate(context) {
         treeDataProvider: treeDataProvider,
         showCollapseAll: true
     });    // Register the header view
-    vscode.window.createTreeView('markdownHeaders', {
+    treeDataProvider.attachTreeView(treeView);
+    const headerView = vscode.window.createTreeView('markdownHeaders', {
         treeDataProvider: headerProvider
     });    // Register the favorites view
-    vscode.window.createTreeView('markdownFavorites', {
+    const favoritesView = vscode.window.createTreeView('markdownFavorites', {
         treeDataProvider: favoritesProvider
     });
+    const previewSyncDebugState = {
+        lastMainTreeSyncTargetUri: null,
+        lastFavoriteSyncTargetUri: null,
+        lastMainTreeRevealSucceeded: false,
+        lastFavoriteRevealSucceeded: false
+    };
+    let lastObservedActivePreviewUri = null;
+
+    const normalizePreviewTrackingUri = (uri) => {
+        if (!uri) {
+            return null;
+        }
+
+        return uri.with({ fragment: '', query: '' });
+    };
+
+    const previewNode = async (node, options = {}) => {
+        if (!node || !node.uri) {
+            return;
+        }
+
+        const normalizedTargetUri = normalizePreviewTrackingUri(node.uri);
+        await previewRouting.openPreview(normalizedTargetUri, options);
+        await syncPreviewedDocumentState(normalizedTargetUri);
+        console.log(`Previewed markdown file: ${node.uri.fsPath}`);
+    };
+
+    const getTabInputUri = (input) => {
+        if (!input || !input.uri) {
+            return null;
+        }
+
+        if (input.uri instanceof vscode.Uri) {
+            return input.uri;
+        }
+
+        if (typeof input.uri.toString === 'function') {
+            try {
+                return vscode.Uri.parse(input.uri.toString());
+            } catch (error) {
+                console.warn('Could not parse preview tab URI string:', error);
+            }
+        }
+
+        if (typeof input.uri === 'object' && typeof input.uri.scheme === 'string' && typeof input.uri.path === 'string') {
+            try {
+                return vscode.Uri.from(input.uri);
+            } catch (error) {
+                console.warn('Could not revive preview tab URI components:', error);
+            }
+        }
+
+        return null;
+    };
+
+    const isMarkdownPreviewTab = (tab) => {
+        if (!tab || !tab.input) {
+            return false;
+        }
+
+        if (typeof tab.input.viewType === 'string' && tab.input.viewType.includes('markdown.preview')) {
+            return true;
+        }
+
+        const constructorName = tab.input?.constructor?.name;
+        return constructorName === 'TabInputWebview' || constructorName === 'TabInputCustom';
+    };
+
+    const getActiveMarkdownPreviewUri = () => {
+        const activeTab = vscode.window.tabGroups.activeTabGroup?.activeTab;
+        if (!isMarkdownPreviewTab(activeTab)) {
+            return null;
+        }
+
+        return getTabInputUri(activeTab.input);
+    };
+
+    const getLastRenderedPreviewUri = () => {
+        const previewRenderState = getSafePreviewRenderDebugState();
+        if (typeof previewRenderState.lastNormalizedDocumentUri !== 'string') {
+            return null;
+        }
+
+        try {
+            return vscode.Uri.parse(previewRenderState.lastNormalizedDocumentUri, true);
+        } catch (error) {
+            console.warn('Could not parse last rendered preview URI:', error);
+            return null;
+        }
+    };
+
+    const syncPreviewedDocumentState = async (fileUri) => {
+        const normalizedUri = normalizePreviewTrackingUri(fileUri);
+        if (!normalizedUri) {
+            return;
+        }
+
+        lastPreviewedMarkdownFile = normalizedUri;
+
+        await vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
+        await headerProvider.updateHeaders(normalizedUri);
+        previewSyncDebugState.lastMainTreeSyncTargetUri = normalizedUri.toString();
+        previewSyncDebugState.lastFavoriteSyncTargetUri = normalizedUri.toString();
+        previewSyncDebugState.lastMainTreeRevealSucceeded = await treeDataProvider.findAndRevealTreeItem(normalizedUri, treeView);
+        previewSyncDebugState.lastFavoriteRevealSucceeded = await favoritesProvider.findAndRevealTreeItem(normalizedUri, favoritesView);
+    };
+
+    const syncPreviewStateFromActiveTab = async (attempt = 0) => {
+        const activePreviewUri = getLastRenderedPreviewUri() || getActiveMarkdownPreviewUri();
+        if (!activePreviewUri) {
+            if (attempt < 2) {
+                setTimeout(() => {
+                    void syncPreviewStateFromActiveTab(attempt + 1);
+                }, 50);
+            }
+            return;
+        }
+
+        const normalizedActivePreviewUri = normalizePreviewTrackingUri(activePreviewUri);
+        if (!normalizedActivePreviewUri) {
+            return;
+        }
+
+        if (lastObservedActivePreviewUri === normalizedActivePreviewUri.toString()) {
+            return;
+        }
+
+        lastObservedActivePreviewUri = normalizedActivePreviewUri.toString();
+        await syncPreviewedDocumentState(normalizedActivePreviewUri);
+    };
 
     // Track tree view events for proper icon updates    context.subscriptions.push(
     context.subscriptions.push(
@@ -1827,7 +1988,7 @@ function activate(context) {
             // Update header view with the active markdown file
             headerProvider.updateHeaders(editor.document.uri);
             // Update the tracking variable since we have an active markdown editor
-            lastPreviewedMarkdownFile = editor.document.uri;
+            lastPreviewedMarkdownFile = normalizePreviewTrackingUri(editor.document.uri);
             console.log(`Markdown context set: ${editor.document.uri.fsPath}`);
         } else {
             // Check if we have a previewed markdown file before clearing headers
@@ -1847,6 +2008,11 @@ function activate(context) {
     // Listen for active editor changes to update context
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(updateMarkdownContext),
+        vscode.window.tabGroups.onDidChangeTabs(() => {
+            setTimeout(() => {
+                void syncPreviewStateFromActiveTab();
+            }, 0);
+        }),
         vscode.workspace.onDidCloseTextDocument((document) => {
             if (document.languageId === 'markdown') {
                 // Check if the closed document was our tracked preview file
@@ -1871,16 +2037,16 @@ function activate(context) {
     // Set initial context - ALWAYS show the Current Document view
     vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
     updateMarkdownContext(vscode.window.activeTextEditor);    // Initialize search context
-    vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);
-
-    // Create tracking state object for Enhanced Preview Provider
-    const trackingState = {
-        getLastPreviewedFile: () => lastPreviewedMarkdownFile,
-        setLastPreviewedFile: (fileUri) => {
-            lastPreviewedMarkdownFile = fileUri;
+    void syncPreviewStateFromActiveTab();
+    const previewStatePollHandle = setInterval(() => {
+        void syncPreviewStateFromActiveTab();
+    }, 250);
+    context.subscriptions.push({
+        dispose: () => {
+            clearInterval(previewStatePollHandle);
         }
-    };    // Register Enhanced Preview Provider v2 with header tracking integration
-    const enhancedPreviewProvider = EnhancedPreviewProvider.register(context, headerProvider, trackingState);
+    });
+    vscode.commands.executeCommand('setContext', 'markdown-navigator:isSearchActive', false);
 
     // Register commands - THIS SECTION IS CRITICAL
     // Make sure every command registered here matches what's defined in package.json
@@ -1907,8 +2073,8 @@ function activate(context) {
         // Search command - Fix the command ID to match package.json
         vscode.commands.registerCommand('markdown-navigator.searchMarkdownFiles', async () => {
             const query = await vscode.window.showInputBox({
-                placeHolder: 'Search markdown files...',
-                prompt: 'Enter search terms (use spaces to search multiple terms)',
+                placeHolder: 'Search markdown folders, files, and headers...',
+                prompt: 'Enter terms to match directory names, markdown file names, and markdown headers',
                 value: treeDataProvider._searchQuery
             });
 
@@ -1933,9 +2099,17 @@ function activate(context) {
                 });
             } else if (request.kind === 'fragment') {
                 route = previewRouting.describeOpenPreviewFragment(uri);
+            } else if (request.kind === 'tree-open') {
+                const normalizedTargetUri = normalizePreviewTrackingUri(uri);
+
+                route = previewRouting.describeOpenPreview(normalizedTargetUri, {
+                    toSide: !!request.toSide,
+                    locked: !!request.locked
+                });
             } else {
                 route = previewRouting.describeOpenPreview(uri, {
-                    toSide: !!request.toSide
+                    toSide: !!request.toSide,
+                    locked: !!request.locked
                 });
             }
 
@@ -1947,11 +2121,28 @@ function activate(context) {
             };
         }),
 
+        vscode.commands.registerCommand('markdown-navigator.__test.getPreviewTrackingState', () => ({
+            lastPreviewedMarkdownFile: lastPreviewedMarkdownFile?.toString() ?? null,
+            currentHeaderFile: headerProvider._currentFile?.toString() ?? null,
+            mainTreeSelection: treeView.selection
+                .map(item => item?.uri?.toString?.())
+                .filter(Boolean),
+            favoriteSelection: favoritesView.selection
+                .map(item => item?.uri?.toString?.())
+                .filter(Boolean),
+            activePreviewUri: normalizePreviewTrackingUri(getLastRenderedPreviewUri() || getActiveMarkdownPreviewUri())?.toString() ?? null,
+            headerViewVisible: headerView.visible,
+            lastMainTreeSyncTargetUri: previewSyncDebugState.lastMainTreeSyncTargetUri,
+            lastFavoriteSyncTargetUri: previewSyncDebugState.lastFavoriteSyncTargetUri,
+            lastMainTreeRevealSucceeded: previewSyncDebugState.lastMainTreeRevealSucceeded,
+            lastFavoriteRevealSucceeded: previewSyncDebugState.lastFavoriteRevealSucceeded
+        })),
+
         // Search in sidebar command
         vscode.commands.registerCommand('markdown-navigator.searchInSidebar', async () => {
             const query = await vscode.window.showInputBox({
-                placeHolder: 'Filter files in sidebar...',
-                prompt: 'Enter terms to filter files in sidebar',
+                placeHolder: 'Filter the markdown tree by folders, files, and headers...',
+                prompt: 'Enter terms to filter the tree by directory names, markdown file names, and markdown headers',
                 value: treeDataProvider._searchQuery
             });
 
@@ -1976,27 +2167,26 @@ function activate(context) {
         vscode.commands.registerCommand('markdown-navigator.previewMarkdownFile', async (node) => {
             if (node && node.uri) {
                 try {
-                    await previewRouting.openPreview(node);
-
-                    // Track the last previewed markdown file
-                    lastPreviewedMarkdownFile = node.uri;
-
-                    // Set context for header view visibility
-                    await vscode.commands.executeCommand('setContext', 'markdownNavigatorActiveDocument', true);
-
-                    // Update header view with the file's headers
-                    await headerProvider.updateHeaders(node.uri);
-
-                    // Try to reveal the item in the tree view
-                    await treeDataProvider.findAndRevealTreeItem(node.uri, treeView);
-
-                    console.log(`Previewed markdown file: ${node.uri.fsPath}`);
+                    await previewNode(node);
                 } catch (error) {
                     console.error('Error previewing markdown file:', error);
                     vscode.window.showErrorMessage(`Could not preview file: ${error.message}`);
                 }
             }
-        }),        // Go to header
+        }),
+
+        vscode.commands.registerCommand('markdown-navigator.previewMarkdownFileInNewTab', async (node) => {
+            if (node && node.uri) {
+                try {
+                    await previewNode(node, { locked: true });
+                } catch (error) {
+                    console.error('Error previewing markdown file in a new tab:', error);
+                    vscode.window.showErrorMessage(`Could not preview file in a new tab: ${error.message}`);
+                }
+            }
+        }),
+
+        // Go to header
         vscode.commands.registerCommand('markdown-navigator.goToHeader', async (lineNumber) => {
             try {
                 if (!headerProvider._currentFile || !lineNumber) {
@@ -2019,19 +2209,7 @@ function activate(context) {
                 }
 
                 const headerText = targetHeader.text;
-                console.log(`Found header: "${headerText}" at line ${lineNumber}`);                // Check if Enhanced Preview is active and use it if available
-                if (!previewRouting.isNativePreviewMode()) {
-                    console.log('Enhanced preview mode is active - using enhanced preview navigation');
-                    try {
-                        await previewRouting.openPreviewAtHeader(headerProvider._currentFile, { lineNumber, headerText });
-                        lastPreviewedMarkdownFile = headerProvider._currentFile;
-                        console.log(`✓ Successfully navigated to header using Enhanced Preview: ${headerText}`);
-                        return;
-                    } catch (enhancedError) {
-                        console.warn('Enhanced Preview navigation failed, falling back to standard methods:', enhancedError.message);
-                        // Continue to fallback methods below
-                    }
-                }
+                console.log(`Found header: "${headerText}" at line ${lineNumber}`);
 
                 // Method 2: Try VS Code's fragment navigation with multiple anchor formats
                 const anchorFormats = [
@@ -2063,45 +2241,7 @@ function activate(context) {
                     }
                 }
 
-                // Method 3: Use editor-based navigation with immediate return to preview
-                try {
-                    console.log('Trying editor-based navigation...');
-
-                    // Step 1: Open in editor to set cursor position
-                    const document = await vscode.workspace.openTextDocument(headerProvider._currentFile);
-                    const position = new vscode.Position(lineNumber - 1, 0);
-
-                    const editor = await vscode.window.showTextDocument(document, {
-                        selection: new vscode.Range(position, position),
-                        preview: true,
-                        preserveFocus: true,
-                        viewColumn: vscode.ViewColumn.One
-                    });
-
-                    // Step 2: Ensure the line is visible in the editor
-                    editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
-
-                    // Step 3: Wait a moment for positioning
-                    await new Promise(resolve => setTimeout(resolve, 100));
-
-                    // Step 4: Try to sync the selection to preview
-                    try {
-                        await vscode.commands.executeCommand('markdown.showSelectionInPreview');
-                        console.log('Selection synced to preview');
-                    } catch (error) {
-                        console.log('Could not sync to preview, opening fresh preview:', error.message);
-                        await previewRouting.openPreview(headerProvider._currentFile, { toSide: true });
-                    }
-
-                    console.log(`✓ Navigated to header using editor method: ${headerText}`);
-                    // Removed the success message - navigation is silent when successful
-                    return;
-
-                } catch (editorError) {
-                    console.warn('Editor-based navigation failed:', editorError.message);
-                }
-
-                // Method 4: Preview with search suggestion
+                // Method 3: Preview with search suggestion
                 try {
                     console.log('Using preview with search suggestion...');
                     await previewRouting.openPreview(headerProvider._currentFile);
@@ -2128,7 +2268,7 @@ function activate(context) {
                 } catch (previewError) {
                     console.warn('Preview with search failed:', previewError.message);
                 }
-                // Method 5: Last resort - calculate approximate position
+                // Method 4: Last resort - calculate approximate position
                
                 try {
 
@@ -2174,45 +2314,6 @@ function activate(context) {
             }
         }),
 
-        // Mark as read command
-        vscode.commands.registerCommand('markdown-navigator.markAsRead', async (node) => {
-            if (node && node.uri) {
-                node.setReadingStatus(100, true, false);
-                treeDataProvider._saveReadingStatus(node.uri.fsPath, {
-                    progress: 100,
-                    hasBeenRead: true,
-                    isModified: false
-                });
-                treeDataProvider._onDidChangeTreeData.fire(node);
-            }
-        }),
-
-        // Mark as unread command
-        vscode.commands.registerCommand('markdown-navigator.markAsUnread', async (node) => {
-            if (node && node.uri) {
-                node.setReadingStatus(0, false, false);
-                treeDataProvider._saveReadingStatus(node.uri.fsPath, {
-                    progress: 0,
-                    hasBeenRead: false,
-                    isModified: false
-                });
-                treeDataProvider._onDidChangeTreeData.fire(node);
-            }
-        }),
-
-        // Mark as partial command
-        vscode.commands.registerCommand('markdown-navigator.markAsPartial', async (node) => {
-            if (node && node.uri) {
-                node.setReadingStatus(50, false, false);
-                treeDataProvider._saveReadingStatus(node.uri.fsPath, {
-                    progress: 50,
-                    hasBeenRead: false,
-                    isModified: false
-                });
-                treeDataProvider._onDidChangeTreeData.fire(node);
-            }
-        }),
-
         // Show workspace stats command
         vscode.commands.registerCommand('markdown-navigator.showWorkspaceStats', async () => {
             const stats = await treeDataProvider.getWorkspaceStatistics();
@@ -2222,11 +2323,6 @@ function activate(context) {
 Total Files: ${stats.totalFiles}
 Total Reading Time: ${stats.totalReadingTime} minutes
 Average File Size: ${stats.averageFileSize} bytes
-
-Reading Status:
-- Read: ${stats.readStatus.read}
-- Partial: ${stats.readStatus.partial}
-- Unread: ${stats.readStatus.unread}
 
 ${stats.largestFile ? `Largest File: ${stats.largestFile.name} (${stats.largestFile.size} bytes)` : ''}
 ${stats.smallestFile ? `Smallest File: ${stats.smallestFile.name} (${stats.smallestFile.size} bytes)` : ''}`;
@@ -2323,9 +2419,6 @@ function generateSimpleAnchor(headerText) {
 }
 
 // Make sure to export the activate function
-function deactivate() {}
+export function deactivate() {}
 
-module.exports = {
-    activate,
-    deactivate
-};
+export { activate };

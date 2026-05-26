@@ -2,6 +2,8 @@
 
 *Last Updated: September 6, 2025*
 
+> Current-state note (2026-05-25): This document remains the original resuscitation-era planning guide. The active extension now ships from `src/extension.ts` to bundled `dist/extension.js`, routes preview opens through VS Code's native markdown preview only, and treats legacy enhanced-preview/provider references below as historical unless explicitly restated.
+
 ## Project Overview
 
 This document serves as a living guide for the resuscitation of the Markdown Navigator VS Code extension. After a hiatus of several months, we're revisiting this project with the knowledge and experience gained from working on the Copirate extension.
@@ -33,24 +35,24 @@ The Markdown Navigator extension provides enhanced functionality for navigating,
 1. **Navigation Tree** - Hierarchical display of markdown files in the workspace
 2. **Document Headers View** - Tree view of headers within the current document
 3. **Favorites System** - Ability to bookmark and manage favorite markdown files
-4. **Enhanced Preview** - Custom preview with additional features beyond VS Code's built-in preview
+4. **Native Preview Integration** - Navigator preview actions route into VS Code's built-in markdown preview; the legacy enhanced preview is retired from the active runtime
 5. **Search & Filter** - Advanced search capabilities across markdown documents
-6. **Reading Progress Tracking** - Track which documents have been read/partially read
-7. **File Type Classification** - Auto-categorization of different types of markdown files
+6. **Document Metadata** - Surface file size, modified date, and estimated reading time in the tree
+7. **File Type Classification** - Auto-categorization of different types of markdown files with custom tree badges
 
 ### Key Files and Components
 
 - `src/extension.ts` - Active TypeScript runtime entry that builds the shipped `dist/extension.js` output
-- `src/core/` - Activation/orchestration ownership during the migration cutover
-- Legacy root JavaScript runtime files (`extension.js`, `enhanced-preview-provider.js`, `favorites-provider.js`) - Temporary migration-era references only until Phase 5 retires them from the active path
-- `styles/enhanced-preview-webview.css` - Minimal enhanced preview stylesheet that maps to VS Code theme variables
+- `src/core/` - Activation and orchestration ownership for the shipped runtime
+- `src/services/preview-routing.ts` - Native-preview routing for tree opens, favorites, and header-target preview navigation
+- Legacy root JavaScript runtime files (`extension.js`, `enhanced-preview-provider.js`, `favorites-provider.js`) - Historical reference material only; they are not part of the active shipping path
 - `test/` and `testing/` - Test files and test markdown documents
 
 ### Runtime Source Of Truth
 
-- During the Phase 5 cutover, source changes belong under `src/`.
-- The shipping target for the migration is bundled `dist/extension.js`.
-- Root JavaScript runtime files remain reference material only until the cutover is fully validated; they are not the long-term source of truth.
+- Phase 5 cutover is complete; source changes belong under `src/`.
+- The shipping target is bundled `dist/extension.js`.
+- Root JavaScript runtime files remain historical reference material only and are not the active source of truth.
 
 ### Component Architecture
 
@@ -67,29 +69,29 @@ The Markdown Navigator extension provides enhanced functionality for navigating,
 3. **Core Services**
    - File system interaction (reading directories, parsing markdown)
    - Search functionality with `FuzzySearchUtils`
-   - Reading status persistence using extension state
+   - File metadata and tree badge classification
 
-4. **Enhanced Preview**
-   - Custom webview implementation
-   - Header navigation
-   - VS Code-native theme-variable styling
+4. **Preview Routing**
+   - Native preview command routing
+   - Header navigation via VS Code fragment/selection paths
+   - Historical enhanced-preview material retained only for archive/debug context
 
 ### Detailed Component Analysis
 
 #### 1. Runtime Migration Note
 
-The historical `extension.js` file contains the legacy activation flow and most of the current implementation detail, but Phase 5 is moving that behavior under `src/` so the built `dist/extension.js` output becomes the only shipping runtime story.
+The historical `extension.js` file contains the legacy activation flow and much of the pre-cutover implementation detail, but Phase 5 moved the shipping runtime under `src/` so the built `dist/extension.js` output is now the only active runtime story.
 
-Legacy runtime responsibilities currently being migrated include:
+Legacy runtime responsibilities that were migrated include:
 
 - **FuzzySearchUtils**: Provides enhanced search capabilities with fuzzy matching and multi-term searches
-- **MarkdownNode**: Represents a node in the markdown navigation tree with metadata and status tracking
+- **MarkdownNode**: Represents a node in the markdown navigation tree with metadata and file-type classification
 - **MarkdownTreeDataProvider**: The main tree view provider that displays markdown files and directories
 - **MarkdownHeaderViewProvider**: Tree view provider for displaying headers in the current markdown document
 
-Key functionality being migrated includes:
+Key functionality now owned under `src/` includes:
 - File and directory traversal with .gitignore filtering
-- Reading status tracking and persistence
+- File metadata extraction and custom tree badge selection
 - Auto-expansion logic for directories
 - Workspace statistics collection
 - Header parsing and navigation
@@ -102,16 +104,13 @@ The `FavoritesTreeDataProvider` class provides:
 - Enhanced display with header extraction
 - Integration with the main tree provider
 
-#### 3. Enhanced Preview (`enhanced-preview-provider.js`)
+#### 3. Preview Routing (`src/services/preview-routing.ts`)
 
-The `EnhancedPreviewProvider` class delivers a custom markdown preview experience:
-- Custom theming with CSS styling
-- Header-based navigation with scroll synchronization
-- Special CFML syntax highlighting
-- Debug mode for troubleshooting
-- File system watchers for style changes
-- Markdown conversion using the marked library
-- Integration with header tracking
+The active preview path is native-only:
+- Generic preview opens route through `markdown.showPreview` or `markdown.showPreviewToSide`
+- Header targets use VS Code fragment navigation instead of an extension-owned preview webview
+- The built-in markdown renderer is the only shipped rendered surface
+- Historical enhanced-preview debugging context is preserved separately under `docs/archive/`
 
 ### Code Structure Issues
 

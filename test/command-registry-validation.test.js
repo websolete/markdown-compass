@@ -9,10 +9,9 @@ const releaseGateCommands = [
     'markdown-navigator.refresh',
     'markdown-navigator.refreshHeaders',
     'markdown-navigator.previewMarkdownFile',
+    'markdown-navigator.previewMarkdownFileInNewTab',
     'markdown-navigator.addToFavorites',
-    'markdown-navigator.removeFromFavorites',
-    'markdown-navigator.openEnhancedPreview',
-    'markdown-navigator.toggleEnhancedPreviewDebug'
+    'markdown-navigator.removeFromFavorites'
 ];
 
 function getExtension() {

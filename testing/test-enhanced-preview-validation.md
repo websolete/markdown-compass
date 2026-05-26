@@ -1,5 +1,7 @@
 # Enhanced Preview Panel Lifecycle Test
 
+> Historical note: This guide documents the retired enhanced-preview runtime. It is kept as legacy validation context and does not describe the current shipped extension, which uses VS Code's native markdown preview as the only active rendered surface.
+
 This document is specifically designed to test the Enhanced Preview panel lifecycle fix implemented in `enhanced-preview-provider.js`.
 
 ## Test Scenario 1: Basic Panel Opening

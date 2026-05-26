@@ -1,6 +1,7 @@
-<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <!-- Darker blue for exact changelog.md match -->
-  <circle cx="8" cy="8" r="5" fill="#2563eb" stroke="#2563eb" stroke-width="0.5" opacity="0.9"/>
-  <!-- Subtle inner highlight for depth -->
-  <circle cx="6.5" cy="6.5" r="1.5" fill="rgba(255,255,255,0.3)"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M3.25 4.55H8.95" stroke="#005A9E" stroke-width="1.35" stroke-linecap="round"/>
+  <path d="M3.25 7.95H10.75" stroke="#005A9E" stroke-width="1.35" stroke-linecap="round"/>
+  <path d="M3.25 11.35H7.85" stroke="#005A9E" stroke-width="1.35" stroke-linecap="round"/>
+  <path d="M11.15 9.45V13.05" stroke="#005A9E" stroke-width="1.35" stroke-linecap="round"/>
+  <path d="M9.35 11.25H12.95" stroke="#005A9E" stroke-width="1.35" stroke-linecap="round"/>
 </svg>

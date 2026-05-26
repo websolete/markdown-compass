@@ -1,6 +1,6 @@
-<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <!-- Teal for analysis documents -->
-  <circle cx="8" cy="8" r="5" fill="#14b8a6" stroke="#14b8a6" stroke-width="0.5" opacity="0.9"/>
-  <!-- Subtle inner highlight for depth -->
-  <circle cx="6.5" cy="6.5" r="1.5" fill="rgba(255,255,255,0.3)"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3.1" y="8.15" width="2.25" height="4.35" rx="0.7" fill="#00BCF2"/>
+  <rect x="6.85" y="5.8" width="2.25" height="6.7" rx="0.7" fill="#00BCF2"/>
+  <rect x="10.6" y="3.55" width="2.25" height="8.95" rx="0.7" fill="#00BCF2"/>
+  <path d="M2.7 12.45H13.3" stroke="#00BCF2" stroke-width="1.2" stroke-linecap="round"/>
 </svg>

@@ -1,6 +1,7 @@
-<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <!-- Colored bullet with subtle stroke for visibility -->
-  <circle cx="8" cy="8" r="5" fill="#ec4899" stroke="#ec4899" stroke-width="0.5" opacity="0.9"/>
-  <!-- Subtle inner highlight for depth -->
-  <circle cx="6.5" cy="6.5" r="1.5" fill="rgba(255,255,255,0.3)"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4.2" y="3.2" width="7.6" height="9.9" rx="1.35" stroke="#CA5010" stroke-width="1.35"/>
+  <path d="M6.65 2.55H9.35" stroke="#CA5010" stroke-width="1.35" stroke-linecap="round"/>
+  <path d="M5.85 6.2H10.15" stroke="#CA5010" stroke-width="1.35" stroke-linecap="round"/>
+  <path d="M5.85 8.55H10.15" stroke="#CA5010" stroke-width="1.35" stroke-linecap="round"/>
+  <path d="M5.85 10.9H8.85" stroke="#CA5010" stroke-width="1.35" stroke-linecap="round"/>
 </svg>
