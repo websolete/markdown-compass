@@ -6,7 +6,8 @@ const {
     resolveHeadingIcon,
     presentHeading,
     stripInlineMarkdown,
-    normalizeHeadingEmojiMode
+    normalizeHeadingEmojiMode,
+    normalizeHeadingIconMode
 } = require('../dist/heading-presentation');
 
 function iconId(text, level = 2) {
@@ -135,6 +136,19 @@ describe('Heading presentation', function() {
             assert.deepStrictEqual(resolveHeadingIcon('Markdown Compass', 1), { kind: 'level', level: 1 });
             assert.deepStrictEqual(resolveHeadingIcon('Deep heading', 6), { kind: 'level', level: 6 });
             assert.deepStrictEqual(resolveHeadingIcon('Odd', 9), { kind: 'level', level: 6 });
+        });
+
+        it('shows only level badges in levels mode, and section icons in sections mode', function() {
+            assert.deepStrictEqual(presentHeading('⚠️ Installation', 2, 'strip', 'levels').icon, { kind: 'level', level: 2 });
+            assert.deepStrictEqual(presentHeading('getTreeItem()', 9, 'strip', 'levels').icon, { kind: 'level', level: 6 });
+            assert.strictEqual(presentHeading('Installation', 2, 'strip', 'sections').icon.id, 'cloud-download');
+            assert.strictEqual(presentHeading('⚠️ Installation', 2, 'strip', 'levels').label, 'Installation');
+        });
+
+        it('defaults the icon setting to level badges', function() {
+            assert.strictEqual(normalizeHeadingIconMode(undefined), 'levels');
+            assert.strictEqual(normalizeHeadingIconMode('bogus'), 'levels');
+            assert.strictEqual(normalizeHeadingIconMode('sections'), 'sections');
         });
 
         it('matches whole words only', function() {

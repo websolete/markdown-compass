@@ -24,7 +24,7 @@ If you reach for `.md` files as your primary documentation format, this extensio
 - **H1 Label Display**: Files with a top-level heading (`#`) display that heading as the tree label, with the filename as the description
 - **Preview on Click**: Single-click on any markdown file to open VS Code's native markdown preview
 - **Open Preview in New Tab**: Right-click any file in the Markdown Files or Favorites tree to open a second locked preview panel without replacing the current one
-- **Document Headers View**: Displays header hierarchy of the currently previewed markdown file. Each heading gets an icon for what the section is (Installation, Configuration, API, FAQ, Known Issues, Changelog, License and about thirty others), an icon for code-shaped headings such as `getTreeItem()` and changelog versions, or a colored H1-H6 badge when nothing else fits. Lines inside code blocks and front matter are not mistaken for headings, and inline Markdown such as `**bold**` or `[links](...)` is shown as plain text
+- **Document Headers View**: Displays header hierarchy of the currently previewed markdown file. Each heading gets a colored H1-H6 badge for its level. Set `markdownCompass.headingIcons` to `sections` to show instead an icon for what the section is (Installation, Configuration, API, FAQ, Known Issues, Changelog, License and about thirty others), with icons for code-shaped headings such as `getTreeItem()` and changelog versions. Lines inside code blocks and front matter are not mistaken for headings, and inline Markdown such as `**bold**` or `[links](...)` is shown as plain text
 - **Navigate Headers**: Click on headers to scroll the markdown preview to the selected section
 - **Copy Header Links**: Easily copy markdown links to headers for cross-referencing
 - **Favorites**: Pin frequently used markdown files to a persistent Favorites panel for fast access
@@ -86,9 +86,12 @@ Markdown Compass contributes these settings:
 	- `tree`: mirrors workspace folders and markdown file locations.
 	- `category`: groups markdown files by detected type (README, changelog, docs, tutorials, specs, tests, notes, todo, other).
 - `markdownCompass.headingEmoji` (default: `strip`) controls emoji in heading text shown in the **Current Document** view and in **Markdown Files** and **Favorites** labels taken from a file's first heading.
-	- `strip`: removes emoji from the label. An emoji with a known meaning, such as a warning sign, a check mark or a bug, still picks the heading's icon.
+	- `strip`: removes emoji from the label. With `headingIcons` set to `sections`, an emoji with a known meaning, such as a warning sign, a check mark or a bug, still picks the heading's icon.
 	- `keep`: shows the heading exactly as written.
 	- Tooltips always show the original heading.
+- `markdownCompass.headingIcons` (default: `levels`) chooses the **Current Document** icons.
+	- `levels`: an H1-H6 badge for each heading's level.
+	- `sections`: an icon for what each section is, in theme colors, with the level badge for headings that match nothing.
 - `markdownCompass.safeLinkSuppression.enabled` (default: `true`) renders definitively broken local Markdown file links and broken cross-file Markdown heading fragments as inert styled text in VS Code's native Markdown preview.
 
 Anchor-only links, valid local links, external URLs, and local non-Markdown fragments that cannot be validated are left unchanged.

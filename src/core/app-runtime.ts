@@ -91,6 +91,12 @@ function getHeadingEmojiMode() {
     );
 }
 
+function getHeadingIconMode() {
+    return headingPresentation.normalizeHeadingIconMode(
+        vscode.workspace.getConfiguration('markdownCompass').get('headingIcons')
+    );
+}
+
 function toHeadingTreeIcon(icon) {
     if (icon.kind === 'codicon') {
         return new vscode.ThemeIcon(icon.id, new vscode.ThemeColor(icon.color));
@@ -2009,12 +2015,14 @@ class MarkdownHeaderViewProvider {
             vscode.TreeItemCollapsibleState.Expanded :
             vscode.TreeItemCollapsibleState.None;
 
-        // The icon comes from what the section is (emoji hint, code shape, known
-        // section name), falling back to an H1-H6 badge.
+        // An H1-H6 badge by default. With headingIcons set to "sections", the icon
+        // comes from what the section is (emoji hint, code shape, known section
+        // name), falling back to the badge.
         const presentation = headingPresentation.presentHeading(
             element.text,
             element.level,
-            getHeadingEmojiMode()
+            getHeadingEmojiMode(),
+            getHeadingIconMode()
         );
 
         const treeItem = new vscode.TreeItem(presentation.label, collapsibleState);
@@ -2353,6 +2361,9 @@ function activate(context) {
                 treeDataProvider._onDidChangeTreeData.fire();
                 headerProvider.refresh();
                 favoritesProvider.refresh();
+            }
+            if (event.affectsConfiguration('markdownCompass.headingIcons')) {
+                headerProvider.refresh();
             }
         })
     );

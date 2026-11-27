@@ -8,6 +8,9 @@
 
 export type HeadingEmojiMode = 'strip' | 'keep';
 
+/** `levels`: H1-H6 badges only. `sections`: an icon for what the section is. */
+export type HeadingIconMode = 'levels' | 'sections';
+
 export interface MarkdownHeading {
     level: number;
     /** Heading text exactly as written, used for anchors and navigation. */
@@ -317,20 +320,30 @@ export function resolveHeadingIcon(rawText: string, level: number): HeadingIcon 
         return { kind: 'codicon', id: 'question', color: COLOR.blue, reason: 'question' };
     }
 
+    return levelBadge(level);
+}
+
+function levelBadge(level: number): HeadingIcon {
     return { kind: 'level', level: Math.min(Math.max(level || 1, 1), 6) };
 }
 
 export function presentHeading(
     rawText: string,
     level: number,
-    emojiMode: HeadingEmojiMode = 'strip'
+    emojiMode: HeadingEmojiMode = 'strip',
+    iconMode: HeadingIconMode = 'sections'
 ): HeadingPresentation {
     return {
         label: formatHeadingLabel(rawText, emojiMode) || stripInlineMarkdown(rawText) || rawText,
-        icon: resolveHeadingIcon(rawText, level)
+        icon: iconMode === 'levels' ? levelBadge(level) : resolveHeadingIcon(rawText, level)
     };
 }
 
 export function normalizeHeadingEmojiMode(value: unknown): HeadingEmojiMode {
     return value === 'keep' ? 'keep' : 'strip';
+}
+
+/** Badges are the default; section icons are opt-in. */
+export function normalizeHeadingIconMode(value: unknown): HeadingIconMode {
+    return value === 'sections' ? 'sections' : 'levels';
 }

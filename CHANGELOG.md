@@ -4,8 +4,8 @@ All notable changes to the "Markdown Compass" extension are documented in this f
 
 ## Unreleased
 
-- **Current Document shows what each section is.** Headings get an icon for the kind of section, such as Installation, Configuration, API, FAQ, Known Issues, Changelog or License, a method or key icon for code-shaped headings, and a tag for changelog versions. Other headings get a colored H1 to H6 badge that follows your light or dark theme.
-- **Choose whether headings show their emoji.** Headings in Current Document, Markdown Files and Favorites now drop emoji by default, and an emoji with a known meaning, such as a warning sign or a check mark, picks the heading's icon instead. Set **Markdown Compass: Heading Emoji** to `keep` to show headings exactly as written; tooltips always show the original.
+- **Current Document shows each heading's level.** Headings get a colored H1 to H6 badge that follows your light or dark theme. Set **Markdown Compass: Heading Icons** to `sections` for an icon that shows what each section is instead, such as Installation, Configuration, API, FAQ, Known Issues, Changelog or License.
+- **Choose whether headings show their emoji.** Headings in Current Document, Markdown Files and Favorites now drop emoji by default. Set **Markdown Compass: Heading Emoji** to `keep` to show headings exactly as written; tooltips always show the original.
 - **Cleaner heading labels.** Lines inside code blocks and front matter no longer appear as headings or as a file's label, and bold text, code spans and links show as plain text.
 - **Current Document stays filled while you preview.** The view no longer resets to "Select a document for viewing" while the file is still open in a preview.
 - **Copy Header Link now appears in the right-click menu.** Right-click a heading in Current Document to copy a link to it.

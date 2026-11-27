@@ -2,7 +2,7 @@
     "name": "markdown-compass",
     "displayName": "Markdown Compass",
     "description": "Navigate and preview Markdown files from a structured sidebar with tree or category browsing, header navigation, favorites, and broken-link suppression",
-    "version": "1.7.2",
+    "version": "1.7.3",
     "publisher": "EdgeInformation",
     "author": {
         "name": "Kevin Miller"
@@ -257,11 +257,25 @@
                         "keep"
                     ],
                     "enumDescriptions": [
-                        "Remove emoji from heading labels. The emoji still decides the item's icon where it has a known meaning, such as a warning sign or a check mark.",
+                        "Remove emoji from heading labels. With Heading Icons set to sections, an emoji with a known meaning, such as a warning sign or a check mark, still picks the item's icon.",
                         "Show heading labels with their emoji, exactly as written."
                     ],
                     "scope": "window",
                     "markdownDescription": "Control emoji in heading text shown in the **Current Document** view and in **Markdown Files** and **Favorites** labels taken from a file's first heading. Tooltips always show the original heading."
+                },
+                "markdownCompass.headingIcons": {
+                    "type": "string",
+                    "default": "levels",
+                    "enum": [
+                        "levels",
+                        "sections"
+                    ],
+                    "enumDescriptions": [
+                        "Show an H1 to H6 badge for each heading's level.",
+                        "Show an icon for what each section is, such as Installation, Configuration, API, FAQ, Known Issues or Changelog, in theme colors. Headings that match nothing get the level badge."
+                    ],
+                    "scope": "window",
+                    "markdownDescription": "Choose the icons in the **Current Document** view."
                 },
                 "markdownCompass.safeLinkSuppression.enabled": {
                     "type": "boolean",
