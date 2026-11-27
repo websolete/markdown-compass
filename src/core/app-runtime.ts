@@ -97,14 +97,35 @@ function getHeadingIconMode() {
     );
 }
 
+const HEADING_ICON_STYLE_ORDER = ['bars', 'levels', 'sections'];
+const HEADING_ICON_STYLE_NAMES = { bars: 'level bars', levels: 'H1-H6 badges', sections: 'section icons' };
+
+/**
+ * Step the Current Document icon style: bars, badges, section icons. Writes to
+ * the scope that already sets the value, so a workspace override keeps working.
+ */
+async function cycleHeadingIconStyle() {
+    const config = vscode.workspace.getConfiguration('markdownCompass');
+    const current = getHeadingIconMode();
+    const next = HEADING_ICON_STYLE_ORDER[(HEADING_ICON_STYLE_ORDER.indexOf(current) + 1) % HEADING_ICON_STYLE_ORDER.length];
+    // The setting is window-scoped, so only Workspace and Global can hold it.
+    const target = config.inspect('headingIcons')?.workspaceValue !== undefined
+        ? vscode.ConfigurationTarget.Workspace
+        : vscode.ConfigurationTarget.Global;
+
+    await config.update('headingIcons', next, target);
+    vscode.window.setStatusBarMessage(`Markdown Compass: heading icons now show ${HEADING_ICON_STYLE_NAMES[next]}`, 3000);
+}
+
 function toHeadingTreeIcon(icon) {
     if (icon.kind === 'codicon') {
         return new vscode.ThemeIcon(icon.id, new vscode.ThemeColor(icon.color));
     }
 
+    const prefix = icon.style === 'bars' ? 'bars-' : '';
     return {
-        light: vscode.Uri.file(getExtensionAssetPath('icons', 'headings', `h${icon.level}-light.svg`)),
-        dark: vscode.Uri.file(getExtensionAssetPath('icons', 'headings', `h${icon.level}-dark.svg`))
+        light: vscode.Uri.file(getExtensionAssetPath('icons', 'headings', `${prefix}h${icon.level}-light.svg`)),
+        dark: vscode.Uri.file(getExtensionAssetPath('icons', 'headings', `${prefix}h${icon.level}-dark.svg`))
     };
 }
 
@@ -2015,9 +2036,9 @@ class MarkdownHeaderViewProvider {
             vscode.TreeItemCollapsibleState.Expanded :
             vscode.TreeItemCollapsibleState.None;
 
-        // An H1-H6 badge by default. With headingIcons set to "sections", the icon
-        // comes from what the section is (emoji hint, code shape, known section
-        // name), falling back to the badge.
+        // Level bars by default, or H1-H6 badges. With headingIcons set to
+        // "sections", the icon comes from what the section is (emoji hint, code
+        // shape, known section name), falling back to the badge.
         const presentation = headingPresentation.presentHeading(
             element.text,
             element.level,
@@ -2505,6 +2526,13 @@ function activate(context) {
             treeDataProvider.clearSearch();
             vscode.commands.executeCommand('setContext', 'markdown-compass:isSearchActive', false);
         }),
+
+        // Current Document title-bar button. One handler under three ids so the
+        // button's icon and tooltip can name the current style (package.json
+        // shows the id matching config.markdownCompass.headingIcons).
+        ...['bars', 'levels', 'sections'].map(style =>
+            vscode.commands.registerCommand(`markdown-compass.headingIconStyle.${style}`, cycleHeadingIconStyle)
+        ),
 
         vscode.commands.registerCommand('markdown-compass.toggleBrowseMode', async () => {
             const nextMode = treeDataProvider.getBrowseMode() === MARKDOWN_BROWSE_MODES.CATEGORY

@@ -8,8 +8,11 @@
 
 export type HeadingEmojiMode = 'strip' | 'keep';
 
-/** `levels`: H1-H6 badges only. `sections`: an icon for what the section is. */
-export type HeadingIconMode = 'levels' | 'sections';
+/**
+ * `levels`: H1-H6 badges. `bars`: one to six horizontal bars per level.
+ * `sections`: an icon for what the section is, falling back to the badge.
+ */
+export type HeadingIconMode = 'levels' | 'bars' | 'sections';
 
 export interface MarkdownHeading {
     level: number;
@@ -21,7 +24,7 @@ export interface MarkdownHeading {
 
 export type HeadingIcon =
     | { kind: 'codicon'; id: string; color: string; reason: 'emoji' | 'code' | 'keyword' | 'question' }
-    | { kind: 'level'; level: number };
+    | { kind: 'level'; level: number; style?: 'bars' };
 
 export interface HeadingPresentation {
     label: string;
@@ -323,7 +326,7 @@ export function resolveHeadingIcon(rawText: string, level: number): HeadingIcon 
     return levelBadge(level);
 }
 
-function levelBadge(level: number): HeadingIcon {
+function levelBadge(level: number): Extract<HeadingIcon, { kind: 'level' }> {
     return { kind: 'level', level: Math.min(Math.max(level || 1, 1), 6) };
 }
 
@@ -335,7 +338,11 @@ export function presentHeading(
 ): HeadingPresentation {
     return {
         label: formatHeadingLabel(rawText, emojiMode) || stripInlineMarkdown(rawText) || rawText,
-        icon: iconMode === 'levels' ? levelBadge(level) : resolveHeadingIcon(rawText, level)
+        icon: iconMode === 'sections'
+            ? resolveHeadingIcon(rawText, level)
+            : iconMode === 'bars'
+                ? { ...levelBadge(level), style: 'bars' }
+                : levelBadge(level)
     };
 }
 
@@ -343,7 +350,7 @@ export function normalizeHeadingEmojiMode(value: unknown): HeadingEmojiMode {
     return value === 'keep' ? 'keep' : 'strip';
 }
 
-/** Badges are the default; section icons are opt-in. */
+/** Bars are the default; badges and section icons are opt-in. */
 export function normalizeHeadingIconMode(value: unknown): HeadingIconMode {
-    return value === 'sections' ? 'sections' : 'levels';
+    return value === 'sections' || value === 'levels' ? value : 'bars';
 }

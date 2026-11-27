@@ -77,6 +77,20 @@
             ]
         },
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "markdown-compass.headingIconStyle.bars",
+                    "when": "false"
+                },
+                {
+                    "command": "markdown-compass.headingIconStyle.levels",
+                    "when": "false"
+                },
+                {
+                    "command": "markdown-compass.headingIconStyle.sections",
+                    "when": "false"
+                }
+            ],
             "view/item/context": [
                 {
                     "command": "markdown-compass.previewMarkdownFile",
@@ -141,6 +155,21 @@
                     "group": "navigation@5"
                 },
                 {
+                    "command": "markdown-compass.headingIconStyle.bars",
+                    "when": "view == markdownHeaders && config.markdownCompass.headingIcons != 'levels' && config.markdownCompass.headingIcons != 'sections'",
+                    "group": "navigation@0"
+                },
+                {
+                    "command": "markdown-compass.headingIconStyle.levels",
+                    "when": "view == markdownHeaders && config.markdownCompass.headingIcons == 'levels'",
+                    "group": "navigation@0"
+                },
+                {
+                    "command": "markdown-compass.headingIconStyle.sections",
+                    "when": "view == markdownHeaders && config.markdownCompass.headingIcons == 'sections'",
+                    "group": "navigation@0"
+                },
+                {
                     "command": "markdown-compass.refreshHeaders",
                     "when": "view == markdownHeaders",
                     "group": "navigation"
@@ -180,6 +209,21 @@
                 "command": "markdown-compass.refreshHeaders",
                 "title": "Refresh Headers",
                 "icon": "$(refresh)"
+            },
+            {
+                "command": "markdown-compass.headingIconStyle.bars",
+                "title": "Heading Icons: Level Bars (click for H1-H6 badges)",
+                "icon": "$(menu)"
+            },
+            {
+                "command": "markdown-compass.headingIconStyle.levels",
+                "title": "Heading Icons: H1-H6 Badges (click for section icons)",
+                "icon": "$(symbol-numeric)"
+            },
+            {
+                "command": "markdown-compass.headingIconStyle.sections",
+                "title": "Heading Icons: Section Icons (click for level bars)",
+                "icon": "$(sparkle)"
             },
             {
                 "command": "markdown-compass.copyHeaderLink",
@@ -265,13 +309,15 @@
                 },
                 "markdownCompass.headingIcons": {
                     "type": "string",
-                    "default": "levels",
+                    "default": "bars",
                     "enum": [
                         "levels",
+                        "bars",
                         "sections"
                     ],
                     "enumDescriptions": [
                         "Show an H1 to H6 badge for each heading's level.",
+                        "Show one to six horizontal bars for each heading's level: one thick bar for H1, six thin bars for H6.",
                         "Show an icon for what each section is, such as Installation, Configuration, API, FAQ, Known Issues or Changelog, in theme colors. Headings that match nothing get the level badge."
                     ],
                     "scope": "window",

@@ -145,9 +145,14 @@ describe('Heading presentation', function() {
             assert.strictEqual(presentHeading('⚠️ Installation', 2, 'strip', 'levels').label, 'Installation');
         });
 
-        it('defaults the icon setting to level badges', function() {
-            assert.strictEqual(normalizeHeadingIconMode(undefined), 'levels');
-            assert.strictEqual(normalizeHeadingIconMode('bogus'), 'levels');
+        it('shows bar icons for the level in bars mode', function() {
+            assert.deepStrictEqual(presentHeading('Installation', 3, 'strip', 'bars').icon, { kind: 'level', level: 3, style: 'bars' });
+        });
+
+        it('defaults the icon setting to level bars', function() {
+            assert.strictEqual(normalizeHeadingIconMode(undefined), 'bars');
+            assert.strictEqual(normalizeHeadingIconMode('bogus'), 'bars');
+            assert.strictEqual(normalizeHeadingIconMode('levels'), 'levels');
             assert.strictEqual(normalizeHeadingIconMode('sections'), 'sections');
         });
 
