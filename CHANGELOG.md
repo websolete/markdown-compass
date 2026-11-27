@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.2] - 2026-05-30
+
 ### Added
 - **Category Browse Mode**: Added a new `markdownCompass.browseMode` setting and a toolbar toggle so the Markdown Files view can switch between the existing workspace tree and category-grouped browsing.
 

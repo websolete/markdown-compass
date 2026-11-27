@@ -9,7 +9,7 @@ const path = require('path');
  * Creates a versioned snapshot of ALL core essential files and directories in the /snapshot directory.
  * This includes all files and directories required for a complete build and deployment of the extension.
  * 
- * Files captured: extension.js, favorites-provider.js, package.json, package-lock.json, 
+ * Files captured: package.json, package-lock.json,
  *                 CHANGELOG.md, README.md, LICENSE.md, icon files, configuration files
  * Directories captured: styles/, icons/, .vscode/
  */
@@ -40,9 +40,6 @@ function createSnapshot() {
         }
           // Core files to snapshot
         const filesToSnapshot = [
-            'extension.js',
-            'enhanced-preview-provider.js',
-            'favorites-provider.js',
             'package-and-test.js',
             'package.json',
             'package-lock.json',

@@ -1,4 +1,7 @@
 .vscode/**
+.claude/**
+.mcp.json
+AGENTS.md
 .copirate/**
 .github/**
 .references/**
@@ -32,9 +35,6 @@ verify-*.js
 validate-*.js
 snapshot.js
 ignored-docs/**
-extension.js
-favorites-provider.js
-enhanced-preview-provider.js
 extension.js.new
 snapshot/**
 testing/**
