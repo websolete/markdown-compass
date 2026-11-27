@@ -28,12 +28,11 @@ env/
 .references/
 .debug-archive/
 
-# Local GitHub/Copirate workspace customizations
-.github/*
-!.github/workflows/
-!.github/workflows/**
-*.local.md
-copilot-instructions.local.md
+.github/
+.claude/
+
+.mcp.json
+AGENTS.md
 
 # Local development sandboxes
 dev/

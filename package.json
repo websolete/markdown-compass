@@ -280,20 +280,22 @@
         "check-types": "tsc --noEmit",
         "compile": "npm run check-types && npm run build:dev",
         "build:dev": "node esbuild.js",
-        "watch": "node esbuild.js --watch",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch -p ./",
         "build:prod": "node esbuild.js --production",
         "package": "npm run check-types && npm run lint && npm run build:prod",
         "vscode:prepublish": "npm run package",
-        "pack": "npx @vscode/vsce package",
+        "pack": "vsce package --no-dependencies",
         "package:vsix": "npm run pack",
-        "build:pack": "npm run package && npm run pack",
+        "build:pack": "npm run clean && npm run pack",
+        "version:patch": "npm version patch --no-git-tag-version",
+        "install:local": "node scripts/install-local.js",
+        "dev:quick": "npm run build:pack && npm run install:local",
+        "full:patch": "npm run version:patch && npm run dev:quick",
         "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
         "lint": "eslint .",
         "pretest": "npm run lint",
         "test": "vscode-test"
-    },
-    "dependencies": {
-        "ignore": "^5.3.0"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
@@ -304,6 +306,7 @@
         "@vscode/vsce": "^3.6.0",
         "esbuild": "^0.25.8",
         "eslint": "^9.25.1",
+        "ignore": "^5.3.2",
         "markdown-it": "^14.2.0",
         "typescript": "^5.9.2"
     }

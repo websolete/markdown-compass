@@ -11,12 +11,12 @@ const problemMatcherPlugin = {
       console.log('[watch] build started');
     });
     build.onEnd((result) => {
+      // Read by the inline problem matcher in .vscode/tasks.json: "[ERROR] message"
+      // followed by an indented "file:line:column:" line.
       for (const { text, location } of result.errors) {
+        console.error(`[ERROR] ${text}`);
         if (location) {
-          console.error(`✘ [ERROR] ${text}`);
-          console.error(`    ${location.file}:${location.line}:${location.column}`);
-        } else {
-          console.error(`✘ [ERROR] ${text}`);
+          console.error(`    ${location.file}:${location.line}:${location.column}:`);
         }
       }
       console.log('[watch] build finished');
@@ -54,8 +54,11 @@ async function main() {
     return;
   }
 
-  await context.rebuild();
+  const result = await context.rebuild();
   await context.dispose();
+  if (result.errors.length) {
+    process.exit(1);
+  }
 }
 
 main().catch((error) => {

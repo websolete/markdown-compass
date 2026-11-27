@@ -1,65 +1,79 @@
 {
+	// Build tasks. "watch" feeds F5; the "Build:" tasks package and install into your
+	// everyday VS Code, which runs the installed .vsix rather than this working tree.
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "compile",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"presentation": {
-				"reveal": "silent"
-			},
-			"problemMatcher": ["$tsc"]
+			"label": "watch",
+			"dependsOn": ["npm: watch:tsc", "npm: watch:esbuild"],
+			"presentation": { "reveal": "never" },
+			"problemMatcher": [],
+			"detail": "Type-check and bundle on every save (used by F5)"
 		},
 		{
 			"type": "npm",
-			"script": "watch",
+			"script": "watch:esbuild",
+			"label": "npm: watch:esbuild",
 			"isBackground": true,
-			"presentation": {
-				"reveal": "always",
-				"panel": "shared"
-			},
-			"problemMatcher": []
+			"group": "build",
+			"presentation": { "group": "watch", "reveal": "never" },
+			"problemMatcher": {
+				"owner": "esbuild",
+				"fileLocation": ["relative", "${workspaceFolder}"],
+				"pattern": [
+					{ "regexp": "^\\[ERROR\\] (.*)$", "message": 1 },
+					{ "regexp": "^\\s+(.+):(\\d+):(\\d+):$", "file": 1, "line": 2, "column": 3 }
+				],
+				"background": {
+					"activeBegin": true,
+					"beginsPattern": "^\\[watch\\] build started",
+					"endsPattern": "^\\[watch\\] build finished"
+				}
+			}
 		},
 		{
 			"type": "npm",
-			"script": "package",
+			"script": "watch:tsc",
+			"label": "npm: watch:tsc",
+			"isBackground": true,
 			"group": "build",
-			"presentation": {
-				"reveal": "silent"
-			},
-			"problemMatcher": []
+			"presentation": { "group": "watch", "reveal": "never" },
+			"problemMatcher": "$tsc-watch"
 		},
 		{
+			"label": "Build: Quick Development",
+			"type": "npm",
+			"script": "dev:quick",
+			"group": { "kind": "build", "isDefault": true },
+			"presentation": { "reveal": "always", "panel": "dedicated" },
+			"problemMatcher": "$tsc",
+			"detail": "Type-check, lint, bundle, package and install the current version"
+		},
+		{
+			"label": "Build: Full Patch Release",
+			"type": "npm",
+			"script": "full:patch",
+			"group": "build",
+			"presentation": { "reveal": "always", "panel": "dedicated" },
+			"problemMatcher": "$tsc",
+			"detail": "Bump the patch version (no git tag), then package and install"
+		},
+		{
+			"label": "Build: Production Package",
 			"type": "npm",
 			"script": "build:pack",
 			"group": "build",
-			"presentation": {
-				"reveal": "always"
-			},
-			"problemMatcher": []
+			"presentation": { "reveal": "always", "panel": "dedicated" },
+			"problemMatcher": "$tsc",
+			"detail": "Clean, then build the .vsix without installing it"
 		},
 		{
+			"label": "Clean",
 			"type": "npm",
 			"script": "clean",
-			"presentation": {
-				"reveal": "silent"
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Run Extension",
-			"type": "shell",
-			"command": "code",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"${workspaceFolder}"
-			],
-			"group": "test",
-			"isBackground": true,
-			"problemMatcher": []
+			"presentation": { "reveal": "silent" },
+			"problemMatcher": [],
+			"detail": "Delete dist/"
 		}
 	]
 }

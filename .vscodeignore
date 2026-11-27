@@ -1,48 +1,49 @@
+# Everything listed here stays out of the .vsix. The package should hold only
+# dist/extension.js, icons/, images/, styles/markdown-safe-links.css, package.json,
+# README.md, CHANGELOG.md and LICENSE.md.
+# vsce keeps a file if ANY "!" negation matches it, regardless of order, so add
+# negations sparingly and keep them narrow. Check what ships with
+# `npx vsce ls --no-dependencies`.
 .vscode/**
+.vscode-test/**
 .claude/**
-.mcp.json
-AGENTS.md
 .copirate/**
 .github/**
 .references/**
-.vscode-test/**
 .work-in-progress/**
-node_modules/**
-coverage/**
-dev/**
-docs/**
-.gitignore
-.yarnrc
-esbuild.js
-package-lock.json
-vsc-extension-quickstart.md
-**/jsconfig.json
-**/*.map
-**/eslint.config.mjs
-**/.vscode-test.*
-*.tsbuildinfo
-CLEANUP-SUMMARY.md
-RESUSCITATION-GUIDE.md
 src/**
 test/**
 tests/**
-test-*.md
-package-and-test.js
-package-and-test.ps1
-test-*.js
-tsconfig.json
-verify-*.js
-validate-*.js
-snapshot.js
-ignored-docs/**
-extension.js.new
-snapshot/**
 testing/**
+scripts/**
+docs/**
+dev/**
+ignored-docs/**
+out/**
+coverage/**
+node_modules/**
+**/*.map
+**/*.ts
+*.tsbuildinfo
+esbuild.js
+eslint.config.mjs
+**/jsconfig.json
+**/.vscode-test.*
+tsconfig*.json
+package-lock.json
+.gitignore
+.gitattributes
+.mcp.json
+AGENTS.md
+*.vsix
+# Bundled into dist/extension.js. esbuild builds them separately only so the tests
+# can load them.
+dist/favorites-provider.js
+dist/heading-presentation.js
+dist/markdown-preview-link-validator.js
+dist/markdown-safe-preview-plugin.js
+# Unused root copy of the icon. The package icon is images/icon.png.
+icon.svg
+# The native preview loads only the safe-link stylesheet.
 styles/**
-
-# Make sure these are NOT ignored
-!dist/**
-!icons/**
-!images/**
-!styles/enhanced-preview-webview.css
 !styles/markdown-safe-links.css

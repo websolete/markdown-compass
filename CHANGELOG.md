@@ -1,22 +1,14 @@
 # Changelog
 
-All notable changes to the "Markdown Compass" extension will be documented in this file.
+All notable changes to the "Markdown Compass" extension are documented in this file. Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## Unreleased
 
-## [Unreleased]
-
-### Added
-- **Current Document Iconography**: Headings now get an icon for what the section is rather than a fixed icon per level. The icon comes from, in order, a leading emoji with a known meaning, a code-shaped heading (methods, keys, changelog versions), a known section name such as Installation, Configuration, API Reference, FAQ, Known Issues, Changelog or License, a heading phrased as a question, and finally a colored H1-H6 badge with light and dark theme variants.
-- **`markdownCompass.headingEmoji` Setting**: Choose `strip` (default) or `keep` for emoji in heading labels in the Current Document, Markdown Files and Favorites views. Changing it updates all three views without a reload.
-
-### Fixed
-- **Code Blocks Read as Headings**: Lines such as a `# comment` inside fenced code blocks or YAML front matter no longer appear as headings in the Current Document view, in header search, or as a file's label in the Markdown Files and Favorites views.
-- **Raw Markdown in Heading Labels**: Bold, italics, code spans, links, images and inline HTML are reduced to their visible text in tree labels. Navigation and copied header links still use the original heading.
-- **Copy Header Link Menu**: The right-click **Copy Header Link** entry in the Current Document view now appears; the tree items were missing the context value the menu checks for.
-- **Current Document Emptied While Previewing**: The Current Document view no longer resets to "Select a document for viewing" while a file's preview is still open. VS Code closes a file's text document some time after its last editor tab closes, and the view treated that as the file going away. Tracking now continues while a markdown preview is open, and the view restores the headers whenever a preview is the active tab but the view has been cleared.
-- **Consistent Emoji Handling**: The Current Document and Favorites views previously kept emoji while Markdown Files labels stripped them; all three now follow the same setting.
+- **Current Document shows what each section is.** Headings get an icon for the kind of section, such as Installation, Configuration, API, FAQ, Known Issues, Changelog or License, a method or key icon for code-shaped headings, and a tag for changelog versions. Other headings get a colored H1 to H6 badge that follows your light or dark theme.
+- **Choose whether headings show their emoji.** Headings in Current Document, Markdown Files and Favorites now drop emoji by default, and an emoji with a known meaning, such as a warning sign or a check mark, picks the heading's icon instead. Set **Markdown Compass: Heading Emoji** to `keep` to show headings exactly as written; tooltips always show the original.
+- **Cleaner heading labels.** Lines inside code blocks and front matter no longer appear as headings or as a file's label, and bold text, code spans and links show as plain text.
+- **Current Document stays filled while you preview.** The view no longer resets to "Select a document for viewing" while the file is still open in a preview.
+- **Copy Header Link now appears in the right-click menu.** Right-click a heading in Current Document to copy a link to it.
 
 ## [1.7.2] - 2026-05-30
 
