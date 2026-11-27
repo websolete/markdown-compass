@@ -249,6 +249,20 @@
                     "scope": "window",
                     "markdownDescription": "Choose how the **Markdown Files** view is organized."
                 },
+                "markdownCompass.headingEmoji": {
+                    "type": "string",
+                    "default": "strip",
+                    "enum": [
+                        "strip",
+                        "keep"
+                    ],
+                    "enumDescriptions": [
+                        "Remove emoji from heading labels. The emoji still decides the item's icon where it has a known meaning, such as a warning sign or a check mark.",
+                        "Show heading labels with their emoji, exactly as written."
+                    ],
+                    "scope": "window",
+                    "markdownDescription": "Control emoji in heading text shown in the **Current Document** view and in **Markdown Files** and **Favorites** labels taken from a file's first heading. Tooltips always show the original heading."
+                },
                 "markdownCompass.safeLinkSuppression.enabled": {
                     "type": "boolean",
                     "default": true,

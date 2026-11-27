@@ -10,6 +10,7 @@ const FavoritesTreeDataProvider = FavoritesTreeDataProviderModule.default || Fav
 const previewRouting = require('../services/preview-routing');
 const { getSafePreviewRenderDebugState } = require('../services/markdown-safe-preview-plugin');
 const { getExtensionAssetPath } = require('../utils/extension-assets');
+const headingPresentation = require('../services/heading-presentation');
 
 const MARKDOWN_BROWSE_MODES = Object.freeze({
     TREE: 'tree',
@@ -81,16 +82,24 @@ function getBrowseCategoryIconPath(categoryKey) {
 }
 
 function stripEmojiForTreeLabel(text) {
-    if (!text) {
-        return '';
+    return headingPresentation.stripEmoji(text);
+}
+
+function getHeadingEmojiMode() {
+    return headingPresentation.normalizeHeadingEmojiMode(
+        vscode.workspace.getConfiguration('markdownCompass').get('headingEmoji')
+    );
+}
+
+function toHeadingTreeIcon(icon) {
+    if (icon.kind === 'codicon') {
+        return new vscode.ThemeIcon(icon.id, new vscode.ThemeColor(icon.color));
     }
 
-    return text
-        .replace(/\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?/gu, '')
-        .replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, '')
-        .replace(/[\u{1F3FB}-\u{1F3FF}\u200D\uFE0F\uFE0E\u20E3]/gu, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+    return {
+        light: vscode.Uri.file(getExtensionAssetPath('icons', 'headings', `h${icon.level}-light.svg`)),
+        dark: vscode.Uri.file(getExtensionAssetPath('icons', 'headings', `h${icon.level}-dark.svg`))
+    };
 }
 
 function serializePreviewRouteArg(arg) {
@@ -846,23 +855,7 @@ class MarkdownTreeDataProvider {
      * @returns {Array} Array of header objects
      */
     _extractHeaders(content) {
-        const headers = [];
-        const lines = content.split('\n');
-
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
-
-            if (headerMatch) {
-                headers.push({
-                    level: headerMatch[1].length,
-                    text: headerMatch[2],
-                    line: i + 1
-                });
-            }
-        }
-
-        return headers;
+        return headingPresentation.extractMarkdownHeadings(content);
     }
 
     /**
@@ -871,18 +864,11 @@ class MarkdownTreeDataProvider {
      * @returns {string|null} First H1 header text or null if none found
      */
     _extractFirstLevelHeader(content) {
-        const lines = content.split('\n');
+        const firstHeading = headingPresentation
+            .extractMarkdownHeadings(content)
+            .find(heading => heading.level === 1);
 
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            const headerMatch = trimmedLine.match(/^#{1}\s+(.+)$/);
-
-            if (headerMatch) {
-                return headerMatch[1].trim();
-            }
-        }
-
-        return null;
+        return firstHeading ? firstHeading.text : null;
     }
 
     /**
@@ -1288,8 +1274,12 @@ class MarkdownTreeDataProvider {
 
         // For markdown files with first level headers, show header text above filename
         if (element.type === 'file' && element.isMarkdownFile && element.firstLevelHeader) {
-            // Strip emoji from rendered tree labels while preserving the original heading elsewhere.
-            const sanitizedHeadingLabel = stripEmojiForTreeLabel(element.firstLevelHeader);
+            // Clean inline Markdown (and emoji, unless the user keeps them) from the
+            // rendered label while the tooltip keeps the original heading.
+            const sanitizedHeadingLabel = headingPresentation.formatHeadingLabel(
+                element.firstLevelHeader,
+                getHeadingEmojiMode()
+            );
             displayLabel = sanitizedHeadingLabel || element.label;
             isUsingSanitizedHeadingLabel = sanitizedHeadingLabel.length > 0 && displayLabel !== element.label;
         }
@@ -1997,24 +1987,10 @@ class MarkdownHeaderViewProvider {
      * @returns {Array} Array of header objects
      */
     _extractHeaders(content) {
-        const headers = [];
-        const lines = content.split('\n');
-
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
-
-            if (headerMatch) {
-                headers.push({
-                    level: headerMatch[1].length,
-                    text: headerMatch[2],
-                    line: i + 1,
-                    id: `header-${i}-${headerMatch[1].length}`
-                });
-            }
-        }
-
-        return headers;
+        return headingPresentation.extractMarkdownHeadings(content).map(heading => ({
+            ...heading,
+            id: `header-${heading.line - 1}-${heading.level}`
+        }));
     }
 
     getTreeItem(element) {
@@ -2033,20 +2009,20 @@ class MarkdownHeaderViewProvider {
             vscode.TreeItemCollapsibleState.Expanded :
             vscode.TreeItemCollapsibleState.None;
 
-        const treeItem = new vscode.TreeItem(element.text, collapsibleState);
-        // Removed line number from description - cleaner display
-        treeItem.description = '';
-        treeItem.tooltip = `${element.text} (Line ${element.line})`;
+        // The icon comes from what the section is (emoji hint, code shape, known
+        // section name), falling back to an H1-H6 badge.
+        const presentation = headingPresentation.presentHeading(
+            element.text,
+            element.level,
+            getHeadingEmojiMode()
+        );
 
-        // Set icon based on header level with hierarchical icons
-        const iconMap = {
-            1: 'book',           // H1 - Book
-            2: 'bookmark',       // H2 - Bookmark  
-            3: 'list-ordered',   // H3 - List
-            4: 'note',           // H4 - Note
-            5: 'pencil',         // H5 - Pencil
-            6: 'dash'            // H6 - Dash
-        };        treeItem.iconPath = new vscode.ThemeIcon(iconMap[element.level] || 'symbol-field');
+        const treeItem = new vscode.TreeItem(presentation.label, collapsibleState);
+        treeItem.description = '';
+        treeItem.tooltip = `${element.text}\nH${element.level} · line ${element.line}`;
+        treeItem.iconPath = toHeadingTreeIcon(presentation.icon);
+        // Enables the "Copy Header Link" context menu entry in package.json.
+        treeItem.contextValue = 'markdownHeader';
 
         // Command to navigate to header
         treeItem.command = {
@@ -2355,6 +2331,12 @@ function activate(context) {
         vscode.workspace.onDidChangeConfiguration((event) => {
             if (event.affectsConfiguration('markdownCompass.browseMode')) {
                 treeDataProvider.syncBrowseModeFromConfiguration();
+            }
+            if (event.affectsConfiguration('markdownCompass.headingEmoji')) {
+                // Labels are computed in getTreeItem, so re-render without a rescan.
+                treeDataProvider._onDidChangeTreeData.fire();
+                headerProvider.refresh();
+                favoritesProvider.refresh();
             }
         })
     );

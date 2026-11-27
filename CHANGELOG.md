@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Current Document Iconography**: Headings now get an icon for what the section is rather than a fixed icon per level. The icon comes from, in order, a leading emoji with a known meaning, a code-shaped heading (methods, keys, changelog versions), a known section name such as Installation, Configuration, API Reference, FAQ, Known Issues, Changelog or License, a heading phrased as a question, and finally a colored H1-H6 badge with light and dark theme variants.
+- **`markdownCompass.headingEmoji` Setting**: Choose `strip` (default) or `keep` for emoji in heading labels in the Current Document, Markdown Files and Favorites views. Changing it updates all three views without a reload.
+
+### Fixed
+- **Code Blocks Read as Headings**: Lines such as a `# comment` inside fenced code blocks or YAML front matter no longer appear as headings in the Current Document view, in header search, or as a file's label in the Markdown Files and Favorites views.
+- **Raw Markdown in Heading Labels**: Bold, italics, code spans, links, images and inline HTML are reduced to their visible text in tree labels. Navigation and copied header links still use the original heading.
+- **Copy Header Link Menu**: The right-click **Copy Header Link** entry in the Current Document view now appears; the tree items were missing the context value the menu checks for.
+- **Consistent Emoji Handling**: The Current Document and Favorites views previously kept emoji while Markdown Files labels stripped them; all three now follow the same setting.
+
 ## [1.7.2] - 2026-05-30
 
 ### Added

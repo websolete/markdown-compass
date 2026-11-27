@@ -4,6 +4,7 @@ export {};
  * Favorites functionality for Markdown Compass
  */
 const vscode = require('vscode');
+const headingPresentation = require('../services/heading-presentation');
 
 /**
  * TreeDataProvider for the Favorites view
@@ -25,10 +26,19 @@ class FavoritesTreeDataProvider {
         let displayLabel = element.label;
         let description = '';
         
-        // If we have a header, use it as the main label and filename as description
+        // If we have a header, use it as the main label and filename as description.
+        // Same cleanup and emoji setting as the Markdown Files view.
         if (element.firstLevelHeader) {
-            displayLabel = element.firstLevelHeader;
-            description = element.label;
+            const headingLabel = headingPresentation.formatHeadingLabel(
+                element.firstLevelHeader,
+                headingPresentation.normalizeHeadingEmojiMode(
+                    vscode.workspace.getConfiguration('markdownCompass').get('headingEmoji')
+                )
+            );
+            if (headingLabel) {
+                displayLabel = headingLabel;
+                description = element.label;
+            }
         }
         
         const treeItem = new vscode.TreeItem(displayLabel, vscode.TreeItemCollapsibleState.None);
@@ -178,18 +188,11 @@ class FavoritesTreeDataProvider {
      * @returns {string|null} First H1 header text or null if none found
      */
     _extractFirstLevelHeader(content) {
-        const lines = content.split('\n');
+        const firstHeading = headingPresentation
+            .extractMarkdownHeadings(content)
+            .find(heading => heading.level === 1);
 
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            const headerMatch = trimmedLine.match(/^#{1}\s+(.+)$/);
-
-            if (headerMatch) {
-                return headerMatch[1].trim();
-            }
-        }
-
-        return null;
+        return firstHeading ? firstHeading.text : null;
     }
 }
 

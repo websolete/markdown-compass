@@ -33,6 +33,7 @@ async function main() {
       'providers/favorites-provider': 'src/providers/favorites-provider.ts',
       'services/markdown-preview-link-validator': 'src/services/markdown-preview-link-validator.ts',
       'services/markdown-safe-preview-plugin': 'src/services/markdown-safe-preview-plugin.ts',
+      'services/heading-presentation': 'src/services/heading-presentation.ts',
     },
     bundle: true,
     format: 'cjs',
