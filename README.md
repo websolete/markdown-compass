@@ -1,105 +1,82 @@
 # Markdown Compass
 
-Turn your codebase into a focused documentation hub by surfacing only its Markdown documents in a dedicated, navigable sidebar.
-
-When your workspace is full of Markdown files — whether that's code-adjacent `README.md` and `SPEC.md` files scattered across your project, or a growing library of documentation artifacts from AI-assisted workflows — finding and reading the right file gets tedious fast. Markdown Compass solves that by turning every `.md` file in your workspace into a structured, navigable sidebar so you spend less time hunting and more time reading.
+A sidebar for the Markdown in your workspace. Markdown Compass finds every `.md` file, gathers them into one tree, and opens each in VS Code's own preview with a single click.
 
 ![Markdown Compass preview](images/preview.png)
 
-## Who is this for?
+## Who it's for
 
-#### **Developers who document in code**
-If you keep `README.md`, `ARCHITECTURE.md`, or other notes alongside your source files, Markdown Compass surfaces all of them in a single focused tree that mirrors your project structure — without cluttering your file explorer with non-documentation noise.
+- **Developers who document in code.** The `README.md`, `ARCHITECTURE.md` and notes scattered through a project, in one tree, without the rest of the file explorer in the way.
+- **People working with AI assistants.** Plans, session summaries, work orders and research notes pile up fast. Browse, filter and preview them without opening each one to see what it covers.
+- **Anyone who writes docs in Markdown** and wants them as easy to reach as the code.
 
-#### **Documentation artifacts from AI-assisted workflows**
-Modern AI collaborations produce a lot of Markdown: planning docs, session summaries, work orders, research artifacts. Markdown Compass makes that output useful instead of overwhelming — you can browse, search, and preview all of it from the sidebar without opening a file just to check what it covers.
+## Getting started
 
-#### **Anyone who treats Markdown as a first-class project resource**
-If you reach for `.md` files as your primary documentation format, this extension gives them the same respect your source code gets.
+1. Click the Markdown Compass icon in the activity bar.
+2. Click a file in **Markdown Files** to open its preview.
+3. Use **Current Document** to jump between that file's headings.
+
+That's it. There is nothing to configure, and the settings below are optional.
 
 ## Features
 
-- **Focused Documentation View**: Shows only markdown files and directories containing markdown files, with animated progress messaging during the initial workspace scan
-- **Switchable Browse Modes**: Choose `tree` mode to mirror your workspace folders, or `category` mode to regroup markdown files by detected document type (README, changelog, docs, tutorials, specs, tests, notes, todo, and other markdown)
-- **H1 Label Display**: Files with a top-level heading (`#`) display that heading as the tree label, with the filename as the description
-- **Preview on Click**: Single-click on any markdown file to open VS Code's native markdown preview
-- **Open Preview in New Tab**: Right-click any file in the Markdown Files or Favorites tree to open a second locked preview panel without replacing the current one
-- **Document Headers View**: Displays header hierarchy of the currently previewed markdown file. Each heading's icon shows its level as one to six colored bars. Set `markdownCompass.headingIcons` to `levels` for H1-H6 badges instead, or to `sections` for an icon for what the section is (Installation, Configuration, API, FAQ, Known Issues, Changelog, License and about thirty others), with icons for code-shaped headings such as `getTreeItem()` and changelog versions. Lines inside code blocks and front matter are not mistaken for headings, and inline Markdown such as `**bold**` or `[links](...)` is shown as plain text
-- **Navigate Headers**: Click on headers to scroll the markdown preview to the selected section
-- **Copy Header Links**: Easily copy markdown links to headers for cross-referencing
-- **Favorites**: Pin frequently used markdown files to a persistent Favorites panel for fast access
-- **Context Menu Options**: Right-click to open files in source/edit mode or preview mode
-- **Hierarchical Display**: Matches the directory structure of your workspace (displays only those folders containing Markdown files)
-- **Collapsible Sections**: Ability to collapse directories for better organization
-- **Toggle .gitignore Filtering**: Enable or disable .gitignore filtering with one click
-- **Search and Filter**: Fuzzy-match markdown folder names, file names, and markdown headers using the built-in tree filter (both `Search Markdown Files` and `Filter in Sidebar` toolbar commands expose this same filter)
-- **File Statistics**: View comprehensive statistics including file count, total reading time, and file-size summary about your markdown documentation
+### Markdown Files
 
-## Usage
+- Shows only Markdown files and the folders that contain them.
+- Two layouts: **tree** mirrors your folders, **category** groups files by type (README, changelog, docs, tutorials, specs, tests, notes, todo, other).
+- Labels each file with its first heading and shows the filename beside it.
+- Click to preview. Right-click and choose **Open Preview in New Tab** to keep the current preview open alongside.
+- Filters by folder name, file name or heading text.
+- Hides files your `.gitignore` excludes, toggled with one click.
+- Shows workspace statistics: file count, total reading time and file sizes.
 
-1. Click on the Markdown Compass icon in the activity bar (sidebar)
-2. Browse through the "Markdown Files" view to find markdown files
-3. Use the browse-mode toolbar button (**Toggle Browse Mode**) to switch between `tree` and `category`
-4. (Optional) Set `markdownCompass.browseMode` to `tree` or `category` in settings to keep your preferred default
-5. Click once on a markdown file to open it in VS Code's native markdown preview
-6. The "Current Document" panel will automatically display the header structure of the previewed file
-7. Click on any header in the headers view to target that section in the markdown preview
-8. Right-click on any header to copy a markdown link to it for cross-referencing
-9. Right-click any file in the Markdown Files or Favorites tree and choose **Open Preview in New Tab** to open an additional locked preview alongside the current one
-10. Use the **Search** or **Filter in Sidebar** toolbar buttons to filter the tree by folder name, markdown file name, or markdown header text — both buttons expose the same fuzzy filter
-11. Use the refresh button to update the view if files are added or changed
-12. Click on the filter icon to toggle .gitignore filtering on/off
-13. Use the statistics button to view comprehensive information about your markdown files
-14. Right-click any file and choose **Add to Favorites** to pin it in the Favorites panel; use **Remove from Favorites** to unpin it
+### Current Document
 
-## Search Scope
+- Outlines the file you're previewing. Click a heading to scroll the preview to it.
+- Right-click a heading to copy a Markdown link to it.
+- Offers three heading icon styles, switched from the button in the view's title bar:
+  - **Level bars** (default): one thick bar for H1, down to six thin bars for H6.
+  - **H1-H6 badges.**
+  - **Section icons**: an icon for what the section is, such as Installation, Configuration, API, FAQ, Known Issues or Changelog. Headings that match nothing get level bars.
+- Keeps labels clean: code blocks and front matter are never mistaken for headings, and `**bold**`, `` `code` `` and `[links](...)` show as plain text.
+- If the preview can't jump to a heading, copies the heading text to your clipboard so you can find it with Ctrl+F.
 
-The Markdown Files search is a live tree filter, not a separate full-text index. It currently matches:
+### Favorites
 
-- directory names shown in the Markdown Files tree
-- markdown file names ending in `.md`
-- markdown headers extracted from those files (`#` through `######`)
+Pin the files you open most. Right-click a file and choose **Add to Favorites**, or **Remove from Favorites** to unpin it.
 
-It does not currently search paragraph/body text, link URLs, or non-Markdown files.
+### Safer preview links
 
-When `.gitignore` filtering is enabled, ignored paths are excluded from both the tree and search results.
+Broken local links in the preview, pointing at a missing file or at a missing heading in another file, render as plain text instead of links that go nowhere. Your source files are not changed.
 
-## Header Navigation
+## Toolbar
 
-When you click on a header in the "Current Document" view, the extension targets VS Code's native markdown preview and attempts to move the preview to that heading using fragment-based navigation:
+| Button | What it does |
+| --- | --- |
+| Refresh | Rescans the workspace for added or changed files |
+| Toggle Browse Mode | Switches Markdown Files between tree and category |
+| Toggle .gitignore Filtering | Shows or hides files your `.gitignore` excludes |
+| Filter in Sidebar / Search Markdown Files | Both open the same filter |
+| Clear Search Filter | Appears while a filter is active |
+| Show Workspace Statistics | Opens the statistics summary |
+| Heading icon style (Current Document) | Steps through level bars, badges and section icons |
 
-1. **Fragment Navigation**: Uses VS Code's built-in anchor system (most reliable)
-2. **Alternative Anchors**: Tries different anchor formats if the first fragment does not land correctly
-3. **Fallback**: Reopens the preview with search guidance if fragment targeting cannot resolve the heading
+The filter matches folder names, file names and headings (H1 to H6). It does not search body text, link URLs or non-Markdown files.
 
-If automatic scrolling fails, the extension will provide the heading text and search guidance instead of silently leaving the preview at the wrong location.
+## Settings
+
+| Setting | Default | What it controls |
+| --- | --- | --- |
+| `markdownCompass.browseMode` | `tree` | Markdown Files layout: `tree` or `category` |
+| `markdownCompass.headingIcons` | `bars` | Current Document icons: `bars`, `levels` or `sections` |
+| `markdownCompass.headingEmoji` | `strip` | `strip` removes emoji from heading labels, `keep` shows them as written |
+| `markdownCompass.safeLinkSuppression.enabled` | `true` | Renders broken local links as plain text in the preview |
+
+A few details:
+
+- **Emoji.** Tooltips always show the original heading. With section icons on, an emoji with a known meaning, such as a warning sign or a check mark, still picks the heading's icon even when it is stripped from the label.
+- **Link suppression** applies to every native Markdown preview while Markdown Compass is active. Links to headings in the same file, working links, web URLs and links to non-Markdown files are left alone.
 
 ## Requirements
 
-No special requirements or dependencies. Markdown Compass uses VS Code's built-in Markdown preview — no external tools or preview engines to configure.
-
-## Extension Settings
-
-Markdown Compass contributes these settings:
-
-- `markdownCompass.browseMode` (default: `tree`) chooses the **Markdown Files** layout.
-	- `tree`: mirrors workspace folders and markdown file locations.
-	- `category`: groups markdown files by detected type (README, changelog, docs, tutorials, specs, tests, notes, todo, other).
-- `markdownCompass.headingEmoji` (default: `strip`) controls emoji in heading text shown in the **Current Document** view and in **Markdown Files** and **Favorites** labels taken from a file's first heading.
-	- `strip`: removes emoji from the label. With `headingIcons` set to `sections`, an emoji with a known meaning, such as a warning sign, a check mark or a bug, still picks the heading's icon.
-	- `keep`: shows the heading exactly as written.
-	- Tooltips always show the original heading.
-- `markdownCompass.headingIcons` (default: `bars`) chooses the **Current Document** icons. The button in the Current Document title bar steps through the three styles, and its icon shows the one in use.
-	- `levels`: an H1-H6 badge for each heading's level.
-	- `bars`: one to six horizontal bars for each heading's level, one thick bar for H1 down to six thin bars for H6.
-	- `sections`: an icon for what each section is, in theme colors, with the level bars for headings that match nothing.
-- `markdownCompass.safeLinkSuppression.enabled` (default: `true`) renders definitively broken local Markdown file links and broken cross-file Markdown heading fragments as inert styled text in VS Code's native Markdown preview.
-
-Anchor-only links, valid local links, external URLs, and local non-Markdown fragments that cannot be validated are left unchanged.
-
-## Almost-native Preview Styling
-
-Markdown Compass relies on VS Code's built-in markdown preview for rendering and styling.
-
-- The extension adds a small native preview stylesheet so suppressed broken local links render as neutral inert text instead of clickable anchors.
-- The safe-link behavior applies to all native Markdown previews while Markdown Compass is active.
+VS Code 1.100 or later. Previews use VS Code's built-in Markdown preview, so there is nothing else to install.

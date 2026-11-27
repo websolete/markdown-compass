@@ -2,7 +2,7 @@
 
 All notable changes to the "Markdown Compass" extension are documented in this file. Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.7.3] - 2026-11-26
 
 - **Current Document shows each heading's level.** Each heading's icon shows its level as stacked bars, one thick bar for a top-level heading down to six thin ones, in a color per level that follows your light or dark theme. The new button in the Current Document title bar switches to H1 to H6 badges, then to icons that show what each section is, such as Installation, Configuration, API, FAQ, Known Issues, Changelog or License. The **Markdown Compass: Heading Icons** setting holds your choice.
 - **Choose whether headings show their emoji.** Headings in Current Document, Markdown Files and Favorites now drop emoji by default. Set **Markdown Compass: Heading Emoji** to `keep` to show headings exactly as written; tooltips always show the original.
