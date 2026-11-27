@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Code Blocks Read as Headings**: Lines such as a `# comment` inside fenced code blocks or YAML front matter no longer appear as headings in the Current Document view, in header search, or as a file's label in the Markdown Files and Favorites views.
 - **Raw Markdown in Heading Labels**: Bold, italics, code spans, links, images and inline HTML are reduced to their visible text in tree labels. Navigation and copied header links still use the original heading.
 - **Copy Header Link Menu**: The right-click **Copy Header Link** entry in the Current Document view now appears; the tree items were missing the context value the menu checks for.
+- **Current Document Emptied While Previewing**: The Current Document view no longer resets to "Select a document for viewing" while a file's preview is still open. VS Code closes a file's text document some time after its last editor tab closes, and the view treated that as the file going away. Tracking now continues while a markdown preview is open, and the view restores the headers whenever a preview is the active tab but the view has been cleared.
 - **Consistent Emoji Handling**: The Current Document and Favorites views previously kept emoji while Markdown Files labels stripped them; all three now follow the same setting.
 
 ## [1.7.2] - 2026-05-30

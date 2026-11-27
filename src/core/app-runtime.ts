@@ -2200,6 +2200,9 @@ function activate(context) {
         return constructorName === 'TabInputWebview' || constructorName === 'TabInputCustom';
     };
 
+    const hasOpenMarkdownPreviewTab = () => vscode.window.tabGroups.all
+        .some(group => group.tabs.some(isMarkdownPreviewTab));
+
     const getActiveMarkdownPreviewUri = () => {
         const activeTab = vscode.window.tabGroups.activeTabGroup?.activeTab;
         if (!isMarkdownPreviewTab(activeTab)) {
@@ -2255,7 +2258,12 @@ function activate(context) {
             return;
         }
 
-        if (lastObservedActivePreviewUri === normalizedActivePreviewUri.toString()) {
+        // Skip a URI already synced, unless a preview is the active tab and the
+        // Current Document view no longer shows its file (something cleared it).
+        const headersShowPreview = headerProvider._currentFile?.toString() === normalizedActivePreviewUri.toString();
+        const previewIsActiveTab = isMarkdownPreviewTab(vscode.window.tabGroups.activeTabGroup?.activeTab);
+        if (lastObservedActivePreviewUri === normalizedActivePreviewUri.toString()
+            && (headersShowPreview || !previewIsActiveTab)) {
             return;
         }
 
@@ -2312,7 +2320,15 @@ function activate(context) {
         vscode.workspace.onDidCloseTextDocument((document) => {
             if (document.languageId === 'markdown') {
                 // Check if the closed document was our tracked preview file
+                // VS Code disposes a text document some time after its last editor
+                // closes, even while a preview of it stays open. Keep tracking while
+                // any markdown preview tab is open; preview tabs expose no URI, so
+                // the check cannot be per file.
                 if (lastPreviewedMarkdownFile && lastPreviewedMarkdownFile.toString() === document.uri.toString()) {
+                    if (hasOpenMarkdownPreviewTab()) {
+                        console.log('Tracked file closed but a markdown preview is still open - keeping headers');
+                        return;
+                    }
                     lastPreviewedMarkdownFile = null;
                     console.log('Tracked preview file was closed - clearing tracking');
                 }

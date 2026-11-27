@@ -405,6 +405,41 @@ describe('Native Preview Behavior Validation', function() {
         }
     });
 
+    it('keeps current-document headers when the previewed file is closed while its preview stays open', async function() {
+        const fixtures = await createFixtureSet();
+        const sourceUri = fixtures.sourceUri.toString();
+
+        try {
+            await closeAllEditors();
+            await vscode.commands.executeCommand('markdown.showPreview', fixtures.sourceUri);
+            await waitFor(
+                async () => (await getPreviewTrackingState()).currentHeaderFile === sourceUri,
+                { description: 'headers for the previewed source' }
+            );
+
+            const sourceTabs = vscode.window.tabGroups.all
+                .flatMap((group) => group.tabs)
+                .filter((tab) => tab.input instanceof vscode.TabInputText
+                    && tab.input.uri.fsPath.toLowerCase() === fixtures.sourceUri.fsPath.toLowerCase());
+            if (sourceTabs.length > 0) {
+                await vscode.window.tabGroups.close(sourceTabs);
+            }
+
+            // VS Code disposes an unshown document after a delay; a language change
+            // fires the same onDidCloseTextDocument event immediately.
+            const document = await vscode.workspace.openTextDocument(fixtures.sourceUri);
+            await vscode.languages.setTextDocumentLanguage(document, 'plaintext');
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            assert.ok(getActivePreviewTab(), 'The native preview should still be the active tab');
+            const state = await getPreviewTrackingState();
+            assert.strictEqual(state.currentHeaderFile, sourceUri, `Headers should survive the document close. State: ${JSON.stringify(state)}`);
+            assert.strictEqual(state.lastPreviewedMarkdownFile, sourceUri, 'Preview tracking should survive the document close');
+        } finally {
+            await disposeFixtureSet(fixtures);
+        }
+    });
+
     it('preserves a locked native preview while opening a second markdown preview target', async function() {
         const fixtures = await createFixtureSet();
 
