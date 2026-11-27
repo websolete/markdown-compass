@@ -92,7 +92,7 @@ Markdown Compass contributes these settings:
 - `markdownCompass.headingIcons` (default: `bars`) chooses the **Current Document** icons. The button in the Current Document title bar steps through the three styles, and its icon shows the one in use.
 	- `levels`: an H1-H6 badge for each heading's level.
 	- `bars`: one to six horizontal bars for each heading's level, one thick bar for H1 down to six thin bars for H6.
-	- `sections`: an icon for what each section is, in theme colors, with the level badge for headings that match nothing.
+	- `sections`: an icon for what each section is, in theme colors, with the level bars for headings that match nothing.
 - `markdownCompass.safeLinkSuppression.enabled` (default: `true`) renders definitively broken local Markdown file links and broken cross-file Markdown heading fragments as inert styled text in VS Code's native Markdown preview.
 
 Anchor-only links, valid local links, external URLs, and local non-Markdown fragments that cannot be validated are left unchanged.

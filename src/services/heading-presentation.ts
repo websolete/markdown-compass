@@ -10,7 +10,7 @@ export type HeadingEmojiMode = 'strip' | 'keep';
 
 /**
  * `levels`: H1-H6 badges. `bars`: one to six horizontal bars per level.
- * `sections`: an icon for what the section is, falling back to the badge.
+ * `sections`: an icon for what the section is, falling back to the bars.
  */
 export type HeadingIconMode = 'levels' | 'bars' | 'sections';
 
@@ -300,7 +300,7 @@ function findCodeShape(rawText: string, plainText: string): HeadingIcon | undefi
 
 /**
  * Choose an icon for a heading. Order: the author's emoji, a code-shaped
- * heading, a known section name, a question, and finally the level badge.
+ * heading, a known section name, a question, and finally the level bars.
  */
 export function resolveHeadingIcon(rawText: string, level: number): HeadingIcon {
     const emojiHint = findEmojiHint(rawText || '');
@@ -323,7 +323,8 @@ export function resolveHeadingIcon(rawText: string, level: number): HeadingIcon 
         return { kind: 'codicon', id: 'question', color: COLOR.blue, reason: 'question' };
     }
 
-    return levelBadge(level);
+    // Nothing to infer: show the level as bars, the default style.
+    return { ...levelBadge(level), style: 'bars' };
 }
 
 function levelBadge(level: number): Extract<HeadingIcon, { kind: 'level' }> {

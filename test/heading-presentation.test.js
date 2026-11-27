@@ -132,10 +132,11 @@ describe('Heading presentation', function() {
             assert.strictEqual(iconId('Why is my tree empty?', 3), 'question');
         });
 
-        it('falls back to a clamped level badge', function() {
-            assert.deepStrictEqual(resolveHeadingIcon('Markdown Compass', 1), { kind: 'level', level: 1 });
-            assert.deepStrictEqual(resolveHeadingIcon('Deep heading', 6), { kind: 'level', level: 6 });
-            assert.deepStrictEqual(resolveHeadingIcon('Odd', 9), { kind: 'level', level: 6 });
+        it('falls back to clamped level bars when no section icon fits', function() {
+            assert.deepStrictEqual(resolveHeadingIcon('Markdown Compass', 1), { kind: 'level', level: 1, style: 'bars' });
+            assert.deepStrictEqual(resolveHeadingIcon('Deep heading', 6), { kind: 'level', level: 6, style: 'bars' });
+            assert.deepStrictEqual(resolveHeadingIcon('Odd', 9), { kind: 'level', level: 6, style: 'bars' });
+            assert.deepStrictEqual(presentHeading('Browsing modes', 2, 'strip', 'sections').icon, { kind: 'level', level: 2, style: 'bars' });
         });
 
         it('shows only level badges in levels mode, and section icons in sections mode', function() {

@@ -2038,7 +2038,7 @@ class MarkdownHeaderViewProvider {
 
         // Level bars by default, or H1-H6 badges. With headingIcons set to
         // "sections", the icon comes from what the section is (emoji hint, code
-        // shape, known section name), falling back to the badge.
+        // shape, known section name), falling back to the level bars.
         const presentation = headingPresentation.presentHeading(
             element.text,
             element.level,

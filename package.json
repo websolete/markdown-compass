@@ -318,7 +318,7 @@
                     "enumDescriptions": [
                         "Show an H1 to H6 badge for each heading's level.",
                         "Show one to six horizontal bars for each heading's level: one thick bar for H1, six thin bars for H6.",
-                        "Show an icon for what each section is, such as Installation, Configuration, API, FAQ, Known Issues or Changelog, in theme colors. Headings that match nothing get the level badge."
+                        "Show an icon for what each section is, such as Installation, Configuration, API, FAQ, Known Issues or Changelog, in theme colors. Headings that match nothing get the level bars."
                     ],
                     "scope": "window",
                     "markdownDescription": "Choose the icons in the **Current Document** view."
